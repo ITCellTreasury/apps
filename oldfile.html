@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>App Portal - Digital Hub</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="./images/app-portal.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="./images/app-portal.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./images/app-portal.png">
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f1f3f7;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .app-header {
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+            color: #1a73e8;
+        }
+
+        .logo-text h1 {
+            font-size: 1.35rem;
+            font-weight: 500;
+            color: #1f1f1f;
+            letter-spacing: -0.2px;
+        }
+
+        .logo-text p {
+            font-size: 0.7rem;
+            color: #5f6368;
+            font-weight: 400;
+            margin-top: 1px;
+        }
+
+        /* Search Bar - Desktop */
+        .search-container {
+            flex: 1;
+            max-width: 350px;
+        }
+
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            background: #f1f3f7;
+            border-radius: 28px;
+            padding: 6px 16px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .search-wrapper:focus-within {
+            background: #ffffff;
+            border-color: #dadce0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .search-icon {
+            color: #5f6368;
+            font-size: 20px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            padding: 12px 0;
+            outline: none;
+            font-family: inherit;
+            color: #202124;
+        }
+
+        .search-input::placeholder {
+            color: #9aa0a6;
+            font-weight: 400;
+        }
+
+        .clear-search {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #5f6368;
+            padding: 4px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .clear-search:hover {
+            background: #e8eaed;
+        }
+
+        /* Mobile Search Overlay */
+        .mobile-search-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s ease;
+        }
+
+        .mobile-search-overlay.active {
+            display: flex;
+        }
+
+        .mobile-search-card {
+            background: #ffffff;
+            margin: 16px;
+            border-radius: 32px;
+            width: calc(100% - 32px);
+            max-width: 500px;
+            animation: slideDown 0.25s ease;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .mobile-search-header {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            gap: 12px;
+            border-bottom: 1px solid #e8eaed;
+        }
+
+        .mobile-search-input {
+            flex: 1;
+            border: none;
+            font-size: 1rem;
+            padding: 12px 0;
+            outline: none;
+            font-family: inherit;
+            background: transparent;
+        }
+
+        .close-search {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #5f6368;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .close-search:hover {
+            background: #f1f3f7;
+        }
+
+        .mobile-search-icon {
+            font-size: 20px;
+            color: #5f6368;
+        }
+
+        /* Mobile search button (visible only on mobile) */
+        .mobile-search-btn {
+            display: none;
+            background: #f1f3f7;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .mobile-search-btn:hover {
+            background: #e8eaed;
+        }
+
+        .mobile-search-btn i {
+            font-size: 20px;
+            color: #5f6368;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Refresh indicator */
+        .refresh-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1f1f1f;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 48px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .refresh-toast.show {
+            opacity: 1;
+        }
+        
+        .refresh-toast i {
+            font-size: 18px;
+        }
+
+        /* Main container */
+        .main-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 28px 24px 48px;
+        }
+
+        /* Info bar */
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+            gap: 12px;
+        }
+
+        .results-count {
+            font-size: 0.85rem;
+            color: #5f6368;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .results-count i {
+            font-size: 14px;
+        }
+
+        .badge {
+            background: #e8eaed;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #1f1f1f;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Apps Grid - Enhanced Cards */
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 380px));
+            gap: 24px;
+            justify-content: center;
+        }
+
+        /* App Card - Rich Card Design */
+        .app-card {
+            text-decoration: none;
+            display: block;
+            background: #ffffff;
+            border-radius: 28px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .app-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 32px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Card Header with Icon and Tag */
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 20px 20px 12px 20px;
+        }
+
+        .icon-wrapper {
+            flex-shrink: 0;
+        }
+
+        .app-icon-large {
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            object-fit: cover;
+            background: #f8f9fa;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .app-card:hover .app-icon-large {
+            transform: scale(1.02);
+        }
+
+        .default-icon-large {
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #4285f4, #1a73e8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: 600;
+            font-family: 'Google Sans', system-ui;
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+            text-transform: uppercase;
+        }
+
+        .app-info-header {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .app-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #202124;
+            margin-bottom: 6px;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Tag Badge */
+        .app-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #e8f0fe;
+            color: #1a73e8;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+
+        .app-tag i {
+            font-size: 12px;
+        }
+
+        /* Star Rating */
+        .star-rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .stars {
+            display: flex;
+            gap: 2px;
+            color: #f9ab00;
+        }
+
+        .stars i {
+            font-size: 14px;
+        }
+
+        .stars i.bi-star-fill {
+            color: #f9ab00;
+        }
+
+        .stars i.bi-star-half {
+            color: #f9ab00;
+        }
+
+        .stars i.bi-star {
+            color: #dadce0;
+        }
+
+        .rating-value {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #5f6368;
+        }
+
+        /* Description */
+        .app-description {
+            padding: 0 20px 16px 20px;
+        }
+
+        .description-text {
+            font-size: 0.85rem;
+            color: #5f6368;
+            line-height: 1.45;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            word-break: break-word;
+        }
+
+        /* Card Footer with Launch Button */
+        .card-footer {
+            padding: 12px 20px 20px 20px;
+            border-top: 1px solid #f1f3f7;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .launch-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f3f7;
+            color: #1a73e8;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .app-card:hover .launch-btn {
+            background: #e8eaed;
+            transform: translateX(4px);
+        }
+
+        .launch-btn i {
+            font-size: 14px;
+        }
+
+        /* State Containers */
+        .state-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            background: #ffffff;
+            border-radius: 36px;
+            text-align: center;
+            margin-top: 40px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .spinner-circle {
+            width: 52px;
+            height: 52px;
+            border: 4px solid #e8eaed;
+            border-top-color: #4285f4;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 24px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #9aa0a6;
+        }
+
+        .state-title {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #202124;
+            margin-bottom: 8px;
+        }
+
+        .state-sub {
+            font-size: 0.85rem;
+            color: #5f6368;
+            max-width: 280px;
+        }
+
+        .reset-search-btn {
+            margin-top: 20px;
+            background: #e8eaed;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .reset-search-btn:hover {
+            background: #dadce0;
+        }
+
+        /* Footer */
+        .app-footer {
+            max-width: 1280px;
+            margin: 48px auto 0;
+            padding: 24px 24px 32px;
+            border-top: 1px solid #e8eaed;
+            text-align: center;
+            color: #5f6368;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .app-card {
+            animation: fadeInUp 0.35s ease forwards;
+        }
+
+        /* Responsive - Mobile devices */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 12px 16px;
+                gap: 12px;
+            }
+            
+            /* Hide desktop search container on mobile */
+            .search-container {
+                display: none;
+            }
+            
+            /* Show mobile search button */
+            .mobile-search-btn {
+                display: flex;
+            }
+            
+            .main-container {
+                padding: 20px 16px 40px;
+            }
+            
+            .apps-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .card-header {
+                padding: 16px 16px 8px 16px;
+            }
+            
+            .app-icon-large, .default-icon-large {
+                width: 56px;
+                height: 56px;
+                font-size: 26px;
+                border-radius: 14px;
+            }
+            
+            .app-title {
+                font-size: 1rem;
+            }
+            
+            .app-description {
+                padding: 0 16px 12px 16px;
+            }
+            
+            .card-footer {
+                padding: 12px 16px 16px 16px;
+            }
+        }
+
+        /* Tablet devices - maintain desktop layout */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .header-content {
+                gap: 16px;
+            }
+            
+            .logo-text h1 {
+                font-size: 1.2rem;
+            }
+            
+            .search-container {
+                flex: 1;
+            }
+            
+            .mobile-search-btn {
+                display: none;
+            }
+        }
+
+        .app-card:active {
+            transform: scale(0.98);
+            transition: transform 0.08s;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <div class="header-content">
+            <div class="logo-area">
+                <i class="bi bi-grid-3x3-gap-fill logo-icon"></i>
+                <div class="logo-text">
+                    <h1>App Portal</h1>
+                    <p>Digital Hub</p>
+                </div>
+            </div>
+            <!-- Desktop Search -->
+            <div class="search-container">
+                <div class="search-wrapper">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" class="search-input" id="desktopSearchInput" placeholder="Search by name, tag, or description..." autocomplete="off">
+                    <button class="clear-search" id="desktopClearBtn" aria-label="Clear search">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Mobile Search Button -->
+            <button class="mobile-search-btn" id="mobileSearchBtn">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Search Overlay -->
+    <div class="mobile-search-overlay" id="mobileSearchOverlay">
+        <div class="mobile-search-card">
+            <div class="mobile-search-header">
+                <i class="bi bi-search mobile-search-icon"></i>
+                <input type="text" class="mobile-search-input" id="mobileSearchInput" placeholder="Search by name, tag, or description..." autocomplete="off">
+                <button class="close-search" id="closeMobileSearch">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="info-bar" id="infoBar" style="display: none;">
+            <div class="results-count" id="resultsCount">
+                <i class="bi bi-app-indicator"></i>
+                <span></span>
+            </div>
+            <div class="badge" id="appCountBadge">
+                <i class="bi bi-collection"></i>
+                <span></span>
+            </div>
+        </div>
+        <div id="apps-container">
+            <div class="state-container">
+                <div class="spinner-circle"></div>
+                <div class="state-title">Loading applications...</div>
+                <div class="state-sub">Fetching the latest app list</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-footer">
+        <i class="bi bi-database"></i>
+        <span>© 2026 Digital App Portal</span>
+    </div>
+
+    <div class="refresh-toast" id="refreshToast">
+        <i class="bi bi-check-circle-fill"></i>
+        <span id="toastMessage">Apps updated!</span>
+    </div>
+
+    <script>
+        // Configuration with cache-busting - NO CACHING
+        const APPS_CONFIG_URL = './apps.txt';
+        
+        let allApps = [];
+        let currentFilter = '';
+        
+        // DOM Elements
+        const container = document.getElementById('apps-container');
+        const desktopSearchInput = document.getElementById('desktopSearchInput');
+        const desktopClearBtn = document.getElementById('desktopClearBtn');
+        const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+        const mobileSearchOverlay = document.getElementById('mobileSearchOverlay');
+        const mobileSearchInput = document.getElementById('mobileSearchInput');
+        const closeMobileSearch = document.getElementById('closeMobileSearch');
+        const infoBar = document.getElementById('infoBar');
+        const resultsCountSpan = document.getElementById('resultsCount').querySelector('span');
+        const appCountBadgeSpan = document.getElementById('appCountBadge').querySelector('span');
+        const refreshToast = document.getElementById('refreshToast');
+        const toastMessageSpan = document.getElementById('toastMessage');
+        
+        // Show toast notification
+        function showToast(message, isError = false) {
+            toastMessageSpan.textContent = message;
+            refreshToast.classList.add('show');
+            if (isError) {
+                refreshToast.style.background = '#d32f2f';
+                refreshToast.querySelector('i').className = 'bi bi-exclamation-triangle-fill';
+            } else {
+                refreshToast.style.background = '#1f1f1f';
+                refreshToast.querySelector('i').className = 'bi bi-check-circle-fill';
+            }
+            setTimeout(() => {
+                refreshToast.classList.remove('show');
+                setTimeout(() => {
+                    refreshToast.style.background = '#1f1f1f';
+                    refreshToast.querySelector('i').className = 'bi bi-check-circle-fill';
+                }, 300);
+            }, 2500);
+        }
+        
+        // Fetch with cache-busting - ALWAYS get fresh data
+        async function fetchAppsNoCache() {
+            const cacheBuster = `?t=${Date.now()}`;
+            const url = APPS_CONFIG_URL + cacheBuster;
+            
+            try {
+                const response = await fetch(url, {
+                    cache: 'no-store',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const text = await response.text();
+                return text;
+            } catch (error) {
+                throw error;
+            }
+        }
+        
+        // Get initials from app name (for default icon)
+        function getInitials(appName) {
+            if (!appName) return 'A';
+            const words = appName.trim().split(/\s+/);
+            if (words.length === 1) {
+                return words[0].charAt(0).toUpperCase();
+            }
+            return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+        }
+        
+        // Format star rating to display stars
+        function renderStars(rating) {
+            const numRating = parseFloat(rating);
+            if (isNaN(numRating) || numRating < 0) return '<i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i>';
+            
+            const fullStars = Math.floor(numRating);
+            const hasHalf = numRating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+            
+            let starsHtml = '';
+            for (let i = 0; i < fullStars; i++) starsHtml += '<i class="bi bi-star-fill"></i>';
+            if (hasHalf) starsHtml += '<i class="bi bi-star-half"></i>';
+            for (let i = 0; i < emptyStars; i++) starsHtml += '<i class="bi bi-star"></i>';
+            
+            return starsHtml;
+        }
+        
+        // Load applications with format: Name, URL, Icon, Tag, Description, Rating
+        async function loadApplications(showToastMsg = false) {
+            container.innerHTML = `
+                <div class="state-container">
+                    <div class="spinner-circle"></div>
+                    <div class="state-title">Loading applications...</div>
+                    <div class="state-sub">Fetching the latest app list</div>
+                </div>
+            `;
+            
+            try {
+                const text = await fetchAppsNoCache();
+                const lines = text.split('\n').filter(line => line.trim() && !line.startsWith('#'));
+                
+                const apps = [];
+                for (const line of lines) {
+                    const parts = line.split(',').map(part => part.trim());
+                    
+                    if (parts.length >= 1 && parts[0]) {
+                        const appName = parts[0];
+                        const launchUrl = parts.length >= 2 && parts[1] ? parts[1] : './';
+                        const iconUrl = parts.length >= 3 && parts[2] && parts[2] !== '' ? parts[2] : null;
+                        const tag = parts.length >= 4 && parts[3] ? parts[3] : 'App';
+                        const description = parts.length >= 5 && parts[4] ? parts[4] : 'No description available';
+                        const rating = parts.length >= 6 && parts[5] ? parseFloat(parts[5]) : 4.0;
+                        
+                        const validRating = Math.min(5, Math.max(0, isNaN(rating) ? 4.0 : rating));
+                        
+                        apps.push({
+                            id: appName.replace(/[^a-z0-9]/gi, '_').toLowerCase(),
+                            name: appName,
+                            url: launchUrl,
+                            iconUrl: iconUrl,
+                            tag: tag,
+                            description: description,
+                            rating: validRating,
+                            searchTokens: (appName + ' ' + tag + ' ' + description).toLowerCase()
+                        });
+                    }
+                }
+                
+                if (apps.length === 0) {
+                    renderEmptyState('No applications found', 'Add entries to apps.txt file with format: App Name, Launch URL, Icon URL, Tag, Description, Star Rating', null, false);
+                    if (showToastMsg) showToast('No apps found in config', true);
+                    return;
+                }
+                
+                allApps = apps;
+                updateTotalBadge();
+                
+                if (currentFilter) {
+                    const filtered = filterApps(currentFilter);
+                    renderAppsGrid(filtered);
+                } else {
+                    renderAppsGrid(allApps);
+                }
+                
+                if (showToastMsg) {
+                    showToast(`Loaded ${apps.length} app${apps.length !== 1 ? 's' : ''}`);
+                }
+                
+            } catch (error) {
+                console.error('Error loading apps:', error);
+                renderEmptyState('Unable to load applications', 'Make sure apps.txt exists in the same directory', error.message, false);
+                if (showToastMsg) showToast('Failed to load apps. Check console.', true);
+            }
+        }
+        
+        function updateTotalBadge() {
+            if (allApps.length) {
+                appCountBadgeSpan.textContent = `${allApps.length} app${allApps.length !== 1 ? 's' : ''} available`;
+            } else {
+                appCountBadgeSpan.textContent = '0 apps';
+            }
+        }
+        
+        function filterApps(searchTerm) {
+            if (!searchTerm.trim()) {
+                return allApps;
+            }
+            const term = searchTerm.trim().toLowerCase();
+            return allApps.filter(app => app.searchTokens.includes(term));
+        }
+        
+        function renderAppsGrid(appsToRender) {
+            if (!appsToRender.length) {
+                const searchTerm = currentFilter;
+                if (searchTerm && allApps.length > 0) {
+                    renderEmptyState('No matching apps', `No apps found for "${searchTerm}"`, null, true);
+                } else if (allApps.length === 0) {
+                    renderEmptyState('App list is empty', 'Please check apps.txt configuration', null, false);
+                } else {
+                    renderEmptyState('No apps found', 'Try adjusting your search', null, true);
+                }
+                return;
+            }
+            
+            const gridHtml = `
+                <div class="apps-grid">
+                    ${appsToRender.map(app => `
+                        <div class="app-card" data-url="${escapeHtml(app.url)}">
+                            <div class="card-header">
+                                <div class="icon-wrapper">
+                                    ${app.iconUrl ? 
+                                        `<img src="${escapeHtml(app.iconUrl)}" alt="${escapeHtml(app.name)}" class="app-icon-large" 
+                                            onerror="this.style.display='none'; this.parentElement.querySelector('.default-icon-large').style.display='flex';">` : 
+                                        ''
+                                    }
+                                    <div class="default-icon-large" ${app.iconUrl ? 'style="display: none;"' : ''}>
+                                        ${escapeHtml(getInitials(app.name))}
+                                    </div>
+                                </div>
+                                <div class="app-info-header">
+                                    <div class="app-title">${escapeHtml(app.name)}</div>
+                                    <div class="app-tag">
+                                        <i class="bi bi-tag-fill"></i>
+                                        ${escapeHtml(app.tag)}
+                                    </div>
+                                    <div class="star-rating">
+                                        <div class="stars">
+                                            ${renderStars(app.rating)}
+                                        </div>
+                                        <span class="rating-value">${app.rating.toFixed(1)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="app-description">
+                                <div class="description-text">${escapeHtml(app.description)}</div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="launch-btn">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                    <span>View</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = gridHtml;
+            
+            document.querySelectorAll('.app-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    const url = card.getAttribute('data-url');
+                    if (url && url !== '#') {
+                        window.open(url, '_blank', 'noopener,noreferrer');
+                    }
+                });
+            });
+            
+            const showingCount = appsToRender.length;
+            const totalCount = allApps.length;
+            if (currentFilter) {
+                resultsCountSpan.innerHTML = `${showingCount} result${showingCount !== 1 ? 's' : ''} for "${escapeHtml(currentFilter)}"`;
+                infoBar.style.display = 'flex';
+            } else {
+                resultsCountSpan.innerHTML = `All apps · ${totalCount} available`;
+                infoBar.style.display = 'flex';
+            }
+        }
+        
+        function renderEmptyState(title, message, errorDetail = null, isSearchEmpty = false) {
+            let additionalHtml = '';
+            if (errorDetail && !isSearchEmpty) {
+                additionalHtml = `<div style="font-size:0.7rem; margin-top:12px; color:#ea4335; display:flex; align-items:center; gap:4px;"><i class="bi bi-exclamation-triangle"></i>${escapeHtml(errorDetail)}</div>`;
+            }
+            if (isSearchEmpty && allApps.length > 0) {
+                additionalHtml += `<button id="resetSearchBtn" class="reset-search-btn"><i class="bi bi-arrow-counterclockwise"></i> Clear Search</button>`;
+            }
+            container.innerHTML = `
+                <div class="state-container">
+                    <div class="empty-icon">
+                        <i class="bi ${isSearchEmpty ? 'bi-search' : 'bi-folder2-open'}"></i>
+                    </div>
+                    <div class="state-title">${escapeHtml(title)}</div>
+                    <div class="state-sub">${escapeHtml(message)}</div>
+                    ${additionalHtml}
+                </div>
+            `;
+            if (isSearchEmpty && allApps.length > 0) {
+                const resetBtn = document.getElementById('resetSearchBtn');
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', () => {
+                        updateSearchValue('');
+                        performSearch();
+                    });
+                }
+            }
+            infoBar.style.display = 'none';
+        }
+        
+        function updateSearchValue(value) {
+            currentFilter = value;
+            if (desktopSearchInput) desktopSearchInput.value = value;
+            if (mobileSearchInput) mobileSearchInput.value = value;
+        }
+        
+        function performSearch() {
+            const filtered = filterApps(currentFilter);
+            renderAppsGrid(filtered);
+        }
+        
+        function handleSearchInput(value) {
+            currentFilter = value;
+            performSearch();
+            // Sync both search inputs
+            if (desktopSearchInput && desktopSearchInput.value !== value) {
+                desktopSearchInput.value = value;
+            }
+            if (mobileSearchInput && mobileSearchInput.value !== value) {
+                mobileSearchInput.value = value;
+            }
+        }
+        
+        function attachSearchEvents() {
+            // Desktop search events
+            if (desktopSearchInput) {
+                desktopSearchInput.addEventListener('input', (e) => {
+                    handleSearchInput(e.target.value);
+                });
+            }
+            
+            if (desktopClearBtn) {
+                desktopClearBtn.addEventListener('click', () => {
+                    handleSearchInput('');
+                    if (desktopSearchInput) desktopSearchInput.focus();
+                });
+            }
+            
+            // Mobile search events
+            if (mobileSearchInput) {
+                mobileSearchInput.addEventListener('input', (e) => {
+                    handleSearchInput(e.target.value);
+                });
+            }
+            
+            // Mobile overlay controls
+            if (mobileSearchBtn) {
+                mobileSearchBtn.addEventListener('click', () => {
+                    mobileSearchOverlay.classList.add('active');
+                    mobileSearchInput.focus();
+                });
+            }
+            
+            if (closeMobileSearch) {
+                closeMobileSearch.addEventListener('click', () => {
+                    mobileSearchOverlay.classList.remove('active');
+                });
+            }
+            
+            mobileSearchOverlay.addEventListener('click', (e) => {
+                if (e.target === mobileSearchOverlay) {
+                    mobileSearchOverlay.classList.remove('active');
+                }
+            });
+            
+            // Escape key to close mobile search
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && mobileSearchOverlay.classList.contains('active')) {
+                    mobileSearchOverlay.classList.remove('active');
+                }
+            });
+        }
+        
+        // Auto-refresh every 30 seconds
+        async function autoRefresh() {
+            await loadApplications(true);
+            performSearch();
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
+        async function init() {
+            await loadApplications(false);
+            attachSearchEvents();
+            setInterval(autoRefresh, 30000);
+        }
+        
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+Certificate Generator,./certificate-generator/index.html,./certificate-generator/CERTIFY.png,Utility,Text editing utility for all,4.5  
+NOC ADMIN,https://keralatreasury.github.io/network/,./images/app-icons/noc%20admin.png,SDWAN, Application for network team,4.7
+Income TaxCalc,https://itcelldto.github.io/try/apps/income-tax-calculator/index.html,,Utility,Income Tax Calculation (New Regieme),3.7
+UTR Details,https://itcelltreasury.github.io/try/utr,,Utility,Details of UTR that changed in the period of Aug2025,4.4
+HelpDesk ITCell,https://itcellhelpdesk.github.io/home/app/index.html,https://itcellhelpdesk.github.io/home/app/icons/icon-192x192.png,Public Utility,IT Cell Assistance for public,4.5
+Files Repository,https://itcelldto.github.io/try/apps/doc-repository.html,,Utility,Search Circulars User Manuals and Forms,4.3
+Calculator,./calculator/index.html,,Utility,Calculator for all Operating Systems,4.4
+TELPLUS,https://telplus.in/,https://telplus.in/wp-content/uploads/2021/06/cropped-Screenshot_2021-06-18-23-52-35-112_com.android.chrome-192x192.jpg,Website,Utility Application Website,4.9
+Google Sheet Data Migration,https://script.google.com/macros/s/AKfycbzlpOw22o5LyQHZEPcJL9GmgIaT53AQ1yJhrgr_Pt7ABVBKGwFTjmOc9rm31OlzMzhj/exec,,Webapp, Bulk Transfer Any Google Sheet Data range to another ,3.9
+Network Speed Test, https://keralatreasury.github.io/network/sdwan/speed-test-by-url.html,,Utility, Test your network speed by downloading a resource url, 4.7

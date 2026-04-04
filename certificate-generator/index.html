@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-Certificate Generator | Treasury Department</title>
+	 <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+	
+	
+   
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f5fa; min-height: 100vh; padding: 30px 20px; }
+        .app-container { max-width: 95%; margin: 0 auto; }
+        .header-section { text-align: center; margin-bottom: 30px; }
+        .header-section h1 { color: #1e293b; font-size: 28px; font-weight: 600; margin-bottom: 8px; }
+        .info-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .info-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .info-card input { width: 100%; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
+        .main-content { display: flex; gap: 25px; flex-wrap: wrap; }
+        .left-panel { flex: 0 0 420px; background: white; border-radius: 16px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .right-panel { flex: 1; min-width: 500px; }
+        .search-box { position: relative; margin-bottom: 15px; }
+        .search-box input { padding-left: 35px; border-radius: 30px; border: 1px solid #e2e8f0; width: 100%; padding: 8px 12px 8px 35px; }
+        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        .selection-toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+        .badge-count { background: #e2e8f0; color: #1e293b; font-size: 0.7rem; padding: 4px 8px; border-radius: 20px; font-weight: 500; }
+        .cert-list-container { max-height: 380px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px; background: #fefefe; }
+        .cert-list-container::-webkit-scrollbar { width: 6px; }
+        .cert-list-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+        .cert-list-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .cert-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: #ffffff; border: 1px solid #e9edf2; border-radius: 10px; margin-bottom: 8px; transition: all 0.2s; cursor: pointer; }
+        .cert-item:hover { background: #f8fafc; border-color: #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .cert-item input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; accent-color: #3b82f6; cursor: pointer; flex-shrink: 0; }
+        .cert-content { flex: 1; }
+        .cert-title { font-size: 13px; font-weight: 600; color: #3b82f6; margin-bottom: 4px; }
+        .cert-text { font-size: 12px; color: #475569; line-height: 1.4; }
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 4px 6px; border-radius: 6px; transition: all 0.2s; flex-shrink: 0; }
+        .action-btn:hover { background: #e2e8f0; }
+        .add-cert-box { background: #f8fafc; padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .add-cert-box label { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; display: block; }
+        .add-cert-box input, .add-cert-box textarea { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 12px; font-family: inherit; font-size: 13px; }
+        .add-cert-box textarea { resize: vertical; }
+        .dropdown-section { margin-bottom: 20px; }
+        .dropdown-header { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; transition: all 0.2s; font-weight: 500; }
+        .dropdown-header:hover { background: #f1f5f9; }
+        .dropdown-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .dropdown-content.open { max-height: 500px; }
+        .dropdown-content-inner { padding: 18px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fef9e3; margin-top: 8px; }
+        .btn { padding: 12px 20px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; font-size: 14px; }
+        .btn-pdf { background: #dc2626; color: white; }
+        .btn-pdf:hover { background: #b91c1c; transform: translateY(-1px); }
+        .btn-add { background: #3b82f6; color: white; width: 100%; }
+        .btn-add:hover { background: #2563eb; transform: translateY(-1px); }
+        .btn-text { background: #3b82f6; color: white; }
+        .btn-text:hover { background: #2563eb; transform: translateY(-1px); }
+        .preview-container { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .formatting-toolbar { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .format-btn { background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 12px; cursor: pointer; transition: all 0.2s; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
+        .format-btn:hover { background: #e2e8f0; transform: translateY(-1px); }
+        .format-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+        .separator { width: 1px; height: 24px; background: #e2e8f0; margin: 0 4px; }
+        .a4-preview { background: white; border: 1px solid #e2e8f0; border-radius: 12px; min-height: 500px; padding: 30px 35px; position: relative; }
+        .cert-header { font-family: "Times New Roman", Times, serif; text-align: center; font-weight: bold; font-size: 1.3em; text-transform: uppercase; }
+        .cert-subtitle { font-family: "Times New Roman", Times, serif; text-align: center; font-weight: bold; font-size: 1.1em; margin-bottom: 25px; }
+        .cert-body { font-family: "Times New Roman", Times, serif; line-height: 1.7; font-size: 13px; min-height: 280px; outline: none; background: #fdfdfd; padding: 15px; border-radius: 8px; overflow-y: auto; }
+        .cert-body:focus { outline: 2px solid #3b82f6; }
+        .cert-footer { display: flex; justify-content: space-between; margin-top: 40px; font-size: 12px; }
+        .signature-area { text-align: center; width: 250px; }
+        .preview-actions { display: flex; gap: 12px; margin-top: 15px; }
+        .file-group { margin-bottom: 12px; }
+        .file-group label { display: block; font-size: 12px; font-weight: 500; color: #92400e; margin-bottom: 5px; }
+        .file-group .hint { font-size: 10px; color: #a16207; font-weight: normal; }
+        .loading-spinner { text-align: center; padding: 20px; color: #64748b; }
+        .color-picker { width: 30px; height: 30px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; padding: 2px; }
+        @media (max-width: 900px) { .main-content { flex-direction: column; } .left-panel { flex: auto; } .right-panel { min-width: auto; } }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header-section">
+            <h1><i class="fas fa-certificate"></i> Certificate Generator</h1>
+        </div>
+
+        <div class="info-cards">
+            <div class="info-card"><label><i class="fas fa-building"></i> Office Name</label><input type="text" id="officeInput" placeholder="Enter Institution Name" oninput="updatePreview(); saveProfile();"></div>
+            <div class="info-card"><label><i class="fas fa-user-tie"></i> Officer Name</label><input type="text" id="officerInput" placeholder="Enter DDO Name" oninput="updatePreview(); saveProfile();"></div>
+            <div class="info-card"><label><i class="fas fa-id-card"></i> Designation</label><input type="text" id="desigInput" placeholder="Enter Designation" oninput="updatePreview(); saveProfile();"></div>
+            <div class="info-card"><label><i class="fas fa-key"></i> PEN Number</label><input type="text" id="penInput" placeholder="Enter PEN" oninput="updatePreview(); saveProfile();"></div>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <div style="font-size:18px; font-weight:600; margin-bottom:20px;"><i class="fas fa-list"></i> Certificate Management</div>
+                
+                <div class="add-cert-box" style="margin-bottom: 20px;">
+                    <label><i class="fas fa-heading"></i> Certificate Title / Heading</label>
+                    <input type="text" id="certTitleInput" placeholder="e.g., CERTIFICATES, VERIFICATION REPORT" value="CERTIFICATE" oninput="updatePreview()">
+                </div>
+
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchCertInput" placeholder="Search by heading or description...">
+                </div>
+                
+                <div class="selection-toolbar">
+                    <button class="format-btn" onclick="selectAllCertificates()"><i class="fas fa-check-double"></i> Select All</button>
+                    <button class="format-btn" onclick="clearAllSelections()"><i class="fas fa-times-circle"></i> Clear Selection</button>
+                    <span class="badge-count" id="selectedCountBadge">0 selected</span>
+                </div>
+
+                <div id="checkboxContainer" class="cert-list-container">
+                    <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading certificates...</div>
+                </div>
+
+                <div class="add-cert-box">
+                    <label><i class="fas fa-plus-circle"></i> Add New Certificate</label>
+                    <input type="text" id="newCertHeading" placeholder="Certificate Heading / Title">
+                    <textarea id="newCertText" placeholder="Certificate description / content..." rows="3"></textarea>
+                    <button class="btn btn-add" onclick="addCertificateToSheet()"><i class="fas fa-save"></i> Add to List & Sync</button>
+                </div>
+
+                <div class="dropdown-section">
+                    <div class="dropdown-header" onclick="toggleDropdown()">
+                        <span><i class="fas fa-cog"></i> More Options</span>
+                        <span class="dropdown-arrow" id="dropdownArrow">▼</span>
+                    </div>
+                    <div class="dropdown-content" id="dropdownContent">
+                        <div class="dropdown-content-inner">
+                            <div class="image-upload-box">
+                                <h4><i class="fas fa-image"></i> Upload Images for Manual Signing</h4>
+                                <div class="file-group"><label><i class="fas fa-signature"></i> Ink Signature <span class="hint">(Max 15KB)</span></label><input type="file" id="signInput" accept="image/*" onchange="handleImageUpload(this, 'sign')"></div>
+                                <div class="file-group"><label><i class="fas fa-stamp"></i> Designation Seal <span class="hint">(Max 15KB)</span></label><input type="file" id="desigSealInput" accept="image/*" onchange="handleImageUpload(this, 'desigSeal')"></div>
+                                <div class="file-group"><label><i class="fas fa-circle"></i> Office Round Seal <span class="hint">(Max 15KB)</span></label><input type="file" id="sealInput" accept="image/*" onchange="handleImageUpload(this, 'seal')"></div>
+                                <button class="format-btn" style="width:100%; background:#fee2e2; color:#991b1b; margin-top:10px;" onclick="clearImages()"><i class="fas fa-trash-alt"></i> Clear All Images</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="preview-container">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                        <h3 style="font-size:18px; font-weight:600;"><i class="fas fa-edit"></i> Rich Text Editor</h3>
+                        <span class="badge-count">A4 Format</span>
+                    </div>
+                    
+                    <!-- Complete Formatting Toolbar -->
+                    <div class="formatting-toolbar">
+                        <button class="format-btn" onclick="formatText('bold')" title="Bold"><b>B</b></button>
+                        <button class="format-btn" onclick="formatText('italic')" title="Italic"><i>I</i></button>
+                        <button class="format-btn" onclick="formatText('underline')" title="Underline"><u>U</u></button>
+                        <button class="format-btn" onclick="formatText('strikeThrough')" title="Strikethrough"><s>S</s></button>
+                        <div class="separator"></div>
+                        <button class="format-btn" onclick="formatText('superscript')" title="Superscript">X²</button>
+                        <button class="format-btn" onclick="formatText('subscript')" title="Subscript">X₂</button>
+                        <div class="separator"></div>
+                        <button class="format-btn" onclick="formatText('justifyLeft')" title="Align Left"><i class="fas fa-align-left"></i></button>
+                        <button class="format-btn" onclick="formatText('justifyCenter')" title="Center"><i class="fas fa-align-center"></i></button>
+                        <button class="format-btn" onclick="formatText('justifyRight')" title="Align Right"><i class="fas fa-align-right"></i></button>
+                        <button class="format-btn" onclick="formatText('justifyFull')" title="Justify"><i class="fas fa-align-justify"></i></button>
+                        <div class="separator"></div>
+                        <button class="format-btn" onclick="formatText('insertOrderedList')" title="Numbered List"><i class="fas fa-list-ol"></i></button>
+                        <button class="format-btn" onclick="formatText('insertUnorderedList')" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+                        <div class="separator"></div>
+                        <select class="format-btn" onchange="changeFontFamily(this.value)" style="font-size:12px;">
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Courier New">Courier New</option>
+                        </select>
+                        <select class="format-btn" onchange="changeFontSize(this.value)" style="font-size:12px;">
+                            <option value="10px">10px</option>
+                            <option value="12px">12px</option>
+                            <option value="13px" selected>13px</option>
+                            <option value="14px">14px</option>
+                            <option value="16px">16px</option>
+                            <option value="18px">18px</option>
+                            <option value="20px">20px</option>
+                            <option value="24px">24px</option>
+                        </select>
+                        <input type="color" id="textColorPicker" class="color-picker" onchange="changeTextColor(this.value)" title="Text Color">
+                        <input type="color" id="bgColorPicker" class="color-picker" onchange="changeBgColor(this.value)" title="Background Color">
+                        <div class="separator"></div>
+                        <button class="format-btn" onclick="insertTable()" title="Insert Table"><i class="fas fa-table"></i></button>
+                        <button class="format-btn" onclick="insertHorizontalRule()" title="Horizontal Line"><i class="fas fa-minus"></i></button>
+                        <div class="separator"></div>
+                        <button class="format-btn" onclick="formatText('undo')" title="Undo"><i class="fas fa-undo"></i></button>
+                        <button class="format-btn" onclick="formatText('redo')" title="Redo"><i class="fas fa-redo"></i></button>
+                        <button class="format-btn" onclick="formatText('removeFormat')" title="Clear Formatting"><i class="fas fa-eraser"></i></button>
+                    </div>
+                    
+                    <div class="a4-preview" id="certificate-content">
+                        <div class="cert-header" id="outOffice">Office Name</div>
+                        <div class="cert-subtitle" id="outCertTitle">CERTIFICATE</div>
+                        <div class="cert-body" id="outText" contenteditable="true">
+                            <div class="placeholder-text">📌 Select certificates from the left panel...</div>
+                        </div>
+                        <div class="cert-footer">
+                            <div class="date-place"><b>Dated:</b> <span id="currentDate"></span></div>
+                            <div class="signature-area" id="signatureBlock">
+                                <div id="signImagesArea" style="min-height: 60px;"></div>
+                                <p class="designation" id="outOfficer">Officer Name</p>
+                                <p class="pen-number">PEN <span id="outPen">Number</span></p>
+                                <p class="designation" id="outDesig">Designation</p>
+                                <p class="designation" id="outOfficeSign">Office Name</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="preview-actions">
+                    <button class="btn btn-pdf" onclick="downloadPDF()"><i class="fas fa-file-pdf"></i> Download PDF</button>
+                    <button class="btn btn-text" onclick="copyText()"><i class="fas fa-copy"></i> Copy as Text</button>
+                    <button id="toggleSignatureBtn" class="btn" style="background:#64748b; color:white;" onclick="toggleSignatureVisibility()"><i class="fas fa-eye-slash"></i> Hide Signature</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Certificate Modal -->
+    <div class="modal fade" id="editCertModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-edit"></i> Edit Certificate</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editCertIndex">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Certificate Heading</label>
+                        <input type="text" id="editCertHeading" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description Text</label>
+                        <textarea id="editCertText" rows="4" class="form-control"></textarea>
+                    </div>
+                    <div class="alert alert-info small">
+                        <i class="fas fa-clock"></i> Upon update, " (Edited on DD/MM/YYYY HH:MM)" will be appended to heading.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="updateCertificateWithTimestamp()"><i class="fas fa-save"></i> Update & Sync</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/jspdf.umd.min.js"></script>
+    <script>
+        // ==================== CONFIGURATION ====================
+        const SHEET_ID = "19YGpejiP0hfgfPKIDuRwIjqK01qiMnDJA4YeZDmP5WA";
+        const API_KEY = "AIzaSyBAuS3Brpsw5JOJnjNJii1UlFa7ClXf8d4";
+        const SHEET_NAME = "List";
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwmFbmwoY5JGQsjnKtiPXVHIlWgVhd4rzev81VbmYSpJUEFTEfgkvXBNBqJwLLJp2tU/exec";
+        
+        // ==================== GLOBAL VARIABLES ====================
+        let certificatesMaster = [];
+        let imgData = { sign: null, seal: null, desigSeal: null };
+        let currentSearchTerm = "";
+        let editModalInstance = null;
+        let currentEditIndex = -1;
+        let signatureVisible = true;
+        
+        // ==================== HELPER FUNCTIONS ====================
+        function escapeHtml(text) {
+            if(!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function getFormattedTimestamp() {
+            const now = new Date();
+            return ` (Edited on ${now.toLocaleDateString('en-GB')} ${now.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})})`;
+        }
+        
+        function extractTitleFromText(text) {
+            const lowerText = text.toLowerCase();
+            const certifiedIndex = lowerText.indexOf("certified that");
+            if (certifiedIndex !== -1) {
+                let afterCertified = text.substring(certifiedIndex + 14).trim();
+                let words = afterCertified.split(/\s+/).slice(0, 4);
+                let title = words.join(" ");
+                return title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            }
+            return null;
+        }
+        
+        // ==================== GOOGLE SHEETS FETCH ====================
+        async function fetchCertificatesFromSheet() {
+            const container = document.getElementById("checkboxContainer");
+            container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading certificates...</div>';
+            
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:B?key=${API_KEY}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.values && data.values.length) {
+                    certificatesMaster = data.values.map(row => ({
+                        heading: row[0] ? row[0].trim() : "Untitled",
+                        text: row[1] ? row[1].trim() : ""
+                    })).filter(item => item.text !== "");
+                } else {
+                    certificatesMaster = getDefaultCertificates();
+                }
+                renderCertificateList();
+            } catch (err) {
+                console.error("Sheet fetch error:", err);
+                certificatesMaster = getDefaultCertificates();
+                renderCertificateList();
+            }
+        }
+        
+        function getDefaultCertificates() {
+            const defaultTexts = [
+                "Certified that the NPS particulars of this bill verified and found in accordance with Circular No. 68/2025/Fin dated 03.09.2025.",
+                "Certified that the SLI and GIS particulars of this bill verified and found as per the slab.",
+                "Certified that the Festival Allowance/Bonus/Advance for All employees of this office has been claimed."
+            ];
+            return defaultTexts.map(text => ({
+                heading: extractTitleFromText(text) || "Certificate",
+                text: text
+            }));
+        }
+        
+        // ==================== RENDER WITH SEARCH ====================
+        function renderCertificateList() {
+            const container = document.getElementById("checkboxContainer");
+            if (!container) return;
+            
+            const searchTerm = currentSearchTerm.toLowerCase();
+            const filtered = certificatesMaster.filter(cert => 
+                cert.heading.toLowerCase().includes(searchTerm) || 
+                cert.text.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-3"><i class="fas fa-search"></i> No certificates match</div>';
+                updateSelectedCount();
+                return;
+            }
+            
+            container.innerHTML = "";
+            filtered.forEach((cert) => {
+                const originalIndex = certificatesMaster.findIndex(c => c.heading === cert.heading && c.text === cert.text);
+                const div = document.createElement("div");
+                div.className = "cert-item";
+                div.setAttribute("data-index", originalIndex);
+                div.innerHTML = `
+                    <input type="checkbox" class="cert-checkbox" data-index="${originalIndex}" id="chk_${originalIndex}">
+                    <div class="cert-content" onclick="document.getElementById('chk_${originalIndex}').click();">
+                        <div class="cert-title">📌 ${escapeHtml(cert.heading)}</div>
+                        <div class="cert-text">${escapeHtml(cert.text.substring(0, 100))}${cert.text.length > 100 ? '...' : ''}</div>
+                    </div>
+                    <div class="cert-actions">
+                        <button class="action-btn" title="Edit" onclick="event.stopPropagation(); openEditModal(${originalIndex})"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn" title="Delete" onclick="event.stopPropagation(); deleteCertificateLocalOnly(${originalIndex})"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                `;
+                container.appendChild(div);
+                
+                const checkbox = div.querySelector('.cert-checkbox');
+                checkbox.addEventListener('change', function() {
+                    updateSelectedCount();
+                    buildPreview();
+                    saveCheckboxStates();
+                });
+            });
+            
+            restoreCheckboxStates();
+            updateSelectedCount();
+            buildPreview();
+        }
+        
+        function saveCheckboxStates() {
+            document.querySelectorAll('.cert-checkbox').forEach(cb => {
+                const idx = cb.getAttribute('data-index');
+                if (cb.checked) {
+                    localStorage.setItem(`checkbox_${idx}`, 'checked');
+                } else {
+                    localStorage.removeItem(`checkbox_${idx}`);
+                }
+            });
+        }
+        
+        function restoreCheckboxStates() {
+            document.querySelectorAll('.cert-checkbox').forEach(cb => {
+                const idx = cb.getAttribute('data-index');
+                if (localStorage.getItem(`checkbox_${idx}`) === 'checked') {
+                    cb.checked = true;
+                }
+            });
+        }
+        
+        function updateSelectedCount() {
+            const selected = document.querySelectorAll('.cert-checkbox:checked').length;
+            const badge = document.getElementById("selectedCountBadge");
+            if (badge) badge.innerText = `${selected} selected`;
+        }
+        
+        function selectAllCertificates() {
+            document.querySelectorAll('.cert-checkbox').forEach(cb => {
+                cb.checked = true;
+                localStorage.setItem(`checkbox_${cb.getAttribute('data-index')}`, 'checked');
+            });
+            updateSelectedCount();
+            buildPreview();
+        }
+        
+        function clearAllSelections() {
+            document.querySelectorAll('.cert-checkbox').forEach(cb => {
+                cb.checked = false;
+                localStorage.removeItem(`checkbox_${cb.getAttribute('data-index')}`);
+            });
+            updateSelectedCount();
+            buildPreview();
+        }
+        
+        // ==================== PREVIEW BUILD ====================
+        function buildPreview() {
+            const checkboxes = document.querySelectorAll('.cert-checkbox:checked');
+            const textDiv = document.getElementById("outText");
+            
+            if (checkboxes.length === 0) {
+                textDiv.innerHTML = '<div class="placeholder-text">📌 Please select certificates from the left panel...</div>';
+                return;
+            }
+            
+            let html = "<ol style='padding-left: 20px; margin: 0;'>";
+            checkboxes.forEach((cb) => {
+                const idx = parseInt(cb.getAttribute('data-index'));
+                const cert = certificatesMaster[idx];
+                if (cert) {
+                    html += `<li style='margin-bottom: 12px; line-height: 1.6;'>${escapeHtml(cert.text)}</li>`;
+                }
+            });
+            html += "</ol>";
+            textDiv.innerHTML = html;
+        }
+        
+        // ==================== TEXT FORMATTING FUNCTIONS ====================
+        function formatText(command) {
+            document.getElementById('outText').focus();
+            document.execCommand(command, false, null);
+        }
+        
+        function changeFontFamily(font) {
+            document.getElementById('outText').focus();
+            document.execCommand('fontName', false, font);
+        }
+        
+        function changeFontSize(size) {
+            document.getElementById('outText').focus();
+            document.execCommand('fontSize', false, '7');
+            const fontElements = document.querySelectorAll('#outText font[size="7"]');
+            fontElements.forEach(el => {
+                el.removeAttribute('size');
+                el.style.fontSize = size;
+            });
+        }
+        
+        function changeTextColor(color) {
+            document.getElementById('outText').focus();
+            document.execCommand('foreColor', false, color);
+        }
+        
+        function changeBgColor(color) {
+            document.getElementById('outText').focus();
+            document.execCommand('backColor', false, color);
+        }
+        
+        function insertTable() {
+            document.getElementById('outText').focus();
+            const rows = prompt("Enter number of rows:", "3");
+            const cols = prompt("Enter number of columns:", "3");
+            if(rows && cols) {
+                let table = '<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; margin: 10px 0;">';
+                for(let i = 0; i < rows; i++) {
+                    table += '<tr>';
+                    for(let j = 0; j < cols; j++) {
+                        table += '<td style="border: 1px solid #ddd; padding: 8px;">&nbsp;</td>';
+                    }
+                    table += '</tr>';
+                }
+                table += '</table>';
+                document.execCommand('insertHTML', false, table);
+            }
+        }
+        
+        function insertHorizontalRule() {
+            document.getElementById('outText').focus();
+            document.execCommand('insertHorizontalRule', false, null);
+        }
+        
+        // ==================== ADD TO SHEET ====================
+        async function addCertificateToSheet() {
+            const heading = document.getElementById("newCertHeading").value.trim();
+            let text = document.getElementById("newCertText").value.trim();
+            
+            if (!heading && !text) {
+                alert("Please enter at least heading or description.");
+                return;
+            }
+            
+            let finalHeading = heading;
+            if (!finalHeading && text) {
+                finalHeading = extractTitleFromText(text) || "Certificate";
+            }
+            
+            const newCert = { heading: finalHeading || "Untitled", text: text || "No description" };
+            certificatesMaster.push(newCert);
+            renderCertificateList();
+            
+            document.getElementById("newCertHeading").value = "";
+            document.getElementById("newCertText").value = "";
+            saveCertificatesLocally();
+            
+            try {
+                const payload = { action: "ADD", heading: finalHeading, description: text };
+                await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            } catch(err) {
+                console.warn("Sheet sync failed", err);
+            }
+            alert("✅ Certificate added locally.");
+        }
+        
+        function openEditModal(index) {
+            const cert = certificatesMaster[index];
+            if(!cert) return;
+            
+            currentEditIndex = index;
+            document.getElementById("editCertIndex").value = index;
+            document.getElementById("editCertHeading").value = cert.heading;
+            document.getElementById("editCertText").value = cert.text;
+            
+            if(!editModalInstance) {
+                const modalEl = document.getElementById("editCertModal");
+                editModalInstance = new bootstrap.Modal(modalEl);
+            }
+            editModalInstance.show();
+        }
+        
+        async function updateCertificateWithTimestamp() {
+            const idx = currentEditIndex;
+            if (idx < 0 || idx >= certificatesMaster.length) {
+                alert("Invalid certificate");
+                return;
+            }
+            
+            const newHeadingRaw = document.getElementById("editCertHeading").value.trim();
+            const newText = document.getElementById("editCertText").value.trim();
+            
+            if (!newHeadingRaw || !newText) {
+                alert("Both heading and description are required.");
+                return;
+            }
+            
+            const timestamp = getFormattedTimestamp();
+            let updatedHeading = newHeadingRaw;
+            if (!updatedHeading.includes("(Edited on")) {
+                updatedHeading = newHeadingRaw + timestamp;
+            }
+            
+            const originalCert = certificatesMaster[idx];
+            const updatedCert = { heading: updatedHeading, text: newText };
+            
+            try {
+                const payload = { 
+                    action: "UPDATE", 
+                    originalHeading: originalCert.heading,
+                    originalText: originalCert.text,
+                    updatedHeading: updatedHeading,
+                    updatedText: newText
+                };
+                await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            } catch(err) {
+                console.warn("Sheet sync failed", err);
+            }
+            
+            certificatesMaster[idx] = updatedCert;
+            saveCertificatesLocally();
+            renderCertificateList();
+            
+            if(editModalInstance) editModalInstance.hide();
+            alert("✅ Certificate updated with timestamp.");
+        }
+        
+        function deleteCertificateLocalOnly(index) {
+            if (confirm("Delete this certificate from browser cache only?")) {
+                certificatesMaster.splice(index, 1);
+                saveCertificatesLocally();
+                renderCertificateList();
+                alert("Removed from cache.");
+            }
+        }
+        
+        function saveCertificatesLocally() {
+            localStorage.setItem("certificatesMasterBackup", JSON.stringify(certificatesMaster));
+        }
+        
+        // ==================== IMAGE HANDLERS ====================
+        function handleImageUpload(input, type) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const maxSize = 15 * 1024;
+            if (file.size > maxSize) {
+                alert(`Image too large. Max 15KB`);
+                input.value = "";
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imgData[type] = e.target.result;
+                updateSignaturePreview();
+                alert(`${type} uploaded!`);
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function updateSignaturePreview() {
+            const container = document.getElementById("signImagesArea");
+            if(!container) return;
+            container.innerHTML = "";
+            if (imgData.desigSeal) {
+                let img = document.createElement("img");
+                img.src = imgData.desigSeal;
+                img.style.maxWidth = "100px";
+                img.style.maxHeight = "40px";
+                container.appendChild(img);
+            }
+            if (imgData.sign) {
+                let sigImg = document.createElement("img");
+                sigImg.src = imgData.sign;
+                sigImg.style.maxWidth = "90px";
+                sigImg.style.maxHeight = "35px";
+                container.appendChild(sigImg);
+            }
+            if (imgData.seal) {
+                let sealImg = document.createElement("img");
+                sealImg.src = imgData.seal;
+                sealImg.style.maxWidth = "60px";
+                container.appendChild(sealImg);
+            }
+            if (!imgData.sign && !imgData.seal && !imgData.desigSeal) {
+                container.innerHTML = '<small class="text-muted">No signatures added</small>';
+            }
+        }
+        
+        function clearImages() {
+            imgData = { sign: null, seal: null, desigSeal: null };
+            document.getElementById("signInput").value = "";
+            document.getElementById("sealInput").value = "";
+            document.getElementById("desigSealInput").value = "";
+            updateSignaturePreview();
+            alert("All images cleared.");
+        }
+        
+        function toggleSignatureVisibility() {
+            const signatureBlock = document.getElementById("signatureBlock");
+            const toggleBtn = document.getElementById("toggleSignatureBtn");
+            if (signatureVisible) {
+                signatureBlock.style.display = "none";
+                toggleBtn.innerHTML = '<i class="fas fa-eye"></i> Show Signature';
+                signatureVisible = false;
+            } else {
+                signatureBlock.style.display = "block";
+                toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Signature';
+                signatureVisible = true;
+            }
+        }
+        
+        // ==================== PREVIEW UPDATE ====================
+        function updatePreview() {
+            document.getElementById("outOffice").innerText = document.getElementById("officeInput").value || "Office Name";
+            document.getElementById("outOfficer").innerText = document.getElementById("officerInput").value || "Officer Name";
+            document.getElementById("outDesig").innerText = document.getElementById("desigInput").value || "Designation";
+            document.getElementById("outPen").innerText = document.getElementById("penInput").value || "PEN Number";
+            document.getElementById("outCertTitle").innerText = document.getElementById("certTitleInput").value || "CERTIFICATE";
+            document.getElementById("outOfficeSign").innerText = document.getElementById("officeInput").value || "Office Name";
+        }
+        
+        // ==================== PDF GENERATION ====================
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+            
+            const officeName = document.getElementById("officeInput").value || "Office Name";
+            const officerName = document.getElementById("officerInput").value || "Officer Name";
+            const desig = document.getElementById("desigInput").value || "Designation";
+            const pen = document.getElementById("penInput").value || "PEN Number";
+            const certTitle = document.getElementById("certTitleInput").value || "CERTIFICATE";
+            const dateStr = document.getElementById("currentDate").innerText;
+            
+            let y = 30;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            
+            doc.setFont("times", "bold");
+            doc.setFontSize(14);
+            const splitOffice = doc.splitTextToSize(officeName.toUpperCase(), pageWidth - 40);
+            splitOffice.forEach(line => { doc.text(line, pageWidth/2, y, { align: "center" }); y += 7; });
+            y += 5;
+            
+            doc.setFontSize(12);
+            doc.text(certTitle, pageWidth/2, y, { align: "center" });
+            y += 15;
+            
+            doc.setFont("times", "normal");
+            const previewContent = document.getElementById("outText");
+            const textContent = previewContent.innerText;
+            const lines = textContent.split('\n').filter(l => l.trim());
+            
+            for (let line of lines) {
+                const wrapped = doc.splitTextToSize(line.trim(), 162);
+                if (y + (wrapped.length * 6) > 275) { doc.addPage(); y = 20; }
+                doc.text(wrapped, 20, y);
+                y += wrapped.length * 6 + 2;
+            }
+            
+            y += 10;
+            if (y + 40 > 280) { doc.addPage(); y = 30; }
+            const footerY = y;
+            
+            if (imgData.seal) doc.addImage(imgData.seal, "PNG", 20, footerY, 30, 30);
+            doc.setFont("times", "bold");
+            doc.text(`Dated: ${dateStr}`, 20, footerY + 35);
+            
+            const rightCenter = 165;
+            if (imgData.desigSeal) doc.addImage(imgData.desigSeal, "PNG", rightCenter - 27.5, footerY + 5, 55, 18);
+            if (imgData.sign) doc.addImage(imgData.sign, "PNG", rightCenter - 17.5, footerY - 12, 35, 15);
+            
+            let textY = footerY + 30;
+            doc.text(officerName, rightCenter, textY, { align: "center" });
+            textY += 5;
+            doc.text(`PEN ${pen}`, rightCenter, textY, { align: "center" });
+            textY += 5;
+            doc.text(desig, rightCenter, textY, { align: "center" });
+            textY += 5;
+            
+            const splitSignOffice = doc.splitTextToSize(officeName, 50);
+            splitSignOffice.forEach(line => { doc.text(line, rightCenter, textY, { align: "center" }); textY += 5; });
+            
+            doc.save("Certificate.pdf");
+        }
+        
+        function copyText() {
+            const text = document.getElementById("certificate-content").innerText;
+            navigator.clipboard.writeText(text).then(() => alert("Certificate text copied!"));
+        }
+        
+        // ==================== PROFILE FUNCTIONS ====================
+        function saveProfile() {
+            const profile = {
+                office: document.getElementById("officeInput").value,
+                officer: document.getElementById("officerInput").value,
+                desig: document.getElementById("desigInput").value,
+                pen: document.getElementById("penInput").value,
+                certTitle: document.getElementById("certTitleInput").value
+            };
+            localStorage.setItem("myProfile", JSON.stringify(profile));
+        }
+        
+        function loadProfile() {
+            const saved = JSON.parse(localStorage.getItem("myProfile"));
+            if (saved) {
+                document.getElementById("officeInput").value = saved.office || "";
+                document.getElementById("officerInput").value = saved.officer || "";
+                document.getElementById("desigInput").value = saved.desig || "";
+                document.getElementById("penInput").value = saved.pen || "";
+                document.getElementById("certTitleInput").value = saved.certTitle || "CERTIFICATE";
+                updatePreview();
+            }
+        }
+        
+        function toggleDropdown() {
+            const content = document.getElementById("dropdownContent");
+            const arrow = document.getElementById("dropdownArrow");
+            content.classList.toggle("open");
+            if (arrow) arrow.classList.toggle("open");
+        }
+        
+        // ==================== SEARCH HANDLER ====================
+        document.getElementById("searchCertInput")?.addEventListener("input", (e) => {
+            currentSearchTerm = e.target.value;
+            renderCertificateList();
+        });
+        
+        // ==================== INITIALIZATION ====================
+        document.getElementById("currentDate").innerText = new Date().toLocaleDateString("en-GB");
+        
+        window.onload = async function() { 
+            loadProfile();
+            await fetchCertificatesFromSheet();
+            const backup = localStorage.getItem("certificatesMasterBackup");
+            if (backup && certificatesMaster.length === 0) {
+                certificatesMaster = JSON.parse(backup);
+                renderCertificateList();
+            }
+            updateSignaturePreview();
+        };
+        
+        // Expose global functions
+        window.selectAllCertificates = selectAllCertificates;
+        window.clearAllSelections = clearAllSelections;
+        window.addCertificateToSheet = addCertificateToSheet;
+        window.openEditModal = openEditModal;
+        window.updateCertificateWithTimestamp = updateCertificateWithTimestamp;
+        window.deleteCertificateLocalOnly = deleteCertificateLocalOnly;
+        window.handleImageUpload = handleImageUpload;
+        window.clearImages = clearImages;
+        window.toggleSignatureVisibility = toggleSignatureVisibility;
+        window.downloadPDF = downloadPDF;
+        window.copyText = copyText;
+        window.formatText = formatText;
+        window.changeFontFamily = changeFontFamily;
+        window.changeFontSize = changeFontSize;
+        window.changeTextColor = changeTextColor;
+        window.changeBgColor = changeBgColor;
+        window.insertTable = insertTable;
+        window.insertHorizontalRule = insertHorizontalRule;
+        window.updatePreview = updatePreview;
+        window.saveProfile = saveProfile;
+        window.toggleDropdown = toggleDropdown;
+        window.buildPreview = buildPreview;
+        window.updateSelectedCount = updateSelectedCount;
+    </script>
+</body>
+</html>
