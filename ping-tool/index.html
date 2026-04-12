@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Ping Tool - Test IP/Host Connectivity</title>
+    
+    <!-- LOCAL CSS -->
+    <link rel="stylesheet" href="https://keralatreasury.github.io/network/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://keralatreasury.github.io/network/css/bootstrap-icons.min.css">
+    
+    <style>
+        :root {
+            --primary: #0f5b9c;
+            --primary-dark: #1a4b7a;
+            --primary-light: #e8f0fe;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --border: #e9ecef;
+        }
+        
+        body {
+            background: #f0f5fa;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            padding: 24px;
+            color: var(--dark);
+        }
+        
+        .container-ping {
+          
+            margin: 0 auto;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .page-header i {
+            font-size: 2rem;
+            background: rgba(255,255,255,0.15);
+            padding: 12px;
+            border-radius: 16px;
+        }
+        
+        .card-ping {
+            background: white;
+            border-radius: 0 0 20px 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,20,40,0.12);
+            border: 1px solid var(--border);
+        }
+        
+        .input-group-custom {
+            margin-bottom: 20px;
+        }
+        
+        .input-group-custom label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-control {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 15px;
+            font-family: monospace;
+        }
+        
+        .btn-ping {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            color: white;
+            padding: 12px 32px;
+            border-radius: 40px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-ping:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(15, 91, 156, 0.3);
+        }
+        
+        .btn-ping:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .results-area {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 25px;
+        }
+        
+        .result-line {
+            padding: 5px 0;
+            border-bottom: 1px solid #334155;
+            font-family: monospace;
+        }
+        
+        .result-success {
+            color: #10b981;
+        }
+        
+        .result-error {
+            color: #ef4444;
+        }
+        
+        .result-info {
+            color: #60a5fa;
+        }
+        
+        .ping-stats {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .preset-btn {
+            background: var(--primary-light);
+            border: none;
+            padding: 6px 15px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--primary);
+            transition: all 0.2s;
+        }
+        
+        .preset-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .badge-online {
+            background: #e8f7ed;
+            color: #0b5e42;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+        }
+        
+        .badge-offline {
+            background: #fee9e7;
+            color: #b91c1c;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+            .card-ping { padding: 20px; }
+            .ping-stats { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-ping">
+        <!-- Header -->
+        <div class="page-header">
+            <i class="bi bi-hdd-network-fill"></i>
+            <div>
+                <h1>Network Ping Tool</h1>
+                <p>Test connectivity to IP addresses or hostnames</p>
+            </div>
+        </div>
+        
+        <!-- Main Card -->
+        <div class="card-ping">
+            <!-- Preset Quick Select -->
+            <div class="preset-buttons">
+                <button class="preset-btn" data-target="google.com">Google (google.com)</button>
+                <button class="preset-btn" data-target="8.8.8.8">Google DNS (8.8.8.8)</button>
+                <button class="preset-btn" data-target="cloudflare.com">Cloudflare</button>
+                <button class="preset-btn" data-target="1.1.1.1">Cloudflare DNS (1.1.1.1)</button>
+                <button class="preset-btn" data-target="github.com">GitHub</button>
+            </div>
+            
+            <!-- Input Section -->
+            <div class="input-group-custom">
+                <label><i class="bi bi-globe"></i> IP Address or Hostname</label>
+                <input type="text" id="pingTarget" class="form-control" placeholder="e.g., google.com, 8.8.8.8, 192.168.1.1">
+                <small class="text-muted mt-1">Enter IP address (e.g., 8.8.8.8) or domain name (e.g., google.com)</small>
+            </div>
+            
+            <!-- Options -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label><i class="bi bi-arrow-repeat"></i> Number of Pings</label>
+                    <select id="pingCount" class="form-select">
+                        <option value="1">1 ping</option>
+                        <option value="3" selected>3 pings</option>
+                        <option value="5">5 pings</option>
+                        <option value="10">10 pings</option>
+                        <option value="20">20 pings</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label><i class="bi bi-hourglass-split"></i> Timeout (seconds)</label>
+                    <select id="pingTimeout" class="form-select">
+                        <option value="2">2 seconds</option>
+                        <option value="3" selected>3 seconds</option>
+                        <option value="5">5 seconds</option>
+                        <option value="10">10 seconds</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="d-flex gap-3">
+                <button id="startPingBtn" class="btn-ping flex-grow-1">
+                    <i class="bi bi-play-fill"></i> Start Ping
+                </button>
+                <button id="stopPingBtn" class="btn-ping flex-grow-1" style="background: #64748b;" disabled>
+                    <i class="bi bi-stop-fill"></i> Stop
+                </button>
+                <button id="clearResultsBtn" class="btn-ping flex-grow-1" style="background: #94a3b8;">
+                    <i class="bi bi-trash"></i> Clear
+                </button>
+            </div>
+            
+            <!-- Results Area -->
+            <div class="results-area" id="resultsArea">
+                <div class="result-info">Ready to ping. Enter an IP or hostname and click "Start Ping".</div>
+            </div>
+            
+            <!-- Statistics -->
+            <div class="ping-stats" id="statsArea" style="display: none;">
+                <div class="stat-item">
+                    <div class="stat-value" id="packetsSent">0</div>
+                    <div class="stat-label">Packets Sent</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="packetsReceived">0</div>
+                    <div class="stat-label">Packets Received</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="packetsLost">0</div>
+                    <div class="stat-label">Packets Lost</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="lossPercent">0%</div>
+                    <div class="stat-label">Loss %</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="avgTime">—</div>
+                    <div class="stat-label">Avg Response (ms)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LOCAL SCRIPTS -->
+    <script src="https://keralatreasury.github.io/network/js/jquery.min.js"></script>
+    <script src="https://keralatreasury.github.io/network/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let isPinging = false;
+        let pingAbortController = null;
+        let pingResults = [];
+        
+        // Preset buttons
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('pingTarget').value = btn.dataset.target;
+            });
+        });
+        
+        // Clear results
+        document.getElementById('clearResultsBtn').addEventListener('click', () => {
+            clearResults();
+        });
+        
+        // Stop ping
+        document.getElementById('stopPingBtn').addEventListener('click', () => {
+            if (pingAbortController) {
+                pingAbortController.abort();
+                pingAbortController = null;
+            }
+            isPinging = false;
+            updateButtonState(false);
+            addResultLine('Ping stopped by user.', 'result-info');
+        });
+        
+        // Start ping
+        document.getElementById('startPingBtn').addEventListener('click', async () => {
+            const target = document.getElementById('pingTarget').value.trim();
+            if (!target) {
+                addResultLine('❌ Please enter an IP address or hostname.', 'result-error');
+                return;
+            }
+            
+            const count = parseInt(document.getElementById('pingCount').value);
+            const timeout = parseInt(document.getElementById('pingTimeout').value) * 1000;
+            
+            await performPingTest(target, count, timeout);
+        });
+        
+        async function performPingTest(target, count, timeout) {
+            if (isPinging) {
+                addResultLine('⚠️ Ping already in progress. Please wait or stop.', 'result-warning');
+                return;
+            }
+            
+            isPinging = true;
+            pingResults = [];
+            updateButtonState(true);
+            clearResults();
+            
+            addResultLine(`Pinging ${target} with ${count} request(s)`, 'result-info');
+            addResultLine('', '');
+            
+            let successCount = 0;
+            let totalTime = 0;
+            let times = [];
+            
+            for (let i = 1; i <= count; i++) {
+                if (!isPinging) break;
+                
+                const startTime = performance.now();
+                let success = false;
+                let errorMsg = '';
+                let responseTime = 0;
+                
+                try {
+                    // Create abort controller for timeout
+                    const controller = new AbortController();
+                    pingAbortController = controller;
+                    const timeoutId = setTimeout(() => controller.abort(), timeout);
+                    
+                    // Try to fetch (HTTP/HTTPS) - works for web servers
+                    let url = target;
+                    if (!target.startsWith('http')) {
+                        url = `https://${target}`;
+                    }
+                    
+                    const response = await fetch(url, {
+                        method: 'HEAD',
+                        mode: 'no-cors',
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    const endTime = performance.now();
+                    responseTime = Math.round(endTime - startTime);
+                    success = true;
+                    successCount++;
+                    totalTime += responseTime;
+                    times.push(responseTime);
+                    
+                    addResultLine(`Reply from ${target}: time=${responseTime}ms`, 'result-success');
+                    
+                } catch (error) {
+                    let errorMsg = '';
+                    if (error.name === 'AbortError') {
+                        errorMsg = `Request timed out after ${timeout/1000}s`;
+                        addResultLine(`Request timed out for ${target}`, 'result-error');
+                    } else {
+                        errorMsg = error.message;
+                        addResultLine(`Failed to reach ${target}: ${error.message}`, 'result-error');
+                    }
+                }
+                
+                // Small delay between pings
+                if (i < count && isPinging) {
+                    await new Promise(r => setTimeout(r, 500));
+                }
+            }
+            
+            pingAbortController = null;
+            isPinging = false;
+            updateButtonState(false);
+            
+            // Calculate statistics
+            const packetsLost = count - successCount;
+            const lossPercent = ((packetsLost / count) * 100).toFixed(1);
+            const avgResponse = successCount > 0 ? Math.round(totalTime / successCount) : 0;
+            const minResponse = times.length > 0 ? Math.min(...times) : 0;
+            const maxResponse = times.length > 0 ? Math.max(...times) : 0;
+            
+            // Display statistics
+            addResultLine('', '');
+            addResultLine('--- Statistics ---', 'result-info');
+            addResultLine(`Packets: Sent = ${count}, Received = ${successCount}, Lost = ${packetsLost} (${lossPercent}% loss)`, 'result-info');
+            if (successCount > 0) {
+                addResultLine(`Approximate round trip times: Min = ${minResponse}ms, Max = ${maxResponse}ms, Avg = ${avgResponse}ms`, 'result-info');
+            } else {
+                addResultLine(`No response received from ${target}`, 'result-error');
+            }
+            
+            // Update stats display
+            updateStatsDisplay(count, successCount, packetsLost, lossPercent, avgResponse);
+        }
+        
+        function addResultLine(text, className = '') {
+            const resultsArea = document.getElementById('resultsArea');
+            const line = document.createElement('div');
+            line.className = `result-line ${className}`;
+            line.innerHTML = text || '&nbsp;';
+            resultsArea.appendChild(line);
+            line.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function clearResults() {
+            const resultsArea = document.getElementById('resultsArea');
+            resultsArea.innerHTML = '';
+            document.getElementById('statsArea').style.display = 'none';
+            pingResults = [];
+        }
+        
+        function updateButtonState(pinging) {
+            const startBtn = document.getElementById('startPingBtn');
+            const stopBtn = document.getElementById('stopPingBtn');
+            
+            if (pinging) {
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            } else {
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            }
+        }
+        
+        function updateStatsDisplay(sent, received, lost, lossPercent, avgTime) {
+            const statsArea = document.getElementById('statsArea');
+            statsArea.style.display = 'flex';
+            
+            document.getElementById('packetsSent').textContent = sent;
+            document.getElementById('packetsReceived').textContent = received;
+            document.getElementById('packetsLost').textContent = lost;
+            document.getElementById('lossPercent').textContent = `${lossPercent}%`;
+            document.getElementById('avgTime').textContent = avgTime > 0 ? `${avgTime} ms` : '—';
+        }
+        
+        // Enter key support
+        document.getElementById('pingTarget').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('startPingBtn').click();
+            }
+        });
+    </script>
+</body>
+</html>
