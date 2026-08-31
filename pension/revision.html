@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pension Revision Calculator</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!--IT Cell  CSS -->
+	<link rel="stylesheet" href="revision.css">
+  
+</head>
+	<body>
+    <div class="header no-print">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-12">
+                    <h2 class="display-5 fw-bold"><i class="bi bi-calculator-fill"></i>Pension Revision Calculator</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container no-print" style="min-width: 100%;">
+        <!-- Calculation Period Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <div class="icon-container">
+                        <i class="bi bi-calendar-range"></i>
+                    </div>
+                    <h5 class="mb-0">Revision Period</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <label for="fromDate" class="form-label">From</label>
+                        <input type="text" class="form-control flatpickr-input" id="fromDate" placeholder="Select From Date">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="toDate" class="form-label">To</label>
+                        <input type="text" class="form-control flatpickr-input" id="toDate" placeholder="Select To Date">
+                    </div>
+					  <div class="col-md-2">
+                            <label class="form-label">Years</label>
+                            <input type="text" class="form-control" id="years" readOnly>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Months</label>
+                            <input type="text" class="form-control" id="months" readOnly >
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Days</label>
+                            <input type="text" class="form-control" id="days" readonly>
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pensioner Details Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <div class="icon-container">
+                        <i class="bi bi-person-vcard"></i>
+                    </div>
+                    <h5 class="mb-0">Pensioner Details</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <label for="treasury" class="form-label">Treasury</label>
+                        <select class="form-select" id="treasury">
+                            <option value="">Loading treasuries...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="pensionerType" class="form-label">Pensioner Type</label>
+                        <select class="form-select" id="pensionerType">
+                            <option value="">Loading pension types...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="pensionerCode" class="form-label">Pensioner Code</label>
+                        <input type="text" class="form-control" id="pensionerCode" placeholder="Enter pensioner code">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="pensionerName" class="form-label">Pensioner Name</label>
+                        <input type="text" class="form-control" id="pensionerName" placeholder="Enter pensioner name">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="basicPensionDrawn" class="form-label">Basic Pension Drawn</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" id="basicPensionDrawn" placeholder="" value="">
+                        </div>
+                    </div>
+                  
+                    <div class="col-md-2">
+                        <label for="basicPensionDue" class="form-label">Basic Pension Due</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" id="basicPensionDue" placeholder="" value="">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="revisionNoFrom" class="form-label">Revision From</label>
+                        <select class="form-select" id="revisionNoFrom">
+                            <option value="">Select Revision No</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="revisionNoTo" class="form-label"> To</label>
+                        <select class="form-select" id="revisionNoTo">
+                            <option value="">Select Revision No</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DR Table Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <div class="icon-container">
+                        <i class="bi bi-table"></i>
+                    </div>
+                    <h5 class="mb-0">Calculation Table</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info" id="drTableStatus">
+                    Please fill all details and click "Calculate DR" to start calculation.
+                </div>
+                
+             
+                
+                <div class="table-responsive">
+                   <table class="table table-striped table-hover" id="drTable" style="display: none;">
+    <colgroup>
+        <col class="date-column">
+        <col class="date-column">
+        <col class="basic-column">
+        <col class="dr-percent-column">
+        <col class="dr-amount-column">
+        <col class="amount-column">
+        <col class="basic-column">
+        <col class="dr-percent-column">
+        <col class="dr-amount-column">
+        <col class="amount-column">
+        <col class="difference-column">
+        <col class="months-column">
+        <col class="gross-column">
+        <col class="action-column">
+    </colgroup>
+    <thead>
+                            <tr>
+							    <th colspan="2" class="text-center">Period</th>
+                                <th colspan="4" class="text-center">Due Details</th>
+                                <th colspan="4" class="text-center">Drawn Details</th>
+                                <th colspan="4" class="text-center">Difference </th>
+                               
+                            </tr>
+                            <tr>
+                                <!-- Due Details -->
+                                <th>From Date</th>
+                                <th>To Date</th>
+                                <th>Basic(Due)</th>
+                                <th>DR% - Due</th>
+                                <th>DR Amount</th>
+                                <th>Amount Due</th>
+                                
+                                <!-- Drawn Details -->
+                                <th>Basic(Drawn)</th>
+                                <th>DR% Drawn</th>
+                                <th>DR Amount</th>
+                                <th>Amount Drawn</th>
+                                
+                                <!-- Difference Details -->
+                                <th>Difference</th>
+                                <th>No. of Months</th>
+                                <th>Gross Amount</th>
+								<!-- Action button -->
+								<th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drTableBody" style="font-size: 12px;">
+                            <!-- Table rows will be generated dynamically -->
+                        </tbody>
+                        <tfoot id="drTableFooter">
+                            <!-- Footer with grand total will be generated dynamically -->
+                        </tfoot>
+                    </table>
+                    <div class="text-center mt-3" id="addRowSection" style="display: none;">
+                        <button class="btn btn-success btn-sm" id="addRowBtn">
+                            <i class="bi bi-plus-circle"></i> Add New Row
+                        </button>
+                    </div>
+                </div>
+				                  <!-- Add Calculation Steps Buttons --><br>
+                <div class="d-flex justify-content-between mb-3 no-print">
+                    <button class="btn btn-primary" id="calculateDRBtn">
+                        <i class="bi bi-calculator"></i> Step 1: Calculate DR
+                    </button>
+                    <button class="btn btn-success" id="calculateAmountBtn">
+                        <i class="bi bi-calculator"></i> Step 2: Calculate Amount
+                    </button>
+                </div>
+				
+            </div>
+        </div>
+       		<!-- Add this after the Action Buttons section -->
+<div class="card no-print">
+    <div class="card-header">
+        <div class="d-flex align-items-center">
+            <div class="icon-container">
+                <i class="bi bi-chat-left-text"></i>
+            </div>
+            <h5 class="mb-0">Remarks</h5>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <label for="remarks" class="form-label">Remarks (will be shown in print)</label>
+                <textarea class="form-control" id="remarks" rows="3" placeholder="Enter any remarks or notes..."></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+        <!-- Action Buttons -->
+		
+        <div class="d-flex justify-content-between mb-5 no-print">
+		
+            <button class="btn btn-outline-secondary" id="resetBtn">
+                <i class="bi bi-arrow-clockwise"></i> Reset 
+            </button>
+			
+            <div>
+                <button class="btn btn-danger" id="printBtn">
+                    <i class="bi bi-printer"></i> Print 
+                </button>
+				<a class="btn btn-warning" href="https://docs.google.com/spreadsheets/d/11oRitOvxaUmQIP6cAFBBTBXMnSV_ZIw6DD9aL_RpILc/edit?gid=0#gid=0" target="_blank" role="button" style="padding: 0.6rem 1.5rem;">DA List
+				</a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Print Section -->
+    <div class="print-section" id="printSection" style="display: none;">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h1 class="print-only">Pension Revision Calculation</h1>
+                <div class="row mt-4">
+                    <div class="col-md-6 text-start">
+                        <p><strong>Name of Pensioner:</strong> <span id="printPensionerName"></span></p>
+                    </div>
+                    <div class="col-md-6 text-start">
+                        <p><strong>Pensioner Code:</strong> <span id="printPensionerCode"></span></p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 text-start">
+                        <p><strong>Calculation Period:</strong> From <span id="printFromDate"></span> To <span id="printToDate"></span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th colspan="6" class="text-center">Due Details</th>
+                            <th colspan="6" class="text-center">Drawn Details</th>
+                            <th colspan="3" class="text-center">Difference </th>
+                        </tr>
+                        <tr>
+                            <!-- Due Details -->
+                            <th>From Date</th>
+                            <th>To Date</th>
+                            <th>Basic(Due)</th>
+                            <th>DR%</th>
+                            <th>DR.Amt</th>
+                            <th>Amount Due</th>
+                            
+                            <!-- Drawn Details -->
+                            <th>Basic(Drawn)</th>
+                            <th>DR%</th>
+                            <th>DR.Amt</th>
+                            <th>Amount Drawn</th>
+                            
+                            <!-- Difference Details -->
+                            <th>Diff.</th>
+                            <th>No.of Months</th>
+                            <th>Gross Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="printTableBody">
+                        <!-- Print table rows will be generated dynamically -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="12" class="text-end"><strong>Grand Total:</strong></td>
+                            <td><strong id="printGrandTotal">0</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+				<!-- Add this after the table in the Print Section -->
+               <div class="mt-4">
+                 <div class="row">
+               <div class="col-12">
+                 <p><strong></strong> <span id="printRemarks"></span></p>
+            </div>
+             </div>
+              </div>
+            </div>
+        </div><br><br>
+		<!--  <p><strong>Disclaimer:</strong> <span >The information provided by this application is for general informational purposes only. Calculations are based solely on the data you provided. </span></p>
+		-->
+    </div>
+	
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+	   <!-- Itcell JS -->
+    <script src="revision.js"></script>
+   
+</body>
+</html>
