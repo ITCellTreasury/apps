@@ -1,0 +1,2855 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>MailBox | Mailbox</title>
+
+  <!--begin::Theme Init-->
+  <script>
+    (() => {
+      'use strict';
+
+      const root = document.documentElement;
+
+      if (root.getAttribute('data-lte-color-mode') === 'off') {
+        return;
+      }
+
+      const STORAGE_KEY = 'lte-theme';
+      let stored = null;
+
+      try {
+        stored = localStorage.getItem(STORAGE_KEY);
+      } catch (_) {}
+
+      const authored = root.getAttribute('data-bs-theme');
+
+      let resolved = 'light';
+
+      if (stored === 'dark' || stored === 'light') {
+        resolved = stored;
+      } else if (authored === 'dark' || authored === 'light') {
+        resolved = authored;
+      } else if (
+        globalThis.matchMedia &&
+        globalThis.matchMedia('(prefers-color-scheme: dark)').matches
+      ) {
+        resolved = 'dark';
+      }
+
+      root.setAttribute('data-bs-theme', resolved);
+      root.style.colorScheme = resolved;
+
+      if (resolved !== authored) {
+        root.setAttribute('data-lte-theme-resolved', '');
+      }
+    })();
+  </script>
+  <!--end::Theme Init-->
+
+  <!--begin::Accessibility Meta Tags-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#007bff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
+  <!--end::Accessibility Meta Tags-->
+
+  <!--begin::Primary Meta Tags-->
+  <meta name="title" content="MailBox | Mailbox" />
+  <meta name="author" content="MailBox" />
+  <meta
+    name="description"
+    content="MailBox"
+  />
+  <!--end::Primary Meta Tags-->
+
+  <meta name="supported-color-schemes" content="light dark" />
+
+  <link rel="preload" href="../css/adminlte.css" as="style" />
+
+  <!--begin::Fonts-->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css"
+    crossorigin="anonymous"
+    media="print"
+    onload="this.media = 'all'"
+  />
+  <!--end::Fonts-->
+
+  <!--begin::OverlayScrollbars-->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/styles/overlayscrollbars.min.css"
+    crossorigin="anonymous"
+  />
+  <!--end::OverlayScrollbars-->
+
+  <!--begin::Bootstrap Icons-->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    crossorigin="anonymous"
+  />
+  <!--end::Bootstrap Icons-->
+
+  <!--begin::AdminLTE-->
+  <link rel="stylesheet" href="../css/adminlte.css" />
+  <!--end::AdminLTE-->
+
+  <style>
+    /* =========================================================
+       MailBox - Inbox Page
+       ========================================================= */
+
+    .mail-folder-link {
+      transition: all 0.15s ease-in-out;
+    }
+
+    .mail-folder-link.active {
+      background-color: var(--bs-primary) !important;
+      color: #fff !important;
+    }
+
+    .mail-folder-link.active i,
+    .mail-folder-link.active span {
+      color: #fff !important;
+    }
+
+    .mail-folder-link:not(.active):hover {
+      background-color: var(--bs-tertiary-bg);
+    }
+
+    .mail-label-link {
+      cursor: pointer;
+      transition: background-color 0.15s ease-in-out;
+    }
+
+    .mail-label-link.active {
+      background-color: var(--bs-primary-bg-subtle);
+      font-weight: 600;
+    }
+
+    .mail-label-link:hover {
+      background-color: var(--bs-tertiary-bg);
+    }
+
+    .mail-loading {
+      min-height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .mail-loading .spinner-border {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .mail-empty {
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .mail-empty i {
+      font-size: 2.5rem;
+      opacity: 0.45;
+    }
+
+    .mail-error {
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.75rem;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .message-row {
+      transition: background-color 0.15s ease-in-out;
+    }
+
+    .message-row:hover {
+      background-color: var(--bs-tertiary-bg);
+    }
+
+    .message-row.unread {
+      font-weight: 600;
+      background-color: var(--bs-secondary-bg);
+    }
+
+    .message-row.unread:hover {
+      background-color: var(--bs-tertiary-bg);
+    }
+
+    .mail-toolbar {
+      min-height: 52px;
+    }
+
+    .folder-title-icon {
+      width: 30px;
+      text-align: center;
+    }
+
+    .label-empty {
+      padding: 1rem;
+      text-align: center;
+      color: var(--bs-secondary-color);
+      font-size: 0.875rem;
+    }
+
+    @media (max-width: 575.98px) {
+      .mail-toolbar .btn-group .btn {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+
+      .mail-toolbar .message-range {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+
+<div class="app-wrapper">
+
+  <!-- =========================================================
+       HEADER
+       ========================================================= -->
+  <nav class="app-header navbar navbar-expand bg-body">
+
+    <div class="container-fluid">
+
+      <!-- Left Navbar -->
+      <ul class="navbar-nav">
+
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            data-lte-toggle="sidebar"
+            href="#"
+            role="button"
+            aria-label="Toggle sidebar"
+          >
+            <i class="bi bi-list"></i>
+          </a>
+        </li>
+
+      </ul>
+
+      <!-- Right Navbar -->
+      <ul class="navbar-nav ms-auto">
+
+        <!-- Search -->
+        <li class="nav-item d-md-none">
+          <a
+            class="nav-link"
+            href="../pages/search-results.html"
+            aria-label="Search"
+          >
+            <i class="bi bi-search" aria-hidden="true"></i>
+          </a>
+        </li>
+
+        <!-- Fullscreen -->
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="#"
+            data-lte-toggle="fullscreen"
+            aria-label="Toggle fullscreen"
+          >
+            <i
+              data-lte-icon="maximize"
+              class="bi bi-arrows-fullscreen"
+            ></i>
+
+            <i
+              data-lte-icon="minimize"
+              class="bi bi-fullscreen-exit d-none"
+            ></i>
+          </a>
+        </li>
+
+        <!-- Color Mode -->
+        <li class="nav-item dropdown">
+
+          <a
+            class="nav-link"
+            href="#"
+            id="bd-theme"
+            aria-label="Toggle color scheme"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i
+              class="bi bi-sun-fill"
+              data-lte-theme-icon="light"
+            ></i>
+
+            <i
+              class="bi bi-moon-fill d-none"
+              data-lte-theme-icon="dark"
+            ></i>
+
+            <i
+              class="bi bi-circle-half d-none"
+              data-lte-theme-icon="auto"
+            ></i>
+          </a>
+
+          <ul
+            class="dropdown-menu dropdown-menu-end"
+            aria-labelledby="bd-theme"
+            style="--bs-dropdown-min-width: 8rem"
+          >
+
+            <li>
+              <button
+                type="button"
+                class="dropdown-item d-flex align-items-center"
+                data-bs-theme-value="light"
+                aria-pressed="false"
+              >
+                <i class="bi bi-sun-fill me-2"></i>
+                Light
+                <i class="bi bi-check-lg ms-auto d-none"></i>
+              </button>
+            </li>
+
+            <li>
+              <button
+                type="button"
+                class="dropdown-item d-flex align-items-center"
+                data-bs-theme-value="dark"
+                aria-pressed="false"
+              >
+                <i class="bi bi-moon-fill me-2"></i>
+                Dark
+                <i class="bi bi-check-lg ms-auto d-none"></i>
+              </button>
+            </li>
+
+            <li>
+              <button
+                type="button"
+                class="dropdown-item d-flex align-items-center active"
+                data-bs-theme-value="auto"
+                aria-pressed="true"
+              >
+                <i class="bi bi-circle-half me-2"></i>
+                Auto
+                <i class="bi bi-check-lg ms-auto d-none"></i>
+              </button>
+            </li>
+
+          </ul>
+
+        </li>
+
+        <!-- =====================================================
+             LOGOUT
+             Same implementation used in read.html
+             ===================================================== -->
+        <li class="nav-item">
+          <button
+            id="logout-button"
+            class="btn btn-link nav-link text-danger"
+            type="button"
+            aria-label="Logout"
+            title="Logout"
+          >
+            <i
+              class="bi bi-box-arrow-right"
+              aria-hidden="true"
+            ></i>
+
+            <span class="d-none d-md-inline ms-1">
+              Logout
+            </span>
+          </button>
+        </li>
+
+      </ul>
+
+    </div>
+  </nav>
+
+
+  <!-- =========================================================
+       SIDEBAR
+       ========================================================= -->
+  <aside
+    class="app-sidebar bg-body-secondary shadow"
+    data-bs-theme="dark"
+  >
+
+    <!-- Brand -->
+    <div class="sidebar-brand">
+
+      <a
+        href="mailbox.html"
+        class="brand-link"
+      >
+
+        <img
+          src="../assets/img/AdminLTELogo.png"
+          alt="MailBox Logo"
+          class="brand-image opacity-75 shadow"
+        />
+
+        <span class="brand-text fw-light">
+          MailBox
+        </span>
+
+      </a>
+
+    </div>
+
+
+    <!-- Sidebar Search -->
+    <div
+      class="sidebar-search"
+      role="search"
+    >
+
+      <label
+        for="sidebar-search-input"
+        class="visually-hidden"
+      >
+        Filter menu
+      </label>
+
+      <input
+        type="search"
+        id="sidebar-search-input"
+        class="form-control form-control-sm"
+        placeholder="Filter menu…"
+        autocomplete="off"
+        data-lte-toggle="sidebar-search"
+        data-lte-target="#navigation"
+      />
+
+      <p
+        class="fs-7 text-secondary mt-2 mb-0"
+        data-lte-search-empty
+        role="status"
+        hidden
+      >
+        No matching pages.
+      </p>
+
+    </div>
+
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar-wrapper">
+
+      <nav
+        class="mt-2"
+        aria-label="Main navigation"
+      >
+
+        <ul
+          class="nav sidebar-menu flex-column"
+          data-lte-toggle="treeview"
+          data-accordion="false"
+          id="navigation"
+        >
+
+          <li class="nav-item menu-open">
+
+            <a
+              href="#"
+              class="nav-link active"
+            >
+
+              <i class="nav-icon bi bi-envelope"></i>
+
+              <p>
+                Mailbox
+                <i class="nav-arrow bi bi-chevron-right"></i>
+              </p>
+
+            </a>
+
+
+            <ul class="nav nav-treeview">
+
+              <li class="nav-item">
+
+                <a
+                  href="mailbox.html"
+                  class="nav-link active"
+                >
+
+                  <i class="nav-icon bi bi-circle"></i>
+
+                  <p>
+                    Folders
+                  </p>
+
+                </a>
+
+              </li>
+
+
+              <li class="nav-item">
+
+                <a
+                  href="compose.html"
+                  class="nav-link"
+                >
+
+                  <i class="nav-icon bi bi-circle"></i>
+
+                  <p>
+                    Compose
+                  </p>
+
+                </a>
+
+              </li>
+
+            </ul>
+
+          </li>
+
+        </ul>
+
+      </nav>
+
+    </div>
+
+  </aside>
+
+
+  <!-- =========================================================
+       MAIN
+       ========================================================= -->
+  <main class="app-main">
+
+    <!-- Page Header -->
+    <div class="app-content-header">
+
+      <div class="container-fluid">
+
+        <div class="row">
+
+          <div class="col-sm-6">
+
+            <h1
+              class="mb-0 fs-3"
+              id="page-heading"
+            >
+              Inbox
+            </h1>
+
+          </div>
+
+
+          <div class="col-sm-6">
+
+            <nav aria-label="breadcrumb">
+
+              <ol class="breadcrumb float-sm-end">
+
+                <li class="breadcrumb-item">
+                  <a href="mailbox.html">
+                    Home
+                  </a>
+                </li>
+
+                <li
+                  class="breadcrumb-item active"
+                  aria-current="page"
+                  id="breadcrumb-folder"
+                >
+                  Inbox
+                </li>
+
+              </ol>
+
+            </nav>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- Main Content -->
+    <div class="app-content">
+
+      <div class="container-fluid">
+
+        <div class="row g-3">
+
+
+          <!-- ===================================================
+               LEFT FOLDER PANEL
+               =================================================== -->
+          <div class="col-lg-3">
+
+            <!-- Compose -->
+            <a
+              href="compose.html"
+              class="btn btn-primary w-100 mb-3"
+            >
+
+              <i
+                class="bi bi-pencil-square me-1"
+                aria-hidden="true"
+              ></i>
+
+              Compose
+
+            </a>
+
+
+            <!-- Folders -->
+            <div class="card">
+
+              <div class="card-header">
+
+                <h3
+                  class="card-title"
+                  style="font-size: 1em;"
+                >
+                  Folders
+                </h3>
+
+              </div>
+
+
+              <div class="card-body p-0">
+
+                <ul
+                  class="nav nav-pills flex-column mb-0"
+                  id="folder-list"
+                >
+
+                  <!-- Inbox -->
+                  <li class="nav-item">
+
+                    <a
+                      href="mailbox.html"
+                      class="nav-link mail-folder-link rounded-0 d-flex justify-content-between"
+                      data-folder="INBOX"
+                      data-label="Inbox"
+                    >
+
+                      <span>
+                        <i class="bi bi-inbox me-2"></i>
+                        Inbox
+                      </span>
+
+                      <span
+                        class="badge text-bg-primary folder-count"
+                        data-count-folder="INBOX"
+                      ></span>
+
+                    </a>
+
+                  </li>
+
+
+                  <!-- Sent -->
+                  <li class="nav-item">
+
+                    <a
+                      href="#"
+                      class="nav-link mail-folder-link rounded-0"
+                      data-folder="SENT"
+                      data-label="Sent"
+                    >
+
+                      <i class="bi bi-send me-2"></i>
+                      Sent
+
+                    </a>
+
+                  </li>
+
+
+                  <!-- Drafts -->
+                  <li class="nav-item">
+
+                    <a
+                      href="#"
+                      class="nav-link mail-folder-link rounded-0 d-flex justify-content-between"
+                      data-folder="DRAFT"
+                      data-label="Drafts"
+                    >
+
+                      <span>
+                        <i class="bi bi-file-earmark me-2"></i>
+                        Drafts
+                      </span>
+
+                      <span
+                        class="badge text-bg-secondary folder-count"
+                        data-count-folder="DRAFT"
+                      ></span>
+
+                    </a>
+
+                  </li>
+
+
+                  <!-- Starred -->
+                  <li class="nav-item">
+
+                    <a
+                      href="#"
+                      class="nav-link mail-folder-link rounded-0"
+                      data-folder="STARRED"
+                      data-label="Starred"
+                    >
+
+                      <i class="bi bi-star me-2"></i>
+                      Starred
+
+                    </a>
+
+                  </li>
+
+
+                  <!-- Archive -->
+                  <li class="nav-item">
+
+                    <a
+                      href="#"
+                      class="nav-link mail-folder-link rounded-0"
+                      data-folder="ARCHIVE"
+                      data-label="Archive"
+                    >
+
+                      <i class="bi bi-archive me-2"></i>
+                      Archive
+
+                    </a>
+
+                  </li>
+
+
+                  <!-- Spam -->
+                  <li class="nav-item">
+
+                    <a
+                      href="#"
+                      class="nav-link mail-folder-link rounded-0"
+                      data-folder="SPAM"
+                      data-label="Spam"
+                    >
+
+                      <i class="bi bi-exclamation-octagon me-2"></i>
+                      Spam
+
+                    </a>
+
+                  </li>
+
+
+                  <!-- Trash -->
+                  <li class="nav-item">
+
+                    <a
+                      href="#"
+                      class="nav-link mail-folder-link rounded-0"
+                      data-folder="TRASH"
+                      data-label="Trash"
+                    >
+
+                      <i class="bi bi-trash me-2"></i>
+                      Trash
+
+                    </a>
+
+                  </li>
+
+                </ul>
+
+              </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 LABELS
+                 ================================================= -->
+            <div class="card mt-3" style="display:none" >
+
+              <div class="card-header">
+
+                <h3
+                  class="card-title"
+                  style="font-size: 1em;"
+                >
+                  Labels
+                </h3>
+
+              </div>
+
+
+              <div class="card-body p-0">
+
+                <ul
+                  class="nav flex-column mb-0"
+                  id="label-list"
+                >
+
+                  <!-- Dynamically populated -->
+
+                  <li
+                    class="label-empty"
+                    id="label-loading"
+                  >
+                    Loading labels…
+                  </li>
+
+                </ul>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- ===================================================
+               MESSAGE LIST
+               =================================================== -->
+          <div class="col-lg-9">
+
+            <div class="card">
+
+
+              <!-- Card Header -->
+              <div class="card-header">
+
+                <h3
+                  class="card-title d-flex align-items-center gap-2"
+                  id="folder-title"
+                >
+
+                  <i
+                    class="bi bi-inbox folder-title-icon"
+                    id="folder-title-icon"
+                  ></i>
+
+                  <span>
+                    Inbox
+                  </span>
+
+                </h3>
+
+              </div>
+
+
+              <!-- Card Body -->
+              <div class="card-body p-0">
+
+
+                <!-- Toolbar -->
+                <div
+                  class="d-flex align-items-center flex-wrap gap-2 px-3 py-2 border-bottom mail-toolbar"
+                >
+
+                  <!-- Select All -->
+                  <div class="form-check mb-0">
+
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="select-all"
+                    />
+
+                    <label
+                      class="form-check-label visually-hidden"
+                      for="select-all"
+                    >
+                      Select all
+                    </label>
+
+                  </div>
+
+
+                  <!-- Search -->
+                  <div class="input-group input-group-sm ms-0 ms-md-3" style="max-width:320px; flex:1 1 220px;">
+
+                    <span class="input-group-text">
+                      <i class="bi bi-search" aria-hidden="true"></i>
+                    </span>
+
+                    <input
+                      type="search"
+                      class="form-control"
+                      id="mail-search"
+                      placeholder="Search mail..."
+                      autocomplete="off"
+                      spellcheck="false"
+                      aria-label="Search mail"
+                    >
+
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      id="mail-search-clear"
+                      title="Clear search"
+                      aria-label="Clear search"
+                      style="display:none;"
+                    >
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+
+                  </div>
+
+
+                  <!-- Toolbar Buttons -->
+                  <div class="btn-group btn-group-sm ms-3">
+
+                    <button
+                      id="refresh-button"
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      title="Refresh"
+                      aria-label="Refresh"
+                    >
+                      <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+
+
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      title="Mark as read"
+                      id="toolbar-read"
+                      disabled
+                    >
+                      <i class="bi bi-envelope-open"></i>
+                    </button>
+
+
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      title="Mark as unread"
+                      id="toolbar-unread"
+                      disabled
+                    >
+                      <i class="bi bi-envelope"></i>
+                    </button>
+
+
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      title="Archive"
+                      id="toolbar-archive"
+                    >
+                      <i class="bi bi-archive"></i>
+                    </button>
+
+
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      title="Mark as spam"
+                      id="toolbar-spam"
+                    >
+                      <i class="bi bi-exclamation-octagon"></i>
+                    </button>
+
+
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      title="Delete"
+                      id="toolbar-delete"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+
+                  </div>
+
+
+                  <!-- Range / pagination -->
+                  <span
+                    class="ms-auto text-secondary small message-range"
+                    id="message-range"
+                  >
+                    0 of 0
+                  </span>
+
+                  <div class="d-flex align-items-center gap-1 ms-2">
+
+                    <select
+                      id="mail-page-size"
+                      class="form-select form-select-sm"
+                      style="width:auto;"
+                      title="Messages per page"
+                      aria-label="Messages per page"
+                    >
+                      <option value="25">25</option>
+                      <option value="50">50</option>
+                    </select>
+
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      id="mail-prev-page"
+                      title="Previous page"
+                      aria-label="Previous page"
+                      disabled
+                    >
+                      <i class="bi bi-chevron-left"></i>
+                    </button>
+
+                    <span
+                      id="mail-page-number"
+                      class="text-secondary small px-1"
+                    >
+                      1 / 1
+                    </span>
+
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      id="mail-next-page"
+                      title="Next page"
+                      aria-label="Next page"
+                      disabled
+                    >
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+
+                  </div>
+
+                </div>
+
+
+                <!-- Message List -->
+                <ul
+                  class="list-group list-group-flush mb-0"
+                  id="message-list"
+                >
+
+                  <!-- Loading content inserted here -->
+
+                </ul>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <!-- =========================================================
+       FOOTER
+       ========================================================= -->
+  <footer class="app-footer">
+
+    <div class="float-end d-none d-sm-inline">
+      MailBox
+    </div>
+
+    <strong>
+      Copyright &copy; 2014-2026&nbsp;
+
+      <a
+        href="#"
+        class="text-decoration-none"
+      >
+        MailBox
+      </a>.
+
+    </strong>
+
+    All rights reserved.
+
+  </footer>
+
+</div>
+
+
+<!-- ===========================================================
+     JAVASCRIPT LIBRARIES
+     =========================================================== -->
+
+<script
+  src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js"
+  crossorigin="anonymous"
+></script>
+
+
+<script
+  src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+  crossorigin="anonymous"
+></script>
+
+
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"
+  crossorigin="anonymous"
+></script>
+
+
+<script src="../js/adminlte.js"></script>
+
+
+<!-- ===========================================================
+     OverlayScrollbars
+     =========================================================== -->
+<script>
+  const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
+
+  const Default = {
+    scrollbarTheme: 'os-theme-light',
+    scrollbarAutoHide: 'leave',
+    scrollbarClickScroll: true
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+
+    const sidebarWrapper =
+      document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+
+    const isMobile = window.innerWidth <= 992;
+
+    if (
+      sidebarWrapper &&
+      typeof OverlayScrollbarsGlobal !== 'undefined' &&
+      OverlayScrollbarsGlobal.OverlayScrollbars !== undefined &&
+      !isMobile
+    ) {
+
+      OverlayScrollbarsGlobal.OverlayScrollbars(
+        sidebarWrapper,
+        {
+          scrollbars: {
+            theme: Default.scrollbarTheme,
+            autoHide: Default.scrollbarAutoHide,
+            clickScroll: Default.scrollbarClickScroll
+          }
+        }
+      );
+
+    }
+
+  });
+</script>
+
+
+<!-- ===========================================================
+     MAILBOX API 
+     =========================================================== -->
+<script>
+  window.MAILBOX_API_URL =
+    'https://script.google.com/macros/s/AKfycbztFYkp6V7YglnFLtZ7GbEXzoctYiBilV4lA4VgLm3WFKF8lYENWdM90_zy0uC1gmdG/exec';
+</script>
+
+<script src="mailbox-api.js"></script>
+
+
+<!-- ===========================================================
+     MAILBOX APPLICATION
+     =========================================================== -->
+<script>
+(() => {
+
+  'use strict';
+
+
+  /* =========================================================
+     LOGIN
+     ========================================================= */
+
+  MailboxAPI.requireLogin();
+
+
+  /* =========================================================
+     DOM
+     ========================================================= */
+
+  const messageList =
+    document.getElementById('message-list');
+
+  const messageRange =
+    document.getElementById('message-range');
+
+  const pageSizeSelect =
+    document.getElementById('mail-page-size');
+
+  const previousPageButton =
+    document.getElementById('mail-prev-page');
+
+  const nextPageButton =
+    document.getElementById('mail-next-page');
+
+  const pageNumber =
+    document.getElementById('mail-page-number');
+
+  const selectAll =
+    document.getElementById('select-all');
+
+  const refreshButton =
+    document.getElementById('refresh-button');
+
+  const searchInput =
+    document.getElementById('mail-search');
+
+  const searchClearButton =
+    document.getElementById('mail-search-clear');
+
+  const toolbarArchive =
+    document.getElementById('toolbar-archive');
+
+  const toolbarSpam =
+    document.getElementById('toolbar-spam');
+
+  const toolbarDelete =
+    document.getElementById('toolbar-delete');
+
+  const toolbarRead =
+    document.getElementById('toolbar-read');
+
+  const toolbarUnread =
+    document.getElementById('toolbar-unread');
+
+  const folderTitle =
+    document.getElementById('folder-title');
+
+  const folderTitleIcon =
+    document.getElementById('folder-title-icon');
+
+  const pageHeading =
+    document.getElementById('page-heading');
+
+  const breadcrumbFolder =
+    document.getElementById('breadcrumb-folder');
+
+  const labelList =
+    document.getElementById('label-list');
+
+  const logoutButton =
+    document.getElementById('logout-button');
+
+
+  /* =========================================================
+     FOLDER DEFINITIONS
+     ========================================================= */
+
+  const folders = {
+
+    INBOX: {
+      label: 'Inbox',
+      icon: 'bi-inbox'
+    },
+
+    SENT: {
+      label: 'Sent',
+      icon: 'bi-send'
+    },
+
+    DRAFT: {
+      label: 'Drafts',
+      icon: 'bi-file-earmark'
+    },
+
+    STARRED: {
+      label: 'Starred',
+      icon: 'bi-star'
+    },
+
+    ARCHIVE: {
+      label: 'Archive',
+      icon: 'bi-archive'
+    },
+
+    SPAM: {
+      label: 'Spam',
+      icon: 'bi-exclamation-octagon'
+    },
+
+    TRASH: {
+      label: 'Trash',
+      icon: 'bi-trash'
+    }
+
+  };
+
+
+  /* =========================================================
+     STATE
+     ========================================================= */
+
+  let currentFolder = 'INBOX';
+
+  let currentMessages = [];
+
+  let currentLabel = '';
+
+  let isLoading = false;
+
+  let currentPage = 1;
+  let currentPageSize = 25;
+  let totalPages = 1;
+  let totalMessages = 0;
+
+  /* =========================================================
+     SILENT AUTO REFRESH
+     ---------------------------------------------------------
+     Refreshes the currently selected folder every 10 seconds.
+     No loading spinner, page jump, popup, or button animation
+     is triggered by the background refresh.
+     ========================================================= */
+
+  const SILENT_REFRESH_INTERVAL = 10000;
+
+  let silentRefreshTimer = null;
+  let silentRefreshRunning = false;
+  let lastSilentSignature = '';
+  let pageIsVisible = !document.hidden;
+
+  function messageSignature(messages) {
+    return (Array.isArray(messages) ? messages : [])
+      .map(message => [
+        message?.mailId || '',
+        message?.date || '',
+        message?.subject || '',
+        message?.senderEmail || '',
+        message?.senderName || '',
+        message?.isRead ? '1' : '0',
+        message?.isStarred ? '1' : '0',
+        message?.label || '',
+        message?.body || ''
+      ].join('¦'))
+      .join('§');
+  }
+
+  function updateSilentSignature(messages) {
+    lastSilentSignature = messageSignature(messages);
+  }
+
+  async function silentRefresh() {
+    if (
+      silentRefreshRunning ||
+      isLoading ||
+      !pageIsVisible ||
+      !MailboxAPI.user()
+    ) {
+      return;
+    }
+
+    silentRefreshRunning = true;
+
+    try {
+      const searchValue =
+        searchInput ? searchInput.value || '' : '';
+
+      const data = await MailboxAPI.list(
+        currentFolder,
+        searchValue,
+        currentPage,
+        currentPageSize
+      );
+
+      const freshMessages =
+        Array.isArray(data?.messages)
+          ? data.messages
+          : [];
+
+      const freshSignature =
+        messageSignature(freshMessages);
+
+      /*
+       * Do nothing when the returned mail data has not changed.
+       * This is what makes the refresh silent.
+       */
+      if (freshSignature === lastSilentSignature) {
+        return;
+      }
+
+      /*
+       * Preserve the current page, folder and label. Only redraw
+       * when the server actually returned different mail data.
+       */
+      currentMessages = freshMessages;
+
+      renderMessages(currentMessages);
+      renderLabels(currentMessages);
+      updatePagination(data);
+
+      updateSilentSignature(currentMessages);
+
+    } catch (error) {
+      /*
+       * Background refresh must never replace the user's mail
+       * list with an error screen. A session error is handled
+       * quietly by sending the user to login.
+       */
+      if (/session/i.test(error?.message || '')) {
+        MailboxAPI.clearSession();
+        window.location.href = 'login.html';
+      }
+    } finally {
+      silentRefreshRunning = false;
+    }
+  }
+
+  function startSilentRefresh() {
+    stopSilentRefresh();
+
+    silentRefreshTimer =
+      window.setInterval(
+        silentRefresh,
+        SILENT_REFRESH_INTERVAL
+      );
+  }
+
+  function stopSilentRefresh() {
+    if (silentRefreshTimer !== null) {
+      window.clearInterval(silentRefreshTimer);
+      silentRefreshTimer = null;
+    }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    pageIsVisible = !document.hidden;
+
+    if (pageIsVisible) {
+      /*
+       * Immediately check once when the user returns to the tab,
+       * then continue with the normal 10-second interval.
+       */
+      silentRefresh();
+    }
+  });
+
+  window.addEventListener('beforeunload', stopSilentRefresh);
+
+
+  /* =========================================================
+     STORAGE
+     ========================================================= */
+
+  const STORAGE_KEY =
+    'mailbox-selected-folder';
+
+
+  function saveFolder(folder) {
+
+    try {
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        folder
+      );
+    } catch (_) {}
+
+  }
+
+
+  function getSavedFolder() {
+
+    try {
+
+      const folder =
+        sessionStorage.getItem(STORAGE_KEY);
+
+      if (folder && folders[folder]) {
+        return folder;
+      }
+
+    } catch (_) {}
+
+    return 'INBOX';
+
+  }
+
+
+  /* =========================================================
+     ESCAPE HTML
+     ========================================================= */
+
+  function esc(value) {
+
+    return String(value ?? '')
+      .replace(
+        /[&<>"']/g,
+        character => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[character])
+      );
+
+  }
+
+
+  /* =========================================================
+     DATE
+     ========================================================= */
+
+  function dateLabel(value) {
+
+    const text =
+      String(value || '');
+
+    return (
+      text.split(' ')[0] ||
+      text
+    );
+
+  }
+
+
+  /* =========================================================
+     BODY PREVIEW
+     ========================================================= */
+
+  function bodyPreview(value) {
+
+    return String(value || '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 110);
+
+  }
+
+
+  /* =========================================================
+     LOADING STATE
+     ========================================================= */
+
+  function showLoading() {
+
+    isLoading = true;
+
+    messageList.innerHTML = `
+
+      <li class="list-group-item p-0">
+
+        <div class="mail-loading">
+
+          <div
+            class="spinner-border text-primary"
+            role="status"
+            aria-hidden="true"
+          ></div>
+
+          <div class="text-secondary">
+            Loading ${esc(
+              folders[currentFolder]?.label || 'messages'
+            )}…
+          </div>
+
+        </div>
+
+      </li>
+
+    `;
+
+    messageRange.textContent =
+      'Loading…';
+
+    selectAll.checked = false;
+    selectAll.disabled = true;
+    updateToolbarState();
+    if (previousPageButton) previousPageButton.disabled = true;
+    if (nextPageButton) nextPageButton.disabled = true;
+
+  }
+
+
+  /* =========================================================
+     EMPTY STATE
+     ========================================================= */
+
+  function showEmpty(message = 'No messages found.') {
+
+    messageList.innerHTML = `
+
+      <li class="list-group-item p-0">
+
+        <div class="mail-empty">
+
+          <i
+            class="bi bi-envelope-open text-secondary"
+            aria-hidden="true"
+          ></i>
+
+          <div class="text-secondary">
+            ${esc(message)}
+          </div>
+
+        </div>
+
+      </li>
+
+    `;
+
+    messageRange.textContent =
+      '0 of 0';
+
+    selectAll.checked = false;
+    selectAll.disabled = true;
+
+  }
+
+
+  /* =========================================================
+     ERROR STATE
+     ========================================================= */
+
+  function showError(error) {
+
+    const message =
+      error?.message ||
+      'Unable to load messages.';
+
+    messageList.innerHTML = `
+
+      <li class="list-group-item p-0">
+
+        <div class="mail-error">
+
+          <i
+            class="bi bi-exclamation-triangle text-danger"
+            style="font-size:2rem;"
+            aria-hidden="true"
+          ></i>
+
+          <div class="fw-semibold">
+            Unable to load messages
+          </div>
+
+          <div class="text-secondary small">
+            ${esc(message)}
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-sm btn-primary"
+            id="retry-load-button"
+          >
+            <i class="bi bi-arrow-clockwise me-1"></i>
+            Retry
+          </button>
+
+        </div>
+
+      </li>
+
+    `;
+
+    messageRange.textContent =
+      'Error';
+
+    selectAll.checked = false;
+    selectAll.disabled = true;
+
+    document
+      .getElementById('retry-load-button')
+      ?.addEventListener(
+        'click',
+        load
+      );
+
+  }
+
+
+  /* =========================================================
+     UPDATE FOLDER HEADER
+     ========================================================= */
+
+  function updateFolderHeader() {
+
+    const folder =
+      folders[currentFolder] ||
+      folders.INBOX;
+
+    pageHeading.textContent =
+      folder.label;
+
+    breadcrumbFolder.textContent =
+      folder.label;
+
+    folderTitle.querySelector('span')?.remove();
+
+    const titleText =
+      document.createElement('span');
+
+    titleText.textContent =
+      folder.label;
+
+    folderTitle.appendChild(titleText);
+
+
+    folderTitleIcon.className =
+      `bi ${folder.icon} folder-title-icon`;
+
+  }
+
+
+  /* =========================================================
+     SELECTED FOLDER
+     ========================================================= */
+
+  function updateFolderSelection() {
+
+    document
+      .querySelectorAll('.mail-folder-link')
+      .forEach(link => {
+
+        const isSelected =
+          link.dataset.folder === currentFolder;
+
+        link.classList.toggle(
+          'active',
+          isSelected
+        );
+
+        link.setAttribute(
+          'aria-current',
+          isSelected
+            ? 'page'
+            : 'false'
+        );
+
+      });
+
+  }
+
+
+  /* =========================================================
+     LABEL EXTRACTION
+     ========================================================= */
+
+  function getLabels(messages) {
+
+    const labels =
+      new Map();
+
+    messages.forEach(message => {
+
+      const value =
+        String(message?.label || '')
+          .trim();
+
+      if (!value) {
+        return;
+      }
+
+      value
+        .split(',')
+        .map(x => x.trim())
+        .filter(Boolean)
+        .forEach(label => {
+
+          if (!labels.has(label)) {
+            labels.set(
+              label,
+              labels.size
+            );
+          }
+
+        });
+
+    });
+
+    return [...labels.keys()];
+
+  }
+
+
+  /* =========================================================
+     RENDER LABELS
+     ========================================================= */
+
+  function renderLabels(messages) {
+
+    const labels =
+      getLabels(messages);
+
+    labelList.innerHTML = '';
+
+
+    /* All messages */
+
+    const allItem =
+      document.createElement('li');
+
+    allItem.className =
+      'nav-item';
+
+    allItem.innerHTML = `
+
+      <a
+        href="#"
+        class="nav-link mail-label-link ${currentLabel === '' ? 'active' : ''}"
+        data-label=""
+      >
+
+        <i
+          class="bi bi-tags me-2"
+          aria-hidden="true"
+        ></i>
+
+        All labels
+
+      </a>
+
+    `;
+
+    labelList.appendChild(
+      allItem
+    );
+
+
+    if (!labels.length) {
+
+      const empty =
+        document.createElement('li');
+
+      empty.className =
+        'label-empty';
+
+      empty.textContent =
+        'No labels found';
+
+      labelList.appendChild(
+        empty
+      );
+
+    } else {
+
+      labels.forEach(label => {
+
+        const item =
+          document.createElement('li');
+
+        item.className =
+          'nav-item';
+
+        item.innerHTML = `
+
+          <a
+            href="#"
+            class="nav-link mail-label-link ${currentLabel === label ? 'active' : ''}"
+            data-label="${esc(label)}"
+          >
+
+            <i
+              class="bi bi-circle-fill text-primary me-2"
+              style="font-size:.6rem"
+              aria-hidden="true"
+            ></i>
+
+            ${esc(label)}
+
+          </a>
+
+        `;
+
+        labelList.appendChild(
+          item
+        );
+
+      });
+
+    }
+
+
+    labelList
+      .querySelectorAll('.mail-label-link')
+      .forEach(link => {
+
+        link.addEventListener(
+          'click',
+          event => {
+
+            event.preventDefault();
+
+            currentLabel =
+              link.dataset.label || '';
+
+            renderMessages(
+              currentMessages
+            );
+
+            renderLabels(
+              currentMessages
+            );
+
+          }
+        );
+
+      });
+
+  }
+
+
+  /* =========================================================
+     FILTER BY LABEL
+     ========================================================= */
+
+  function filteredMessages(messages) {
+
+    if (!currentLabel) {
+      return messages;
+    }
+
+    return messages.filter(message => {
+
+      const labels =
+        String(message?.label || '')
+          .split(',')
+          .map(x => x.trim())
+          .filter(Boolean);
+
+      return labels.some(
+        label =>
+          label.toLowerCase() ===
+          currentLabel.toLowerCase()
+      );
+
+    });
+
+  }
+
+
+  /* =========================================================
+     SELECTED MESSAGE IDS
+     ========================================================= */
+
+  function selectedMessageIds() {
+
+    return Array.from(
+      messageList.querySelectorAll('.msg-check:checked')
+    )
+      .map(checkbox => checkbox.dataset.id)
+      .filter(Boolean);
+
+  }
+
+
+  function updateToolbarState() {
+
+    const hasSelection =
+      selectedMessageIds().length > 0;
+
+    [
+      toolbarArchive,
+      toolbarSpam,
+      toolbarDelete,
+      toolbarRead,
+      toolbarUnread
+    ].forEach(button => {
+      if (button) button.disabled = !hasSelection;
+    });
+
+  }
+
+
+  async function applyToSelected(changes) {
+
+    const ids = selectedMessageIds();
+
+    if (!ids.length) return;
+
+    const buttons = [
+      toolbarArchive,
+      toolbarSpam,
+      toolbarDelete,
+      toolbarRead,
+      toolbarUnread
+    ].filter(Boolean);
+
+    buttons.forEach(button => button.disabled = true);
+
+    try {
+
+      await Promise.all(
+        ids.map(mailId =>
+          MailboxAPI.update(
+            Object.assign({ mailId }, changes)
+          )
+        )
+      );
+
+      await load(currentPage);
+
+    } catch (error) {
+
+      if (/session/i.test(error?.message || '')) {
+        MailboxAPI.clearSession();
+        window.location.href = 'login.html';
+        return;
+      }
+
+      showError(error);
+
+    } finally {
+
+      updateToolbarState();
+
+    }
+
+  }
+
+
+  /* =========================================================
+     RENDER MESSAGES
+     ========================================================= */
+
+  function renderMessages(messages) {
+
+    const filtered =
+      filteredMessages(messages);
+
+    messageList.innerHTML = '';
+
+    isLoading = false;
+
+
+    if (!filtered.length) {
+
+      if (currentLabel) {
+
+        showEmpty(
+          `No messages with label "${currentLabel}".`
+        );
+
+      } else {
+
+        showEmpty(
+          'No messages found.'
+        );
+
+      }
+
+      return;
+
+    }
+
+
+    filtered.forEach(
+      (message, index) => {
+
+        const li =
+          document.createElement('li');
+
+        li.className =
+          'list-group-item d-flex align-items-center gap-2 message-row' +
+          (
+            message.isRead
+              ? ''
+              : ' unread'
+          );
+
+
+        const mailId =
+          message.mailId || '';
+
+
+        const subject =
+          message.subject ||
+          '(No subject)';
+
+
+        const sender =
+          message.senderName ||
+          message.senderEmail ||
+          '(Unknown sender)';
+
+
+        const preview =
+          bodyPreview(
+            message.body
+          );
+
+
+        const date =
+          dateLabel(
+            message.date
+          );
+
+
+        const isStarred =
+          message.isStarred === true ||
+          String(message.isStarred || '')
+            .toUpperCase() === 'YES';
+
+
+        const label =
+          String(
+            message.label || ''
+          ).trim();
+
+
+        li.innerHTML = `
+
+          <div class="form-check mb-0">
+
+            <input
+              class="form-check-input msg-check"
+              type="checkbox"
+              data-id="${esc(mailId)}"
+              id="msg-${index}"
+            >
+
+            <label
+              class="form-check-label visually-hidden"
+              for="msg-${index}"
+            >
+              Select ${esc(subject)}
+            </label>
+
+          </div>
+
+
+          <button
+            class="btn btn-link p-0 lh-1 star-btn ${
+              isStarred
+                ? 'text-warning'
+                : 'text-secondary'
+            }"
+            type="button"
+            title="${
+              isStarred
+                ? 'Unstar'
+                : 'Star'
+            }"
+            aria-label="${
+              isStarred
+                ? 'Unstar'
+                : 'Star'
+            }"
+            data-id="${esc(mailId)}"
+          >
+
+            <i
+              class="bi ${
+                isStarred
+                  ? 'bi-star-fill'
+                  : 'bi-star'
+              }"
+              aria-hidden="true"
+            ></i>
+
+          </button>
+
+
+          <a
+            href="read.html?id=${encodeURIComponent(mailId)}"
+            class="flex-grow-1 d-flex flex-column flex-md-row gap-md-3 text-decoration-none text-body"
+            style="min-width:0"
+          >
+
+            <span
+              class="text-truncate"
+              style="min-width:9rem"
+              title="${esc(sender)}"
+            >
+              ${esc(sender)}
+            </span>
+
+
+            <span
+              class="flex-grow-1 text-truncate"
+              style="min-width:0"
+            >
+
+              ${
+                label
+                  ? `
+                    <span
+                      class="badge text-bg-primary me-2"
+                    >
+                      ${esc(label)}
+                    </span>
+                  `
+                  : ''
+              }
+
+              ${esc(subject)}
+
+              ${
+                preview
+                  ? `
+                    <span
+                      class="fw-normal text-secondary"
+                    >
+                      &nbsp;&mdash;
+                      ${esc(preview)}
+                    </span>
+                  `
+                  : ''
+              }
+
+            </span>
+
+
+            <span
+              class="text-secondary small text-md-end"
+              style="min-width:5rem"
+            >
+              ${esc(date)}
+            </span>
+
+          </a>
+
+        `;
+
+
+        messageList.appendChild(
+          li
+        );
+
+      }
+    );
+
+
+    messageRange.textContent =
+      `1–${filtered.length} of ${filtered.length}`;
+
+
+    selectAll.disabled = false;
+    selectAll.checked = false;
+    updateToolbarState();
+
+    messageList
+      .querySelectorAll('.msg-check')
+      .forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          const boxes = Array.from(
+            messageList.querySelectorAll('.msg-check')
+          );
+          selectAll.checked =
+            boxes.length > 0 &&
+            boxes.every(box => box.checked);
+          updateToolbarState();
+        });
+      });
+
+
+    /* =======================================================
+       STAR BUTTONS
+       ======================================================= */
+
+    messageList
+      .querySelectorAll('.star-btn')
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          async event => {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const icon =
+              button.querySelector('i');
+
+            const currentlyStarred =
+              icon.classList.contains(
+                'bi-star-fill'
+              );
+
+
+            button.disabled = true;
+
+            try {
+
+              await MailboxAPI.update({
+
+                mailId:
+                  button.dataset.id,
+
+                Is_Starred:
+                  currentlyStarred
+                    ? 'NO'
+                    : 'YES'
+
+              });
+
+              await load();
+
+            } catch (error) {
+
+              showError(
+                error
+              );
+
+            } finally {
+
+              button.disabled = false;
+
+            }
+
+          }
+        );
+
+      });
+
+  }
+
+
+  /* =========================================================
+     PAGINATION
+     ========================================================= */
+
+  function updatePagination(data) {
+
+    const page = Number(data?.page || 1);
+    const pageSize = Number(data?.pageSize || currentPageSize || 25);
+    const total = Number(data?.total || 0);
+    const pages = Math.max(Number(data?.totalPages || 1), 1);
+
+    currentPage = page;
+    currentPageSize = pageSize === 50 ? 50 : 25;
+    totalPages = pages;
+    totalMessages = total;
+
+    if (pageSizeSelect) {
+      pageSizeSelect.value = String(currentPageSize);
+    }
+
+    if (pageNumber) {
+      pageNumber.textContent = `${currentPage} / ${totalPages}`;
+    }
+
+    if (messageRange) {
+      if (!total) {
+        messageRange.textContent = '0 of 0';
+      } else {
+        const start = ((currentPage - 1) * currentPageSize) + 1;
+        const end = Math.min(currentPage * currentPageSize, total);
+        messageRange.textContent = `${start}–${end} of ${total}`;
+      }
+    }
+
+    if (previousPageButton) {
+      previousPageButton.disabled = currentPage <= 1 || isLoading || total === 0;
+    }
+
+    if (nextPageButton) {
+      nextPageButton.disabled = currentPage >= totalPages || isLoading || total === 0;
+    }
+  }
+
+
+  /* =========================================================
+     LOAD MESSAGES
+     ========================================================= */
+
+  async function load(page = currentPage) {
+
+    if (isLoading) return;
+
+    showLoading();
+
+    try {
+
+      const searchValue =
+        searchInput ? searchInput.value || '' : '';
+
+      const data =
+        await MailboxAPI.list(
+          currentFolder,
+          searchValue,
+          page,
+          currentPageSize
+        );
+
+      currentMessages =
+        Array.isArray(data?.messages)
+          ? data.messages
+          : [];
+
+      renderMessages(currentMessages);
+      renderLabels(currentMessages);
+      updatePagination(data);
+
+      updateSilentSignature(currentMessages);
+
+    } catch (error) {
+
+      isLoading = false;
+
+      if (/session/i.test(error?.message || '')) {
+        MailboxAPI.clearSession();
+        window.location.href = 'login.html';
+        return;
+      }
+
+      showError(error);
+
+    } finally {
+
+      isLoading = false;
+
+      if (previousPageButton) {
+        previousPageButton.disabled = currentPage <= 1 || totalMessages === 0;
+      }
+
+      if (nextPageButton) {
+        nextPageButton.disabled = currentPage >= totalPages || totalMessages === 0;
+      }
+
+    }
+  }
+
+
+  /* =========================================================
+     FOLDER CLICK
+     ========================================================= */
+
+  document
+    .querySelectorAll('.mail-folder-link')
+    .forEach(link => {
+
+      link.addEventListener(
+        'click',
+        async event => {
+
+          event.preventDefault();
+
+
+          const folder =
+            link.dataset.folder;
+
+
+          if (!folders[folder]) {
+            return;
+          }
+
+
+          if (
+            folder === currentFolder &&
+            !isLoading
+          ) {
+
+            return;
+
+          }
+
+
+          currentFolder =
+            folder;
+
+          currentPage = 1;
+
+
+          currentLabel =
+            '';
+
+
+          saveFolder(
+            currentFolder
+          );
+
+
+          updateFolderSelection();
+
+          updateFolderHeader();
+
+          renderLabels([]);
+
+
+          await load();
+
+        }
+      );
+
+    });
+
+
+  /* =========================================================
+     SEARCH
+     ========================================================= */
+
+  let searchTimer;
+
+  function runSearch() {
+
+    clearTimeout(searchTimer);
+
+    searchTimer = setTimeout(async () => {
+
+      currentPage = 1;
+      currentLabel = '';
+      updateToolbarState();
+
+      try {
+        await load(1);
+      } catch (error) {
+        showError(error);
+      }
+
+    }, 300);
+
+  }
+
+
+  searchInput?.addEventListener('input', () => {
+
+    if (searchClearButton) {
+      searchClearButton.style.display =
+        searchInput.value.trim() ? '' : 'none';
+    }
+
+    runSearch();
+
+  });
+
+
+  searchInput?.addEventListener('keydown', event => {
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      searchInput.value = '';
+      if (searchClearButton) searchClearButton.style.display = 'none';
+      runSearch();
+    }
+
+  });
+
+
+  searchClearButton?.addEventListener('click', () => {
+
+    searchInput.value = '';
+    searchClearButton.style.display = 'none';
+    searchInput.focus();
+    runSearch();
+
+  });
+
+
+  document.addEventListener('keydown', event => {
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      searchInput?.focus();
+    }
+
+  });
+
+
+  /* =========================================================
+     PAGINATION CONTROLS
+     ========================================================= */
+
+  previousPageButton?.addEventListener('click', async () => {
+    if (currentPage <= 1 || isLoading) return;
+    await load(currentPage - 1);
+  });
+
+  nextPageButton?.addEventListener('click', async () => {
+    if (currentPage >= totalPages || isLoading) return;
+    await load(currentPage + 1);
+  });
+
+  pageSizeSelect?.addEventListener('change', async () => {
+    currentPageSize = Number(pageSizeSelect.value) === 50 ? 50 : 25;
+    currentPage = 1;
+    await load(1);
+  });
+
+
+  /* =========================================================
+     TOOLBAR ACTIONS
+     ========================================================= */
+
+  toolbarArchive?.addEventListener('click', () =>
+    applyToSelected({
+      Folder: 'ARCHIVE',
+      Is_Archived: 'YES',
+      Is_Spam: 'NO',
+      Is_Deleted: 'NO'
+    })
+  );
+
+
+  toolbarSpam?.addEventListener('click', () => {
+    if (!window.confirm('Move the selected message(s) to Spam?')) return;
+    applyToSelected({
+      Folder: 'SPAM',
+      Is_Spam: 'YES',
+      Is_Archived: 'NO',
+      Is_Deleted: 'NO'
+    });
+  });
+
+
+  toolbarDelete?.addEventListener('click', () => {
+    if (!window.confirm('Move the selected message(s) to Trash?')) return;
+    applyToSelected({
+      Folder: 'TRASH',
+      Is_Deleted: 'YES'
+    });
+  });
+
+
+  toolbarRead?.addEventListener('click', () =>
+    applyToSelected({ Is_Read: 'YES' })
+  );
+
+
+  toolbarUnread?.addEventListener('click', () =>
+    applyToSelected({ Is_Read: 'NO' })
+  );
+
+
+  /* =========================================================
+     REFRESH
+     ========================================================= */
+
+  refreshButton?.addEventListener(
+    'click',
+    async () => {
+
+      refreshButton.disabled =
+        true;
+
+      try {
+
+        await load();
+
+      } finally {
+
+        refreshButton.disabled =
+          false;
+
+      }
+
+    }
+  );
+
+
+  /* =========================================================
+     SELECT ALL
+     ========================================================= */
+
+  selectAll?.addEventListener(
+    'change',
+    () => {
+
+      messageList
+        .querySelectorAll(
+          '.msg-check'
+        )
+        .forEach(
+          checkbox => {
+            checkbox.checked =
+              selectAll.checked;
+          }
+        );
+
+      updateToolbarState();
+
+    }
+  );
+
+
+  /* =========================================================
+     LOGOUT
+     Same implementation used in read.html
+     ========================================================= */
+
+  logoutButton?.addEventListener(
+    'click',
+    async () => {
+
+      const button =
+        document.getElementById(
+          'logout-button'
+        );
+
+
+      if (button) {
+        button.disabled = true;
+      }
+
+
+      try {
+
+        await MailboxAPI.logout();
+
+      } catch (_) {}
+
+
+      MailboxAPI.clearSession();
+
+
+      window.location.href =
+        'login.html';
+
+    }
+  );
+
+
+  /* =========================================================
+     USER INFORMATION
+     ========================================================= */
+
+  const user =
+    MailboxAPI.user();
+
+
+  if (user) {
+
+    document
+      .querySelectorAll(
+        '[data-mailbox-user-name]'
+      )
+      .forEach(
+        element => {
+          element.textContent =
+            user.name;
+        }
+      );
+
+  }
+
+
+  /* =========================================================
+     INITIALISE
+     ========================================================= */
+
+  currentFolder =
+    getSavedFolder();
+
+
+  updateFolderSelection();
+
+  updateFolderHeader();
+
+  renderLabels([]);
+
+  updateToolbarState();
+
+
+  load().finally(() => {
+    startSilentRefresh();
+  });
+
+
+})();
+</script>
+
+
+<!-- ===========================================================
+     COLOR MODE / APEX SUPPORT
+     =========================================================== -->
+<script>
+(() => {
+
+  'use strict';
+
+
+  const mode = () =>
+    document.documentElement
+      .getAttribute('data-bs-theme') === 'dark'
+      ? 'dark'
+      : 'light';
+
+
+  globalThis.Apex ||= {};
+
+  const apex =
+    globalThis.Apex;
+
+
+  apex.theme = {
+    mode: mode()
+  };
+
+
+  apex.chart =
+    Object.assign(
+      apex.chart || {},
+      {
+        background: 'transparent'
+      }
+    );
+
+
+  new MutationObserver(
+    () => {
+
+      const next =
+        mode();
+
+
+      apex.theme = {
+        mode: next
+      };
+
+
+      const instances =
+        apex._chartInstances || [];
+
+
+      for (
+        const { chart } of instances
+      ) {
+
+        try {
+
+          chart.updateOptions(
+            {
+              theme: {
+                mode: next
+              }
+            },
+            false,
+            false
+          );
+
+        } catch (_) {}
+
+      }
+
+    }
+  ).observe(
+    document.documentElement,
+    {
+      attributes: true,
+      attributeFilter: [
+        'data-bs-theme'
+      ]
+    }
+  );
+
+})();
+</script>
+
+</body>
+</html>

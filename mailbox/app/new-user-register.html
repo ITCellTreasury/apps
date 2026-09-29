@@ -1,0 +1,2260 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Mailbox - New User Registration</title>
+
+
+<style>
+
+/* =====================================================
+   BASE
+   ===================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+
+body {
+
+  margin: 0;
+
+  min-height: 100vh;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  background:
+    linear-gradient(
+      135deg,
+      #eef4ff,
+      #f8fbff
+    );
+
+  color: #172033;
+
+}
+
+
+/* =====================================================
+   CONTAINER
+   ===================================================== */
+
+.container {
+
+  width:
+    min(900px, 94%);
+
+  margin:
+    35px auto;
+
+}
+
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.header {
+
+  text-align: center;
+
+  margin-bottom: 22px;
+
+}
+
+
+.header h1 {
+
+  margin: 0;
+
+  font-size: 28px;
+
+}
+
+
+.header p {
+
+  color: #64748b;
+
+}
+
+
+/* =====================================================
+   CARD
+   ===================================================== */
+
+.card {
+
+  background:
+    rgba(255,255,255,.94);
+
+  border-radius:
+    18px;
+
+  padding:
+    25px;
+
+  box-shadow:
+    0 12px 35px
+    rgba(15,23,42,.12);
+
+}
+
+
+/* =====================================================
+   NOTE
+   ===================================================== */
+
+.note {
+
+  padding:
+    12px;
+
+  background:
+    #f1f5f9;
+
+  border-radius:
+    9px;
+
+  margin-bottom:
+    18px;
+
+  font-size:
+    14px;
+
+  color:
+    #475569;
+
+}
+
+
+/* =====================================================
+   GRID
+   ===================================================== */
+
+.grid {
+
+  display:
+    grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0,1fr)
+    );
+
+  gap:
+    16px;
+
+}
+
+
+.full {
+
+  grid-column:
+    1 / -1;
+
+}
+
+
+/* =====================================================
+   LABEL
+   ===================================================== */
+
+label {
+
+  display:
+    block;
+
+  font-size:
+    14px;
+
+  font-weight:
+    600;
+
+  margin-bottom:
+    7px;
+
+}
+
+
+/* =====================================================
+   INPUT
+   ===================================================== */
+
+input {
+
+  width:
+    100%;
+
+  padding:
+    12px 13px;
+
+  border:
+    1px solid #cbd5e1;
+
+  border-radius:
+    9px;
+
+  outline:
+    none;
+
+  font-size:
+    15px;
+
+}
+
+
+input:focus {
+
+  border-color:
+    #2563eb;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(37,99,235,.12);
+
+}
+
+
+input[readonly] {
+
+  background:
+    #f1f5f9;
+
+  color:
+    #475569;
+
+}
+
+
+/* =====================================================
+   EMAIL GROUP
+   ===================================================== */
+
+.emailGroup {
+
+  display:
+    flex;
+
+  width:
+    100%;
+
+}
+
+
+.emailGroup input {
+
+  border-radius:
+    9px 0 0 9px;
+
+  border-right:
+    0;
+
+}
+
+
+.emailDomain {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  padding:
+    0 13px;
+
+  min-width:
+    150px;
+
+  background:
+    #f1f5f9;
+
+  border:
+    1px solid #cbd5e1;
+
+  border-radius:
+    0 9px 9px 0;
+
+  color:
+    #475569;
+
+  font-size:
+    15px;
+
+  white-space:
+    nowrap;
+
+}
+
+
+/* =====================================================
+   USERNAME STATUS
+   ===================================================== */
+
+.usernameStatus {
+
+  margin-top:
+    7px;
+
+  font-size:
+    13px;
+
+  min-height:
+    18px;
+
+}
+
+
+.usernameStatus.available {
+
+  color:
+    #15803d;
+
+}
+
+
+.usernameStatus.unavailable {
+
+  color:
+    #b91c1c;
+
+}
+
+
+.usernameStatus.checking {
+
+  color:
+    #64748b;
+
+}
+
+
+/* =====================================================
+   SUGGESTIONS
+   ===================================================== */
+
+.suggestions {
+
+  margin-top:
+    9px;
+
+  display:
+    none;
+
+}
+
+
+.suggestionTitle {
+
+  font-size:
+    13px;
+
+  color:
+    #64748b;
+
+  margin-bottom:
+    6px;
+
+}
+
+
+.suggestion {
+
+  display:
+    inline-block;
+
+  margin:
+    3px 5px 3px 0;
+
+  padding:
+    7px 10px;
+
+  border:
+    1px solid #bfdbfe;
+
+  border-radius:
+    8px;
+
+  background:
+    #eff6ff;
+
+  color:
+    #1d4ed8;
+
+  font-size:
+    13px;
+
+  cursor:
+    pointer;
+
+}
+
+
+.suggestion:hover {
+
+  background:
+    #dbeafe;
+
+}
+
+
+/* =====================================================
+   BUTTON
+   ===================================================== */
+
+button.primary {
+
+  width:
+    100%;
+
+  padding:
+    13px;
+
+  border:
+    0;
+
+  border-radius:
+    9px;
+
+  background:
+    #2563eb;
+
+  color:
+    white;
+
+  font-size:
+    15px;
+
+  font-weight:
+    600;
+
+  cursor:
+    pointer;
+
+}
+
+
+button.primary:hover {
+
+  background:
+    #1d4ed8;
+
+}
+
+
+button:disabled {
+
+  opacity:
+    .55;
+
+  cursor:
+    not-allowed;
+
+}
+
+
+/* =====================================================
+   MESSAGES
+   ===================================================== */
+
+.success {
+
+  display:
+    none;
+
+  padding:
+    13px;
+
+  border-radius:
+    9px;
+
+  background:
+    #dcfce7;
+
+  color:
+    #166534;
+
+  margin-bottom:
+    15px;
+
+}
+
+
+.error {
+
+  display:
+    none;
+
+  padding:
+    13px;
+
+  border-radius:
+    9px;
+
+  background:
+    #fee2e2;
+
+  color:
+    #991b1b;
+
+  margin-bottom:
+    15px;
+
+}
+
+
+/* =====================================================
+   RESULT
+   ===================================================== */
+
+.result {
+
+  padding:
+    15px;
+
+  background:
+    #eff6ff;
+
+  border-radius:
+    10px;
+
+  margin-top:
+    15px;
+
+}
+
+
+.userId {
+
+  font-size:
+    22px;
+
+  font-weight:
+    bold;
+
+  color:
+    #1d4ed8;
+
+}
+
+
+.mailResult {
+
+  margin-top:
+    8px;
+
+  font-weight:
+    600;
+
+  color:
+    #334155;
+
+}
+
+
+.hidden {
+
+  display:
+    none !important;
+
+}
+
+
+/* =====================================================
+   LOADING
+   ===================================================== */
+
+.loading {
+
+  display:
+    inline-flex;
+
+  align-items:
+    center;
+
+  gap:
+    8px;
+
+}
+
+
+.spinner {
+
+  width:
+    16px;
+
+  height:
+    16px;
+
+  border:
+    2px solid
+    rgba(255,255,255,.4);
+
+  border-top-color:
+    white;
+
+  border-radius:
+    50%;
+
+  animation:
+    spin .8s linear infinite;
+
+}
+
+
+@keyframes spin {
+
+  to {
+
+    transform:
+      rotate(360deg);
+
+  }
+
+}
+
+
+/* =====================================================
+   FOOTER
+   ===================================================== */
+
+.footer {
+
+  text-align:
+    center;
+
+  margin-top:
+    20px;
+
+  font-size:
+    13px;
+
+  color:
+    #64748b;
+
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media(max-width:650px) {
+
+  .grid {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .full {
+
+    grid-column:
+      auto;
+
+  }
+
+
+  .emailGroup {
+
+    flex-direction:
+      column;
+
+  }
+
+
+  .emailGroup input {
+
+    border-radius:
+      9px;
+
+    border-right:
+      1px solid #cbd5e1;
+
+  }
+
+
+  .emailDomain {
+
+    margin-top:
+      6px;
+
+    min-height:
+      44px;
+
+    border-radius:
+      9px;
+
+  }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+  <div class="header">
+
+    <h1>
+      Mailbox
+    </h1>
+
+    <p>
+      New User Registration
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+
+    <div id="regSuccess"
+         class="success">
+    </div>
+
+
+    <div id="regError"
+         class="error">
+    </div>
+
+
+    <div class="note">
+
+      Create your internal mailbox account.
+      Your mailbox address will use the
+      configured internal mail domain.
+
+    </div>
+
+
+    <div class="grid">
+
+
+      <!-- ============================================
+           FULL NAME
+           ============================================ -->
+
+      <div class="full">
+
+        <label>
+          Full Name
+        </label>
+
+        <input
+          id="fullName"
+          type="text"
+          autocomplete="name"
+          placeholder="Enter full name">
+
+      </div>
+
+
+      <!-- ============================================
+           MAILBOX ADDRESS
+           ============================================ -->
+
+      <div class="full">
+
+        <label>
+          Mailbox Email Address
+        </label>
+
+
+        <div class="emailGroup">
+
+          <input
+            id="username"
+            type="text"
+            maxlength="30"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Enter username">
+
+          <div
+            id="emailDomain"
+            class="emailDomain">
+
+            Loading...
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="usernameStatus"
+          class="usernameStatus">
+
+        </div>
+
+
+        <div
+          id="suggestions"
+          class="suggestions">
+
+          <div class="suggestionTitle">
+
+            This username is already registered.
+            You may use:
+
+          </div>
+
+          <div
+            id="suggestionList">
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- ============================================
+           MOBILE
+           ============================================ -->
+
+      <div>
+
+        <label>
+          Mobile Number
+        </label>
+
+        <input
+          id="mobile"
+          type="tel"
+          maxlength="10"
+          inputmode="numeric"
+          placeholder="10 digit mobile number">
+
+      </div>
+
+
+      <!-- ============================================
+           DESIGNATION
+           ============================================ -->
+
+      <div>
+
+        <label>
+          Designation
+        </label>
+
+        <input
+          id="designation"
+          type="text"
+          placeholder="Designation">
+
+      </div>
+
+
+      <!-- ============================================
+           DEPARTMENT
+           ============================================ -->
+
+      <div>
+
+        <label>
+          Department
+        </label>
+
+        <input
+          id="department"
+          type="text"
+          placeholder="Department">
+
+      </div>
+
+
+      <!-- ============================================
+           RECOVERY EMAIL
+           ============================================ -->
+
+      <div>
+
+        <label>
+
+          Recovery Email
+
+          <span
+            style="
+              font-weight:normal;
+              color:#64748b;
+            ">
+
+            (Optional)
+
+          </span>
+
+        </label>
+
+        <input
+          id="recoveryEmail"
+          type="email"
+          placeholder="Gmail / other external email">
+
+      </div>
+
+
+      <!-- ============================================
+           PASSWORD
+           ============================================ -->
+
+      <div>
+
+        <label>
+          Password
+        </label>
+
+        <input
+          id="password"
+          type="password"
+          autocomplete="new-password"
+          placeholder="Minimum 8 characters">
+
+      </div>
+
+
+      <!-- ============================================
+           CONFIRM PASSWORD
+           ============================================ -->
+
+      <div>
+
+        <label>
+          Confirm Password
+        </label>
+
+        <input
+          id="confirmPassword"
+          type="password"
+          autocomplete="new-password"
+          placeholder="Confirm password">
+
+      </div>
+
+
+      <!-- ============================================
+           REGISTER
+           ============================================ -->
+
+      <div class="full">
+
+        <button
+          id="registerBtn"
+          class="primary"
+          onclick="registerUser()">
+
+          Create Mailbox Account
+
+        </button>
+
+      </div>
+
+
+    </div>
+
+
+    <!-- ================================================
+         RESULT
+         ================================================ -->
+
+    <div
+      id="registrationResult"
+      class="result hidden">
+
+
+      <div>
+        Registration successful.
+      </div>
+
+
+      <div>
+        Your Mailbox User ID:
+      </div>
+
+
+      <div
+        id="newUserId"
+        class="userId">
+
+      </div>
+
+
+      <div
+        id="newEmail"
+        class="mailResult">
+
+      </div>
+
+
+      <br>
+
+
+      <div>
+        Please keep your User ID safely.
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+  <div class="footer">
+
+   
+
+  </div>
+
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   API URL
+   ===================================================== */
+
+
+
+const API_URL =
+  'https://script.google.com/macros/s/AKfycbyF5Sa7dQd0PPU8oesAMp2WcAMC05NMSYjXYAF8hmiFOppc9qfC68CCi1eLSW-KfL1l/exec';
+
+
+/* =====================================================
+   GLOBAL VARIABLES
+   ===================================================== */
+
+let mailboxDomain = '';
+
+let usernameTimer = null;
+
+let usernameAvailable = false;
+
+
+/* =====================================================
+   PAGE LOAD
+   ===================================================== */
+
+document.addEventListener(
+  'DOMContentLoaded',
+  function() {
+
+    loadConfiguration();
+
+    setupUsernameInput();
+
+  }
+);
+
+
+/* =====================================================
+   LOAD DOMAIN
+   ===================================================== */
+
+async function loadConfiguration() {
+
+  try {
+
+    setDomainText(
+      'Loading...'
+    );
+
+
+    const result =
+      await apiGet(
+        'getConfiguration'
+      );
+
+
+    if (!result.ok) {
+
+      throw new Error(
+        result.message ||
+        'Unable to load configuration.'
+      );
+
+    }
+
+
+    mailboxDomain =
+      result.domain;
+
+
+    setDomainText(
+      mailboxDomain
+    );
+
+  }
+
+  catch (error) {
+
+    setDomainText(
+      'Unavailable'
+    );
+
+
+    showError(
+      'regError',
+      getErrorMessage(error)
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   DOMAIN DISPLAY
+   ===================================================== */
+
+function setDomainText(
+  text
+) {
+
+  document
+    .getElementById(
+      'emailDomain'
+    )
+    .textContent =
+      text;
+
+}
+
+
+/* =====================================================
+   API GET
+   ===================================================== */
+
+async function apiGet(
+  action,
+  params = {}
+) {
+
+  const url =
+    new URL(
+      API_URL
+    );
+
+
+  url.searchParams.set(
+    'action',
+    action
+  );
+
+
+  Object.keys(params)
+    .forEach(
+      function(key) {
+
+        url.searchParams.set(
+          key,
+          params[key]
+        );
+
+      }
+    );
+
+
+  const response =
+    await fetch(
+      url.toString(),
+      {
+        method:
+          'GET',
+
+        cache:
+          'no-store',
+
+        redirect:
+          'follow'
+      }
+    );
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      'API request failed: HTTP ' +
+      response.status
+    );
+
+  }
+
+
+  return await response.json();
+
+}
+
+
+/* =====================================================
+   API POST
+   ===================================================== */
+
+async function apiPost(
+  payload
+) {
+
+  const response =
+    await fetch(
+      API_URL,
+      {
+
+        method:
+          'POST',
+
+        /*
+         * IMPORTANT:
+         *
+         * text/plain keeps this request
+         * as a CORS simple request and
+         * avoids OPTIONS preflight.
+         */
+
+        headers: {
+
+          'Content-Type':
+            'text/plain;charset=utf-8'
+
+        },
+
+        body:
+          JSON.stringify(
+            payload
+          ),
+
+        cache:
+          'no-store',
+
+        redirect:
+          'follow'
+
+      }
+    );
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      'API request failed: HTTP ' +
+      response.status
+    );
+
+  }
+
+
+  return await response.json();
+
+}
+
+
+/* =====================================================
+   USERNAME INPUT
+   ===================================================== */
+
+function setupUsernameInput() {
+
+  const input =
+    document.getElementById(
+      'username'
+    );
+
+
+  input.addEventListener(
+    'input',
+    function() {
+
+      usernameChanged();
+
+    }
+  );
+
+}
+
+
+function usernameChanged() {
+
+  const input =
+    document.getElementById(
+      'username'
+    );
+
+
+  input.value =
+    input.value
+      .toLowerCase()
+      .replace(
+        /[^a-z0-9._-]/g,
+        ''
+      );
+
+
+  usernameAvailable =
+    false;
+
+
+  clearUsernameSuggestions();
+
+
+  const username =
+    input.value.trim();
+
+
+  if (!username) {
+
+    setUsernameStatus(
+      '',
+      ''
+    );
+
+    return;
+
+  }
+
+
+  if (
+    username.length < 3
+  ) {
+
+    setUsernameStatus(
+      'Enter at least 3 characters.',
+      'checking'
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !/^[a-z0-9][a-z0-9._-]{2,29}$/
+      .test(username)
+  ) {
+
+    setUsernameStatus(
+      'Use letters, numbers, dot, underscore or hyphen.',
+      'unavailable'
+    );
+
+    return;
+
+  }
+
+
+  setUsernameStatus(
+    'Checking availability...',
+    'checking'
+  );
+
+
+  if (usernameTimer) {
+
+    clearTimeout(
+      usernameTimer
+    );
+
+  }
+
+
+  usernameTimer =
+    setTimeout(
+      function() {
+
+        checkUsername(
+          username
+        );
+
+      },
+      450
+    );
+
+}
+
+
+/* =====================================================
+   CHECK USERNAME
+   ===================================================== */
+
+async function checkUsername(
+  username
+) {
+
+  try {
+
+    const result =
+      await apiGet(
+        'checkUsername',
+        {
+          username:
+            username
+        }
+      );
+
+
+    /*
+     * Make sure the result belongs
+     * to the current input.
+     */
+
+    const current =
+      document
+        .getElementById(
+          'username'
+        )
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    if (
+      current !== username
+    ) {
+
+      return;
+
+    }
+
+
+    if (result.available) {
+
+      usernameAvailable =
+        true;
+
+
+      setUsernameStatus(
+        result.message,
+        'available'
+      );
+
+
+      clearUsernameSuggestions();
+
+    }
+
+    else {
+
+      usernameAvailable =
+        false;
+
+
+      setUsernameStatus(
+        result.message,
+        'unavailable'
+      );
+
+
+      showSuggestions(
+        result.suggestions
+      );
+
+    }
+
+  }
+
+  catch (error) {
+
+    usernameAvailable =
+      false;
+
+
+    setUsernameStatus(
+      getErrorMessage(error),
+      'unavailable'
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   USERNAME STATUS
+   ===================================================== */
+
+function setUsernameStatus(
+  message,
+  type
+) {
+
+  const el =
+    document.getElementById(
+      'usernameStatus'
+    );
+
+
+  el.textContent =
+    message || '';
+
+
+  el.className =
+    'usernameStatus ' +
+    (type || '');
+
+}
+
+
+/* =====================================================
+   SHOW SUGGESTIONS
+   ===================================================== */
+
+function showSuggestions(
+  suggestions
+) {
+
+  const container =
+    document.getElementById(
+      'suggestions'
+    );
+
+
+  const list =
+    document.getElementById(
+      'suggestionList'
+    );
+
+
+  list.innerHTML =
+    '';
+
+
+  if (
+    !suggestions ||
+    !suggestions.length
+  ) {
+
+    container.style.display =
+      'none';
+
+    return;
+
+  }
+
+
+  suggestions.forEach(
+    function(item) {
+
+      const button =
+        document.createElement(
+          'span'
+        );
+
+
+      button.className =
+        'suggestion';
+
+
+      button.textContent =
+        item.email;
+
+
+      button.onclick =
+        function() {
+
+          selectSuggestion(
+            item
+          );
+
+        };
+
+
+      list.appendChild(
+        button
+      );
+
+    }
+  );
+
+
+  container.style.display =
+    'block';
+
+}
+
+
+/* =====================================================
+   SELECT SUGGESTION
+   ===================================================== */
+
+function selectSuggestion(
+  item
+) {
+
+  const input =
+    document.getElementById(
+      'username'
+    );
+
+
+  input.value =
+    item.username;
+
+
+  usernameAvailable =
+    true;
+
+
+  setUsernameStatus(
+    item.email +
+    ' selected.',
+    'available'
+  );
+
+
+  clearUsernameSuggestions();
+
+}
+
+
+/* =====================================================
+   CLEAR SUGGESTIONS
+   ===================================================== */
+
+function clearUsernameSuggestions() {
+
+  const container =
+    document.getElementById(
+      'suggestions'
+    );
+
+
+  const list =
+    document.getElementById(
+      'suggestionList'
+    );
+
+
+  container.style.display =
+    'none';
+
+
+  list.innerHTML =
+    '';
+
+}
+
+
+/* =====================================================
+   REGISTER
+   ===================================================== */
+
+async function registerUser() {
+
+  hideMessages();
+
+
+  const username =
+    document
+      .getElementById(
+        'username'
+      )
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const fullName =
+    document
+      .getElementById(
+        'fullName'
+      )
+      .value
+      .trim();
+
+
+  const mobile =
+    document
+      .getElementById(
+        'mobile'
+      )
+      .value
+      .trim();
+
+
+  const designation =
+    document
+      .getElementById(
+        'designation'
+      )
+      .value
+      .trim();
+
+
+  const department =
+    document
+      .getElementById(
+        'department'
+      )
+      .value
+      .trim();
+
+
+  const recoveryEmail =
+    document
+      .getElementById(
+        'recoveryEmail'
+      )
+      .value
+      .trim();
+
+
+  const password =
+    document
+      .getElementById(
+        'password'
+      )
+      .value;
+
+
+  const confirmPassword =
+    document
+      .getElementById(
+        'confirmPassword'
+      )
+      .value;
+
+
+  /* ===================================================
+     CLIENT VALIDATION
+     =================================================== */
+
+  if (!username) {
+
+    showError(
+      'regError',
+      'Mailbox username is required.'
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !/^[a-z0-9][a-z0-9._-]{2,29}$/
+      .test(username)
+  ) {
+
+    showError(
+      'regError',
+      'Please enter a valid mailbox username.'
+    );
+
+    return;
+
+  }
+
+
+  if (!usernameAvailable) {
+
+    /*
+     * Perform one final availability
+     * check before registration.
+     */
+
+    setUsernameStatus(
+      'Checking availability...',
+      'checking'
+    );
+
+
+    try {
+
+      const check =
+        await apiGet(
+          'checkUsername',
+          {
+            username:
+              username
+          }
+        );
+
+
+      if (!check.available) {
+
+        usernameAvailable =
+          false;
+
+
+        setUsernameStatus(
+          check.message,
+          'unavailable'
+        );
+
+
+        showSuggestions(
+          check.suggestions
+        );
+
+
+        showError(
+          'regError',
+          'Please choose an available mailbox username.'
+        );
+
+
+        return;
+
+      }
+
+
+      usernameAvailable =
+        true;
+
+    }
+
+    catch (error) {
+
+      showError(
+        'regError',
+        getErrorMessage(error)
+      );
+
+      return;
+
+    }
+
+  }
+
+
+  if (!fullName) {
+
+    showError(
+      'regError',
+      'Full Name is required.'
+    );
+
+    return;
+
+  }
+
+
+  if (!mobile) {
+
+    showError(
+      'regError',
+      'Mobile Number is required.'
+    );
+
+    return;
+
+  }
+
+
+  if (!designation) {
+
+    showError(
+      'regError',
+      'Designation is required.'
+    );
+
+    return;
+
+  }
+
+
+  if (!department) {
+
+    showError(
+      'regError',
+      'Department is required.'
+    );
+
+    return;
+
+  }
+
+
+  if (
+    password.length < 8
+  ) {
+
+    showError(
+      'regError',
+      'Password must contain at least 8 characters.'
+    );
+
+    return;
+
+  }
+
+
+  if (
+    password !==
+    confirmPassword
+  ) {
+
+    showError(
+      'regError',
+      'Password and Confirm Password do not match.'
+    );
+
+    return;
+
+  }
+
+
+  /* ===================================================
+     DATA
+     =================================================== */
+
+  const data = {
+
+    username:
+      username,
+
+    fullName:
+      fullName,
+
+    mobile:
+      mobile,
+
+    designation:
+      designation,
+
+    department:
+      department,
+
+    recoveryEmail:
+      recoveryEmail,
+
+    password:
+      password,
+
+    confirmPassword:
+      confirmPassword
+
+  };
+
+
+  /* ===================================================
+     DISABLE FORM
+     =================================================== */
+
+  setFormDisabled(
+    true
+  );
+
+
+  setButtonLoading(
+    true
+  );
+
+
+  try {
+
+    const result =
+      await apiPost({
+
+        action:
+          'registerUser',
+
+        data:
+          data
+
+      });
+
+
+    if (!result.ok) {
+
+      throw new Error(
+        result.message ||
+        'Registration failed.'
+      );
+
+    }
+
+
+    /* ===============================================
+       SUCCESS
+       =============================================== */
+
+    showSuccess(
+      'regSuccess',
+      'Registration completed successfully.'
+    );
+
+
+    document
+      .getElementById(
+        'registrationResult'
+      )
+      .classList
+      .remove(
+        'hidden'
+      );
+
+
+    document
+      .getElementById(
+        'newUserId'
+      )
+      .textContent =
+        result.userId;
+
+
+    document
+      .getElementById(
+        'newEmail'
+      )
+      .textContent =
+        'Mailbox Email: ' +
+        result.email;
+
+
+    setButtonLoading(
+      false
+    );
+
+
+    document
+      .getElementById(
+        'registerBtn'
+      )
+      .disabled =
+        true;
+
+
+  }
+
+  catch (error) {
+
+    setFormDisabled(
+      false
+    );
+
+
+    setButtonLoading(
+      false
+    );
+
+
+    usernameAvailable =
+      false;
+
+
+    showError(
+      'regError',
+      getErrorMessage(error)
+    );
+
+
+    /*
+     * Re-check username.
+     *
+     * This handles the situation where
+     * another user registered the same
+     * username between availability
+     * checking and final registration.
+     */
+
+    try {
+
+      await checkUsername(
+        username
+      );
+
+    }
+
+    catch (ignore) {}
+
+  }
+
+}
+
+
+/* =====================================================
+   DISABLE / ENABLE FORM
+   ===================================================== */
+
+function setFormDisabled(
+  disabled
+) {
+
+  document
+    .querySelectorAll(
+      'input'
+    )
+    .forEach(
+      function(input) {
+
+        input.disabled =
+          disabled;
+
+      }
+    );
+
+}
+
+
+/* =====================================================
+   BUTTON LOADING
+   ===================================================== */
+
+function setButtonLoading(
+  loading
+) {
+
+  const button =
+    document.getElementById(
+      'registerBtn'
+    );
+
+
+  if (loading) {
+
+    button.disabled =
+      true;
+
+
+    button.innerHTML =
+      '<span class="loading">' +
+      '<span class="spinner"></span>' +
+      'Creating account...' +
+      '</span>';
+
+  }
+
+  else {
+
+    button.innerHTML =
+      'Create Mailbox Account';
+
+  }
+
+}
+
+
+/* =====================================================
+   HIDE MESSAGES
+   ===================================================== */
+
+function hideMessages() {
+
+  document
+    .querySelectorAll(
+      '.success,.error'
+    )
+    .forEach(
+      function(el) {
+
+        el.style.display =
+          'none';
+
+      }
+    );
+
+}
+
+
+/* =====================================================
+   SUCCESS
+   ===================================================== */
+
+function showSuccess(
+  id,
+  message
+) {
+
+  const el =
+    document.getElementById(
+      id
+    );
+
+
+  el.textContent =
+    message;
+
+
+  el.style.display =
+    'block';
+
+}
+
+
+/* =====================================================
+   ERROR
+   ===================================================== */
+
+function showError(
+  id,
+  message
+) {
+
+  const el =
+    document.getElementById(
+      id
+    );
+
+
+  el.textContent =
+    message;
+
+
+  el.style.display =
+    'block';
+
+}
+
+
+/* =====================================================
+   ERROR MESSAGE
+   ===================================================== */
+
+function getErrorMessage(
+  error
+) {
+
+  if (!error) {
+
+    return 'Unknown error.';
+
+  }
+
+
+  if (
+    typeof error ===
+    'string'
+  ) {
+
+    return error;
+
+  }
+
+
+  return (
+    error.message ||
+    String(error)
+  );
+
+}
+
+</script>
+
+</body>
+
+</html>

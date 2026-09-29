@@ -1,0 +1,3608 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>MailBox | Mailbox - Compose</title>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const root = document.documentElement;
+      if (root.getAttribute('data-lte-color-mode') === 'off') return;
+
+      const STORAGE_KEY = 'lte-theme';
+      let stored = null;
+
+      try {
+        stored = localStorage.getItem(STORAGE_KEY);
+      } catch (_) {}
+
+      const authored = root.getAttribute('data-bs-theme');
+
+      let resolved = 'light';
+
+      if (stored === 'dark' || stored === 'light') {
+        resolved = stored;
+      } else if (authored === 'dark' || authored === 'light') {
+        resolved = authored;
+      } else if (
+        globalThis.matchMedia &&
+        globalThis.matchMedia('(prefers-color-scheme: dark)').matches
+      ) {
+        resolved = 'dark';
+      }
+
+      root.setAttribute('data-bs-theme', resolved);
+      root.style.colorScheme = resolved;
+
+      if (resolved !== authored) {
+        root.setAttribute('data-lte-theme-resolved', '');
+      }
+    })();
+  </script>
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#007bff" />
+
+  <link rel="preload" href="../css/adminlte.css" as="style" />
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css"
+    crossorigin="anonymous"
+  />
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/styles/overlayscrollbars.min.css"
+    crossorigin="anonymous"
+  />
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    crossorigin="anonymous"
+  />
+
+  <link rel="stylesheet" href="../css/adminlte.css" />
+
+  <style>
+
+    /* =========================================================
+       EXISTING LOADING
+    ========================================================= */
+
+    .compose-loading {
+      display: none;
+    }
+
+    .compose-loading.show {
+      display: flex;
+    }
+
+
+    /* =========================================================
+       FORWARDED MESSAGE
+    ========================================================= */
+
+    .forwarded-message {
+      border-left: 3px solid var(--bs-border-color);
+      padding-left: 1rem;
+      margin-top: 1rem;
+    }
+
+    .forwarded-header {
+      font-size: .875rem;
+      color: var(--bs-secondary-color);
+      margin-bottom: .75rem;
+    }
+
+    .forwarded-body {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .forwarded-body.html-body {
+      white-space: normal;
+    }
+
+    .original-attachments {
+      margin-top: 1rem;
+    }
+
+    .original-attachment {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .65rem .75rem;
+      border: 1px solid var(--bs-border-color);
+      border-radius: .375rem;
+      margin-bottom: .5rem;
+    }
+
+    .original-attachment .attachment-name {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .original-attachment .attachment-name span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mode-badge {
+      font-size: .75rem;
+    }
+
+    #mail-body {
+      min-height: 16rem;
+    }
+
+
+    /* =========================================================
+       SENDING ANIMATION
+    ========================================================= */
+
+    .send-progress {
+      display: none;
+      align-items: center;
+      gap: .85rem;
+      margin-top: .75rem;
+      padding: .8rem 1rem;
+      border: 1px solid var(--bs-border-color);
+      border-radius: .5rem;
+      background: var(--bs-tertiary-bg);
+      overflow: hidden;
+    }
+
+    .send-progress.show {
+      display: flex;
+      animation: sendPanelIn .25s ease-out;
+    }
+
+    .send-plane {
+      position: relative;
+      flex: 0 0 2.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      background: var(--bs-primary);
+      color: #fff;
+      box-shadow: 0 .35rem 1rem rgba(13,110,253,.25);
+      animation: sendPulse 1.15s ease-in-out infinite;
+    }
+
+    .send-plane i {
+      animation: sendFly 1.1s ease-in-out infinite;
+    }
+
+    .send-bar {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .send-progress .progress {
+      height: .4rem;
+      overflow: hidden;
+    }
+
+    .send-progress .progress-bar {
+      width: 100%;
+      animation:
+        sendProgressMove 1.25s linear infinite;
+    }
+
+    @keyframes sendPanelIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes sendPulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    @keyframes sendFly {
+      0%, 100% {
+        transform:
+          translate(0, 0)
+          rotate(0deg);
+      }
+
+      35% {
+        transform:
+          translate(.15rem, -.12rem)
+          rotate(-8deg);
+      }
+
+      65% {
+        transform:
+          translate(.22rem, -.05rem)
+          rotate(6deg);
+      }
+    }
+
+    @keyframes sendProgressMove {
+      0% {
+        transform: translateX(-70%);
+      }
+
+      100% {
+        transform: translateX(70%);
+      }
+    }
+
+
+    /* =========================================================
+       EMAIL AUTOCOMPLETE
+    ========================================================= */
+
+    .recipient-suggest-wrap {
+      position: relative;
+    }
+
+    .recipient-suggestions {
+      position: absolute;
+      z-index: 1080;
+      top: 100%;
+      left: 0;
+      right: 0;
+      max-height: 280px;
+      overflow-y: auto;
+      display: none;
+
+      background: var(--bs-body-bg);
+      color: var(--bs-body-color);
+      border: 1px solid var(--bs-border-color);
+      border-radius: .375rem;
+      box-shadow: 0 .5rem 1rem rgba(0,0,0,.12);
+    }
+
+    .recipient-suggestions.show {
+      display: block;
+    }
+
+    .recipient-suggestion {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: 0;
+      padding: .6rem .75rem;
+      background: transparent;
+      color: inherit;
+    }
+
+    .recipient-suggestion:hover,
+    .recipient-suggestion.active {
+      background: var(--bs-tertiary-bg);
+    }
+
+    .recipient-suggestion small {
+      display: block;
+      color: var(--bs-secondary-color);
+    }
+
+
+    /* =========================================================
+       CUSTOM SUCCESS MODAL
+    ========================================================= */
+
+    .mail-success-modal .modal-content {
+      border: 0;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow:
+        0 1rem 3rem rgba(0,0,0,.20);
+    }
+
+    .mail-success-icon {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 1rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(25,135,84,.12);
+      color: var(--bs-success);
+      animation: successPop .45s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .mail-success-icon i {
+      font-size: 2.5rem;
+      animation: successCheck .45s ease-out .1s both;
+    }
+
+    .mail-success-reference {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      margin-top: .75rem;
+      padding: .45rem .75rem;
+      border-radius: .5rem;
+      background: var(--bs-tertiary-bg);
+      color: var(--bs-secondary-color);
+      font-size: .875rem;
+    }
+
+    @keyframes successPop {
+      0% {
+        transform: scale(.65);
+        opacity: 0;
+      }
+
+      70% {
+        transform: scale(1.08);
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes successCheck {
+      from {
+        transform: scale(.4) rotate(-25deg);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1) rotate(0);
+        opacity: 1;
+      }
+    }
+
+
+    /* =========================================================
+       DISABLED COMPOSE STATE
+    ========================================================= */
+
+    #compose-form.is-sending {
+      opacity: .72;
+    }
+
+    #compose-form.is-sending input,
+    #compose-form.is-sending textarea,
+    #compose-form.is-sending button,
+    #compose-form.is-sending select {
+      cursor: not-allowed;
+    }
+
+    .compose-footer-disabled {
+      cursor: not-allowed !important;
+    }
+
+  </style>
+</head>
+
+
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+
+<div class="app-wrapper">
+
+
+  <!-- =======================================================
+       HEADER
+  ======================================================== -->
+
+  <nav class="app-header navbar navbar-expand bg-body">
+
+    <div class="container-fluid">
+
+      <ul class="navbar-nav">
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            data-lte-toggle="sidebar"
+            href="#"
+            role="button"
+            aria-label="Toggle sidebar"
+          >
+            <i class="bi bi-list"></i>
+          </a>
+
+        </li>
+
+      </ul>
+
+
+      <ul class="navbar-nav ms-auto">
+
+
+        <!-- FULLSCREEN -->
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="#"
+            data-lte-toggle="fullscreen"
+            aria-label="Toggle fullscreen"
+          >
+
+            <i
+              data-lte-icon="maximize"
+              class="bi bi-arrows-fullscreen"
+            ></i>
+
+            <i
+              data-lte-icon="minimize"
+              class="bi bi-fullscreen-exit d-none"
+            ></i>
+
+          </a>
+
+        </li>
+
+
+        <!-- THEME -->
+
+        <li class="nav-item dropdown">
+
+          <a
+            class="nav-link"
+            href="#"
+            id="bd-theme"
+            aria-label="Toggle color scheme"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+
+            <i
+              class="bi bi-sun-fill"
+              data-lte-theme-icon="light"
+            ></i>
+
+            <i
+              class="bi bi-moon-fill d-none"
+              data-lte-theme-icon="dark"
+            ></i>
+
+            <i
+              class="bi bi-circle-half d-none"
+              data-lte-theme-icon="auto"
+            ></i>
+
+          </a>
+
+
+          <ul
+            class="dropdown-menu dropdown-menu-end"
+            aria-labelledby="bd-theme"
+          >
+
+            <li>
+
+              <button
+                type="button"
+                class="dropdown-item"
+                data-bs-theme-value="light"
+              >
+
+                <i class="bi bi-sun-fill me-2"></i>
+                Light
+
+              </button>
+
+            </li>
+
+
+            <li>
+
+              <button
+                type="button"
+                class="dropdown-item"
+                data-bs-theme-value="dark"
+              >
+
+                <i class="bi bi-moon-fill me-2"></i>
+                Dark
+
+              </button>
+
+            </li>
+
+
+            <li>
+
+              <button
+                type="button"
+                class="dropdown-item active"
+                data-bs-theme-value="auto"
+              >
+
+                <i class="bi bi-circle-half me-2"></i>
+                Auto
+
+              </button>
+
+            </li>
+
+          </ul>
+
+        </li>
+
+
+        <!-- =================================================
+             LOGOUT
+        ================================================== -->
+
+        <li class="nav-item">
+
+          <button
+            id="logout-button"
+            type="button"
+            class="nav-link border-0 bg-transparent"
+            title="Logout"
+            aria-label="Logout"
+          >
+
+            <i class="bi bi-box-arrow-right text-danger"></i>
+            <span class="text-danger">
+              Logout
+            </span>
+          </button>
+
+        </li>
+
+      </ul>
+
+    </div>
+
+  </nav>
+
+
+
+  <!-- =======================================================
+       SIDEBAR
+  ======================================================== -->
+
+  <aside
+    class="app-sidebar bg-body-secondary shadow"
+    data-bs-theme="dark"
+  >
+
+    <div class="sidebar-brand">
+
+      <a
+        href="mailbox.html"
+        class="brand-link"
+      >
+
+        <img
+          src="../assets/img/AdminLTELogo.png"
+          alt="AdminLTE Logo"
+          class="brand-image opacity-75 shadow"
+        />
+
+        <span class="brand-text fw-light">
+          MailBox
+        </span>
+
+      </a>
+
+    </div>
+
+
+    <div class="sidebar-search" role="search">
+
+      <label
+        for="sidebar-search-input"
+        class="visually-hidden"
+      >
+        Filter menu
+      </label>
+
+      <input
+        type="search"
+        id="sidebar-search-input"
+        class="form-control form-control-sm"
+        placeholder="Filter menu…"
+        autocomplete="off"
+        data-lte-toggle="sidebar-search"
+        data-lte-target="#navigation"
+      />
+
+    </div>
+
+
+    <div class="sidebar-wrapper">
+
+      <nav
+        class="mt-2"
+        aria-label="Main navigation"
+      >
+
+        <ul
+          class="nav sidebar-menu flex-column"
+          data-lte-toggle="treeview"
+          data-accordion="false"
+          id="navigation"
+        >
+
+          <li class="nav-item menu-open">
+
+            <a
+              href="#"
+              class="nav-link active"
+            >
+
+              <i class="nav-icon bi bi-envelope"></i>
+
+              <p>
+                Mailbox
+                <i class="nav-arrow bi bi-chevron-right"></i>
+              </p>
+
+            </a>
+
+
+            <ul class="nav nav-treeview">
+
+              <li class="nav-item">
+
+                <a
+                  href="mailbox.html"
+                  class="nav-link"
+                >
+
+                  <i class="nav-icon bi bi-circle"></i>
+
+                  <p>
+                    Folders
+                  </p>
+
+                </a>
+
+              </li>
+
+
+              <li class="nav-item">
+
+                <a
+                  href="compose.html"
+                  class="nav-link active"
+                >
+
+                  <i class="nav-icon bi bi-circle"></i>
+
+                  <p>
+                    Compose
+                  </p>
+
+                </a>
+
+              </li>
+
+            </ul>
+
+          </li>
+
+        </ul>
+
+      </nav>
+
+    </div>
+
+  </aside>
+
+
+
+  <!-- =======================================================
+       MAIN
+  ======================================================== -->
+
+  <main class="app-main">
+
+
+    <!-- HEADER -->
+
+    <div class="app-content-header">
+
+      <div class="container-fluid">
+
+        <div class="row">
+
+          <div class="col-sm-6">
+
+            <h1 class="mb-0 fs-3">
+              Compose Message
+            </h1>
+
+          </div>
+
+
+          <div class="col-sm-6">
+
+            <nav aria-label="breadcrumb">
+
+              <ol class="breadcrumb float-sm-end">
+
+                <li class="breadcrumb-item">
+                  <a href="mailbox.html">
+                    Home
+                  </a>
+                </li>
+
+                <li class="breadcrumb-item">
+                  <a href="mailbox.html">
+                    Mailbox
+                  </a>
+                </li>
+
+                <li
+                  id="breadcrumb-mode"
+                  class="breadcrumb-item active"
+                  aria-current="page"
+                >
+                  Compose
+                </li>
+
+              </ol>
+
+            </nav>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- CONTENT -->
+
+    <div class="app-content">
+
+      <div class="container-fluid">
+
+
+        <!-- NORMAL ALERT -->
+
+        <div
+          id="alert"
+          class="alert d-none"
+          role="alert"
+        ></div>
+
+
+        <!-- LOADING -->
+
+        <div
+          id="compose-loading"
+          class="alert alert-info compose-loading align-items-center gap-2"
+        >
+
+          <span
+            class="spinner-border spinner-border-sm"
+            aria-hidden="true"
+          ></span>
+
+          <span id="loading-text">
+            Loading message...
+          </span>
+
+        </div>
+
+
+
+        <!-- CARD -->
+
+        <div class="card">
+
+
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+
+            <div class="d-flex align-items-center gap-2">
+
+              <h3
+                id="card-title"
+                class="card-title mb-0"
+              >
+                New Message
+              </h3>
+
+              <span
+                id="mode-badge"
+                class="badge text-bg-primary mode-badge d-none"
+              ></span>
+
+            </div>
+
+          </div>
+
+
+
+          <!-- FORM -->
+
+          <div class="card-body">
+
+            <form
+              id="compose-form"
+              class="row g-3"
+            >
+
+
+              <!-- TO -->
+
+              <div class="col-12">
+
+                <label
+                  class="form-label"
+                  for="mail-to"
+                >
+                  To
+                </label>
+
+                <div class="recipient-suggest-wrap">
+
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="mail-to"
+                    placeholder="Type a name or email address…"
+                    autocomplete="off"
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-controls="recipient-suggestions"
+                  />
+
+                  <div
+                    id="recipient-suggestions"
+                    class="recipient-suggestions"
+                    role="listbox"
+                    aria-label="Email suggestions"
+                  ></div>
+
+                </div>
+
+              </div>
+
+
+
+              <!-- CC -->
+
+              <div class="col-md-6">
+
+                <label
+                  class="form-label"
+                  for="mail-cc"
+                >
+                  Cc
+                </label>
+
+                <input
+                  type="text"
+                  class="form-control"
+                  id="mail-cc"
+                />
+
+              </div>
+
+
+
+              <!-- BCC -->
+
+              <div class="col-md-6">
+
+                <label
+                  class="form-label"
+                  for="mail-bcc"
+                >
+                  Bcc
+                </label>
+
+                <input
+                  type="text"
+                  class="form-control"
+                  id="mail-bcc"
+                />
+
+              </div>
+
+
+
+              <!-- SUBJECT -->
+
+              <div class="col-12">
+
+                <label
+                  class="form-label"
+                  for="mail-subject"
+                >
+                  Subject
+                </label>
+
+                <input
+                  type="text"
+                  class="form-control"
+                  id="mail-subject"
+                />
+
+              </div>
+
+
+
+              <!-- MESSAGE -->
+
+              <div class="col-12">
+
+                <label
+                  class="form-label"
+                  for="mail-body"
+                >
+                  Message
+                </label>
+
+                <textarea
+                  id="mail-body"
+                  class="form-control"
+                  rows="12"
+                  placeholder="Write your message…"
+                ></textarea>
+
+                <div
+                  id="forwarded-preview"
+                  class="d-none"
+                ></div>
+
+              </div>
+
+
+
+              <!-- ATTACHMENTS -->
+
+              <div class="col-12">
+
+                <label
+                  class="form-label"
+                  for="mail-attach"
+                >
+                  Attachments
+                </label>
+
+                <input
+                  type="file"
+                  class="form-control"
+                  id="mail-attach"
+                  multiple
+                />
+
+                <div
+                  id="attachment-status"
+                  class="form-text"
+                ></div>
+
+
+                <div
+                  id="original-attachments"
+                  class="original-attachments d-none"
+                >
+
+                  <div class="fw-semibold mb-2">
+                    Original attachments
+                  </div>
+
+                  <div
+                    id="original-attachment-list"
+                  ></div>
+
+                </div>
+
+              </div>
+
+            </form>
+
+          </div>
+
+
+
+          <!-- FOOTER -->
+
+          <div class="card-footer d-flex gap-2">
+
+            <button
+              id="send-button"
+              class="btn btn-primary"
+              type="button"
+            >
+
+              <i class="bi bi-send me-1"></i>
+
+              <span id="send-button-text">
+                Send
+              </span>
+
+            </button>
+
+
+            <button
+              id="draft-button"
+              class="btn btn-outline-secondary"
+              type="button"
+            >
+
+              <i class="bi bi-file-earmark me-1"></i>
+
+              Save draft
+
+            </button>
+
+
+            <button
+              id="discard-button"
+              class="btn btn-outline-danger ms-auto"
+              type="button"
+            >
+
+              <i class="bi bi-x-lg me-1"></i>
+
+              Discard
+
+            </button>
+
+          </div>
+
+
+
+          <!-- SEND PROGRESS -->
+
+          <div class="px-3 pb-3">
+
+            <div
+              id="send-progress"
+              class="send-progress"
+              role="status"
+              aria-live="polite"
+            >
+
+              <span
+                class="send-plane"
+                aria-hidden="true"
+              >
+
+                <i class="bi bi-send-fill"></i>
+
+              </span>
+
+
+              <div class="send-bar">
+
+                <div
+                  class="small fw-semibold"
+                  id="send-progress-text"
+                >
+                  Sending message…
+                </div>
+
+                <div
+                  class="progress mt-1"
+                  aria-hidden="true"
+                >
+
+                  <div
+                    id="send-progress-bar"
+                    class="progress-bar progress-bar-striped progress-bar-animated"
+                  ></div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+
+  <!-- =======================================================
+       FOOTER
+  ======================================================== -->
+
+  <footer class="app-footer">
+
+    <div class="float-end d-none d-sm-inline">
+      Internal Mailbox
+    </div>
+
+    <strong>
+      Copyright &copy; 2014-2026&nbsp;
+
+      <a
+        href="mailbox.html"
+        class="text-decoration-none"
+      >
+        Internal Mailbox
+      </a>.
+
+    </strong>
+
+    All rights reserved.
+
+  </footer>
+
+</div>
+
+
+
+<!-- =========================================================
+     CUSTOM MESSAGE SENT MODAL
+========================================================= -->
+
+<div
+  class="modal fade mail-success-modal"
+  id="mail-success-modal"
+  tabindex="-1"
+  aria-labelledby="mail-success-title"
+  aria-hidden="true"
+>
+
+  <div
+    class="modal-dialog modal-dialog-centered"
+  >
+
+    <div class="modal-content">
+
+      <div class="modal-body text-center p-4 p-md-5">
+
+
+        <div
+          class="mail-success-icon"
+          aria-hidden="true"
+        >
+
+          <i class="bi bi-check-lg"></i>
+
+        </div>
+
+
+        <h3
+          id="mail-success-title"
+          class="fw-semibold mb-2"
+        >
+          Message Sent
+        </h3>
+
+
+        <p
+          class="text-secondary mb-0"
+        >
+          Your message has been successfully delivered.
+        </p>
+
+
+        <div
+          id="success-reference"
+          class="mail-success-reference"
+        >
+
+          <i class="bi bi-hash"></i>
+
+          <span>
+            Reference: —
+          </span>
+
+        </div>
+
+
+        <div class="mt-4">
+
+          <button
+            id="success-ok-button"
+            type="button"
+            class="btn btn-primary px-4"
+          >
+
+            <i class="bi bi-check2 me-1"></i>
+
+            OK
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     LIBRARIES
+========================================================= -->
+
+<script
+  src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js"
+  crossorigin="anonymous"
+></script>
+
+<script
+  src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+  crossorigin="anonymous"
+></script>
+
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"
+  crossorigin="anonymous"
+></script>
+
+<script src="../js/adminlte.js"></script>
+
+
+
+<!-- =========================================================
+     MAILBOX API
+========================================================= -->
+
+<script>
+
+  window.MAILBOX_API_URL =
+    window.MAILBOX_API_URL ||
+    'https://script.google.com/macros/s/AKfycbztFYkp6V7YglnFLtZ7GbEXzoctYiBilV4lA4VgLm3WFKF8lYENWdM90_zy0uC1gmdG/exec';
+
+</script>
+
+<script src="mailbox-api.js"></script>
+
+
+
+<!-- =========================================================
+     COMPOSE SCRIPT
+========================================================= -->
+
+<script>
+(() => {
+
+  'use strict';
+
+
+  /* =========================================================
+     LOGIN
+  ========================================================= */
+
+  MailboxAPI.requireLogin();
+
+
+
+  /* =========================================================
+     ELEMENTS
+  ========================================================= */
+
+  const composeForm =
+    document.getElementById('compose-form');
+
+  const to =
+    document.getElementById('mail-to');
+
+  const cc =
+    document.getElementById('mail-cc');
+
+  const bcc =
+    document.getElementById('mail-bcc');
+
+  const subject =
+    document.getElementById('mail-subject');
+
+  const body =
+    document.getElementById('mail-body');
+
+  const files =
+    document.getElementById('mail-attach');
+
+  const sendBtn =
+    document.getElementById('send-button');
+
+  const draftBtn =
+    document.getElementById('draft-button');
+
+  const discardBtn =
+    document.getElementById('discard-button');
+
+  const sendButtonText =
+    document.getElementById('send-button-text');
+
+  const alertBox =
+    document.getElementById('alert');
+
+  const loadingBox =
+    document.getElementById('compose-loading');
+
+  const loadingText =
+    document.getElementById('loading-text');
+
+  const cardTitle =
+    document.getElementById('card-title');
+
+  const modeBadge =
+    document.getElementById('mode-badge');
+
+  const breadcrumbMode =
+    document.getElementById('breadcrumb-mode');
+
+  const forwardedPreview =
+    document.getElementById('forwarded-preview');
+
+  const originalAttachments =
+    document.getElementById('original-attachments');
+
+  const originalAttachmentList =
+    document.getElementById('original-attachment-list');
+
+  const attachmentStatus =
+    document.getElementById('attachment-status');
+
+  const sendProgress =
+    document.getElementById('send-progress');
+
+  const sendProgressText =
+    document.getElementById('send-progress-text');
+
+  const logoutButton =
+    document.getElementById('logout-button');
+
+  const successModalElement =
+    document.getElementById('mail-success-modal');
+
+  const successReference =
+    document.getElementById('success-reference');
+
+  const successOkButton =
+    document.getElementById('success-ok-button');
+
+
+
+  /* =========================================================
+     SUCCESS MODAL
+  ========================================================= */
+
+  let successModal = null;
+
+  if (
+    successModalElement &&
+    globalThis.bootstrap?.Modal
+  ) {
+
+    successModal =
+      new bootstrap.Modal(
+        successModalElement,
+        {
+          backdrop: 'static',
+          keyboard: false
+        }
+      );
+
+  }
+
+
+  function showSuccessModal(referenceNo) {
+
+    const reference =
+      String(referenceNo || '').trim();
+
+
+    if (successReference) {
+
+      successReference.innerHTML =
+        reference
+          ? `
+              <i class="bi bi-hash"></i>
+              <span>
+                Reference: ${escapeHtml(reference)}
+              </span>
+            `
+          : `
+              <i class="bi bi-check-circle"></i>
+              <span>
+                Message processed successfully
+              </span>
+            `;
+
+    }
+
+
+    if (successModal) {
+
+      successModal.show();
+
+    } else {
+
+      showAlert(
+        reference
+          ? `Message sent successfully. Reference: ${reference}`
+          : 'Message sent successfully.',
+        'success'
+      );
+
+    }
+
+  }
+
+
+  if (successOkButton) {
+
+    successOkButton.addEventListener(
+      'click',
+      () => {
+
+        if (successModal) {
+          successModal.hide();
+        }
+
+        clearForm();
+
+        window.location.href =
+          'mailbox.html';
+
+      }
+    );
+
+  }
+
+
+
+  /* =========================================================
+     LOGOUT
+  ========================================================= */
+
+  if (logoutButton) {
+
+    logoutButton.addEventListener(
+      'click',
+      async () => {
+
+        if (isSending) return;
+
+
+        const confirmed =
+          window.confirm(
+            'Are you sure you want to logout?'
+          );
+
+
+        if (!confirmed) return;
+
+
+        try {
+
+          if (
+            typeof MailboxAPI.logout ===
+            'function'
+          ) {
+
+            await MailboxAPI.logout();
+
+          }
+
+        } catch (err) {
+
+          console.warn(
+            'Logout API failed:',
+            err
+          );
+
+        }
+
+
+        /*
+         * Support the common local/session
+         * storage keys used by the mailbox.
+         */
+        try {
+
+          [
+            'mailboxUser',
+            'mailbox_user',
+            'MAILBOX_USER',
+            'mailboxSession',
+            'mailbox_session',
+            'MAILBOX_SESSION'
+          ].forEach(key => {
+
+            localStorage.removeItem(key);
+            sessionStorage.removeItem(key);
+
+          });
+
+        } catch (_) {}
+
+
+        window.location.href =
+          'login.html';
+
+      }
+    );
+
+  }
+
+
+
+  /* =========================================================
+     TO FIELD AUTOCOMPLETE
+  ========================================================= */
+
+  const suggestionBox =
+    document.getElementById(
+      'recipient-suggestions'
+    );
+
+  let suggestionItems = [];
+
+  let activeSuggestion = -1;
+
+  let suggestionTimer = null;
+
+  let suggestionRequestId = 0;
+
+
+  function currentRecipientFragment() {
+
+    const value =
+      to.value;
+
+    const comma =
+      value.lastIndexOf(',');
+
+
+    return {
+
+      prefix:
+        value.slice(0, comma + 1),
+
+      query:
+        value.slice(comma + 1).trim()
+
+    };
+
+  }
+
+
+  function hideSuggestions() {
+
+    suggestionBox.classList.remove(
+      'show'
+    );
+
+    suggestionBox.innerHTML = '';
+
+    to.setAttribute(
+      'aria-expanded',
+      'false'
+    );
+
+    suggestionItems = [];
+
+    activeSuggestion = -1;
+
+  }
+
+
+  function renderSuggestions(items) {
+
+    suggestionItems =
+      Array.isArray(items)
+        ? items
+        : [];
+
+
+    activeSuggestion = -1;
+
+
+    if (!suggestionItems.length) {
+
+      hideSuggestions();
+
+      return;
+
+    }
+
+
+    suggestionBox.innerHTML =
+      suggestionItems.map(
+        (item, index) => `
+
+          <button
+            type="button"
+            class="recipient-suggestion"
+            role="option"
+            data-index="${index}"
+            aria-selected="false"
+          >
+
+            <span class="fw-semibold">
+
+              ${escapeHtml(
+                item.name ||
+                item.email
+              )}
+
+            </span>
+
+            <small>
+
+              ${escapeHtml(
+                item.email
+              )}
+
+              ${
+                item.department
+                  ? ' · ' +
+                    escapeHtml(
+                      item.department
+                    )
+                  : ''
+              }
+
+            </small>
+
+          </button>
+
+        `
+      ).join('');
+
+
+    suggestionBox.classList.add(
+      'show'
+    );
+
+
+    to.setAttribute(
+      'aria-expanded',
+      'true'
+    );
+
+  }
+
+
+  function chooseSuggestion(index) {
+
+    const item =
+      suggestionItems[index];
+
+
+    if (
+      !item ||
+      !item.email
+    ) {
+      return;
+    }
+
+
+    const fragment =
+      currentRecipientFragment();
+
+
+    to.value =
+      fragment.prefix +
+      item.email +
+      ', ';
+
+
+    hideSuggestions();
+
+    to.focus();
+
+  }
+
+
+  async function lookupRecipientSuggestions(
+    query
+  ) {
+
+    const requestId =
+      ++suggestionRequestId;
+
+
+    try {
+
+      const result =
+        await MailboxAPI.suggestRecipients(
+          query
+        );
+
+
+      if (
+        requestId !==
+        suggestionRequestId
+      ) {
+        return;
+      }
+
+
+      renderSuggestions(
+        Array.isArray(
+          result?.items
+        )
+          ? result.items
+          : (
+              Array.isArray(
+                result?.suggestions
+              )
+                ? result.suggestions
+                : []
+            )
+      );
+
+    } catch (err) {
+
+      console.warn(
+        'Recipient suggestions unavailable:',
+        err
+      );
+
+      hideSuggestions();
+
+    }
+
+  }
+
+
+  to.addEventListener(
+    'input',
+    () => {
+
+      clearTimeout(
+        suggestionTimer
+      );
+
+
+      const {
+        query
+      } =
+        currentRecipientFragment();
+
+
+      if (
+        query.length < 2
+      ) {
+
+        suggestionRequestId++;
+
+        hideSuggestions();
+
+        return;
+
+      }
+
+
+      suggestionTimer =
+        setTimeout(
+          () => {
+
+            lookupRecipientSuggestions(
+              query
+            );
+
+          },
+          220
+        );
+
+    }
+  );
+
+
+  to.addEventListener(
+    'keydown',
+    event => {
+
+      if (
+        !suggestionBox.classList.contains(
+          'show'
+        )
+      ) {
+        return;
+      }
+
+
+      if (
+        event.key ===
+        'ArrowDown' ||
+        event.key ===
+        'ArrowUp'
+      ) {
+
+        event.preventDefault();
+
+
+        const delta =
+          event.key ===
+          'ArrowDown'
+            ? 1
+            : -1;
+
+
+        activeSuggestion =
+          (
+            activeSuggestion +
+            delta +
+            suggestionItems.length
+          ) %
+          suggestionItems.length;
+
+
+        [
+          ...suggestionBox.querySelectorAll(
+            '.recipient-suggestion'
+          )
+        ].forEach(
+          (el, i) => {
+
+            el.classList.toggle(
+              'active',
+              i ===
+              activeSuggestion
+            );
+
+
+            el.setAttribute(
+              'aria-selected',
+              String(
+                i ===
+                activeSuggestion
+              )
+            );
+
+          }
+        );
+
+      }
+
+      else if (
+        event.key ===
+        'Enter' &&
+        activeSuggestion >= 0
+      ) {
+
+        event.preventDefault();
+
+        chooseSuggestion(
+          activeSuggestion
+        );
+
+      }
+
+      else if (
+        event.key ===
+        'Escape'
+      ) {
+
+        hideSuggestions();
+
+      }
+
+    }
+  );
+
+
+  suggestionBox.addEventListener(
+    'mousedown',
+    event => {
+
+      const button =
+        event.target.closest(
+          '.recipient-suggestion'
+        );
+
+
+      if (!button) return;
+
+
+      event.preventDefault();
+
+
+      chooseSuggestion(
+        Number(
+          button.dataset.index
+        )
+      );
+
+    }
+  );
+
+
+  document.addEventListener(
+    'click',
+    event => {
+
+      if (
+        !event.target.closest(
+          '.recipient-suggest-wrap'
+        )
+      ) {
+
+        hideSuggestions();
+
+      }
+
+    }
+  );
+
+
+
+  /* =========================================================
+     URL PARAMETERS
+  ========================================================= */
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const mode =
+    String(
+      params.get('mode') ||
+      'new'
+    ).toLowerCase();
+
+
+  const originalMailId =
+    params.get('id') ||
+    params.get('replyTo') ||
+    params.get('forwardTo') ||
+    '';
+
+
+  let originalMessage = null;
+
+  let originalAttachmentsData = [];
+
+  let isSending = false;
+
+
+
+  /* =========================================================
+     HELPERS
+  ========================================================= */
+
+  function showAlert(
+    message,
+    type = 'danger'
+  ) {
+
+    alertBox.textContent =
+      message;
+
+
+    alertBox.className =
+      `alert alert-${type}`;
+
+  }
+
+
+  function hideAlert() {
+
+    alertBox.className =
+      'alert d-none';
+
+    alertBox.textContent =
+      '';
+
+  }
+
+
+  function showLoading(message) {
+
+    loadingText.textContent =
+      message;
+
+    loadingBox.classList.add(
+      'show'
+    );
+
+  }
+
+
+  function hideLoading() {
+
+    loadingBox.classList.remove(
+      'show'
+    );
+
+  }
+
+
+  function cleanSubject(value) {
+
+    let s =
+      String(
+        value || ''
+      ).trim();
+
+
+    s =
+      s.replace(
+        /^(re|fw|fwd)\s*:\s*/i,
+        ''
+      );
+
+
+    return s.trim();
+
+  }
+
+
+  function replySubject(value) {
+
+    const s =
+      cleanSubject(value);
+
+
+    return s
+      ? `Re: ${s}`
+      : 'Re:';
+
+  }
+
+
+  function forwardSubject(value) {
+
+    const s =
+      cleanSubject(value);
+
+
+    return s
+      ? `Fwd: ${s}`
+      : 'Fwd:';
+
+  }
+
+
+  function escapeHtml(value) {
+
+    return String(
+      value ?? ''
+    ).replace(
+      /[&<>"']/g,
+      ch => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[ch])
+    );
+
+  }
+
+
+  function escapeAttr(value) {
+
+    return escapeHtml(value);
+
+  }
+
+
+  function formatSize(bytes) {
+
+    const n =
+      Number(
+        bytes || 0
+      );
+
+
+    if (!n) return '';
+
+    if (
+      n < 1024
+    ) {
+      return `${n} B`;
+    }
+
+    if (
+      n < 1024 * 1024
+    ) {
+      return `${(
+        n / 1024
+      ).toFixed(1)} KB`;
+    }
+
+    if (
+      n < 1024 *
+        1024 *
+        1024
+    ) {
+      return `${(
+        n / 1024 /
+        1024
+      ).toFixed(1)} MB`;
+    }
+
+
+    return `${(
+      n / 1024 /
+      1024 /
+      1024
+    ).toFixed(1)} GB`;
+
+  }
+
+
+  function attachmentIcon(
+    mimeType,
+    fileName
+  ) {
+
+    const mime =
+      String(
+        mimeType || ''
+      ).toLowerCase();
+
+
+    const name =
+      String(
+        fileName || ''
+      ).toLowerCase();
+
+
+    if (
+      mime.includes('pdf') ||
+      name.endsWith('.pdf')
+    ) {
+
+      return 'bi-file-earmark-pdf-fill text-danger';
+
+    }
+
+
+    if (
+      mime.startsWith('image/') ||
+      /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(
+        name
+      )
+    ) {
+
+      return 'bi-file-earmark-image-fill text-primary';
+
+    }
+
+
+    if (
+      mime.includes('word') ||
+      /\.(doc|docx)$/i.test(name)
+    ) {
+
+      return 'bi-file-earmark-word-fill text-primary';
+
+    }
+
+
+    if (
+      mime.includes('excel') ||
+      /\.(xls|xlsx|csv)$/i.test(name)
+    ) {
+
+      return 'bi-file-earmark-spreadsheet-fill text-success';
+
+    }
+
+
+    if (
+      mime.includes('zip') ||
+      /\.(zip|rar|7z)$/i.test(name)
+    ) {
+
+      return 'bi-file-earmark-zip-fill text-warning';
+
+    }
+
+
+    return 'bi-paperclip text-secondary';
+
+  }
+
+
+
+  /* =========================================================
+     MODE UI
+  ========================================================= */
+
+  function configureMode() {
+
+    if (
+      mode === 'reply'
+    ) {
+
+      cardTitle.textContent =
+        'Reply';
+
+      modeBadge.textContent =
+        'Reply';
+
+      modeBadge.className =
+        'badge text-bg-primary mode-badge';
+
+      breadcrumbMode.textContent =
+        'Reply';
+
+      document.title =
+        'MailBox | Mailbox - Reply';
+
+      return;
+
+    }
+
+
+    if (
+      mode === 'forward'
+    ) {
+
+      cardTitle.textContent =
+        'Forward Message';
+
+      modeBadge.textContent =
+        'Forward';
+
+      modeBadge.className =
+        'badge text-bg-secondary mode-badge';
+
+      breadcrumbMode.textContent =
+        'Forward';
+
+      document.title =
+        'MailBox | Mailbox - Forward';
+
+      return;
+
+    }
+
+
+    cardTitle.textContent =
+      'New Message';
+
+    modeBadge.className =
+      'badge text-bg-primary mode-badge d-none';
+
+    breadcrumbMode.textContent =
+      'Compose';
+
+    document.title =
+      'MailBox | Mailbox - Compose';
+
+  }
+
+
+
+  /* =========================================================
+     RENDER ORIGINAL ATTACHMENTS
+  ========================================================= */
+
+  function renderOriginalAttachments(
+    items
+  ) {
+
+    originalAttachmentList.innerHTML =
+      '';
+
+
+    if (
+      !Array.isArray(items) ||
+      !items.length
+    ) {
+
+      originalAttachments.classList.add(
+        'd-none'
+      );
+
+      return;
+
+    }
+
+
+    originalAttachments.classList.remove(
+      'd-none'
+    );
+
+
+    originalAttachmentList.innerHTML =
+      items.map(
+        (item, index) => {
+
+          const fileName =
+            item.fileName ||
+            item.name ||
+            `Attachment ${index + 1}`;
+
+
+          const mimeType =
+            item.mimeType ||
+            item.type ||
+            '';
+
+
+          const size =
+            formatSize(
+              item.size
+            );
+
+
+          const icon =
+            attachmentIcon(
+              mimeType,
+              fileName
+            );
+
+
+          return `
+
+            <div class="original-attachment">
+
+              <i
+                class="bi ${icon} fs-4"
+                aria-hidden="true"
+              ></i>
+
+              <div class="attachment-name">
+
+                <span
+                  title="${escapeAttr(
+                    fileName
+                  )}"
+                >
+                  ${escapeHtml(
+                    fileName
+                  )}
+                </span>
+
+                <small
+                  class="text-secondary"
+                >
+                  ${escapeHtml(
+                    size ||
+                    mimeType
+                  )}
+                </small>
+
+              </div>
+
+              <span
+                class="badge text-bg-success"
+                data-original-attachment-status="${index}"
+              >
+                Loading…
+              </span>
+
+            </div>
+
+          `;
+
+        }
+      ).join('');
+
+  }
+
+
+
+  /* =========================================================
+     HTML TO TEXT
+  ========================================================= */
+
+  function htmlToText(html) {
+
+    const div =
+      document.createElement(
+        'div'
+      );
+
+
+    div.innerHTML =
+      String(
+        html || ''
+      );
+
+
+    return div.innerText ||
+      div.textContent ||
+      '';
+
+  }
+
+
+
+  /* =========================================================
+     FORWARDED MESSAGE
+  ========================================================= */
+
+  function createForwardedMessage(
+    message
+  ) {
+
+    const senderName =
+      message.senderName ||
+      message.senderEmail ||
+      '';
+
+
+    const senderEmail =
+      message.senderEmail ||
+      '';
+
+
+    const date =
+      message.date ||
+      '';
+
+
+    const toValue =
+      message.to ||
+      '';
+
+
+    const ccValue =
+      message.cc ||
+      '';
+
+
+    const originalBody =
+      String(
+        message.body || ''
+      );
+
+
+    const textBody =
+      String(
+        message.bodyType ||
+        ''
+      ).toUpperCase() === 'HTML'
+        ? htmlToText(
+            originalBody
+          )
+        : originalBody;
+
+
+    return [
+
+      '',
+      '',
+      '---------- Forwarded message ----------',
+
+      `From: ${senderName}${
+        senderEmail
+          ? ` <${senderEmail}>`
+          : ''
+      }`,
+
+      `Date: ${date}`,
+
+      `Subject: ${
+        message.subject ||
+        '(No subject)'
+      }`,
+
+      `To: ${toValue}`,
+
+      ccValue
+        ? `Cc: ${ccValue}`
+        : '',
+
+      '',
+
+      textBody
+
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+  }
+
+
+
+  /* =========================================================
+     LOAD ORIGINAL MESSAGE
+  ========================================================= */
+
+  async function loadOriginalMessage() {
+
+    if (
+      mode === 'new' ||
+      !originalMailId
+    ) {
+      return;
+    }
+
+
+    showLoading(
+      mode === 'reply'
+        ? 'Loading message for reply…'
+        : 'Loading message for forwarding…'
+    );
+
+
+    try {
+
+      const result =
+        await MailboxAPI.get(
+          originalMailId
+        );
+
+
+      originalMessage =
+        result?.message ||
+        {};
+
+
+      originalAttachmentsData =
+        Array.isArray(
+          result?.attachments
+        )
+          ? result.attachments
+          : [];
+
+
+      if (!originalMessage) {
+
+        throw new Error(
+          'Original message could not be loaded.'
+        );
+
+      }
+
+
+      document.title =
+        `${
+          originalMessage.subject ||
+          'Message'
+        } | MailBox`;
+
+
+      if (
+        mode === 'reply'
+      ) {
+
+        to.value =
+          originalMessage.senderEmail ||
+          '';
+
+        cc.value =
+          '';
+
+        bcc.value =
+          '';
+
+        subject.value =
+          replySubject(
+            originalMessage.subject
+          );
+
+        body.value =
+          '';
+
+        attachmentStatus.textContent =
+          'Original attachments are not included automatically in a reply.';
+
+      }
+
+
+      if (
+        mode === 'forward'
+      ) {
+
+        to.value =
+          '';
+
+        cc.value =
+          '';
+
+        bcc.value =
+          '';
+
+        subject.value =
+          forwardSubject(
+            originalMessage.subject
+          );
+
+
+        body.value =
+          createForwardedMessage(
+            originalMessage
+          );
+
+
+        renderOriginalAttachments(
+          originalAttachmentsData
+        );
+
+
+        await prepareForwardAttachments(
+          originalAttachmentsData
+        );
+
+      }
+
+    } catch (err) {
+
+      console.error(
+        'Unable to load original message:',
+        err
+      );
+
+
+      showAlert(
+        err.message ||
+        'Unable to load the original message.'
+      );
+
+    } finally {
+
+      hideLoading();
+
+    }
+
+  }
+
+
+
+  /* =========================================================
+     FETCH ATTACHMENT
+  ========================================================= */
+
+  async function fetchAttachmentAsFile(
+    item
+  ) {
+
+    if (!item) {
+
+      throw new Error(
+        'Invalid attachment.'
+      );
+
+    }
+
+
+    if (
+      item.base64 ||
+      item.data
+    ) {
+
+      const base64 =
+        item.base64 ||
+        item.data;
+
+
+      const binary =
+        atob(base64);
+
+
+      const bytes =
+        new Uint8Array(
+          binary.length
+        );
+
+
+      for (
+        let i = 0;
+        i < binary.length;
+        i++
+      ) {
+
+        bytes[i] =
+          binary.charCodeAt(i);
+
+      }
+
+
+      return new File(
+        [bytes],
+
+        item.fileName ||
+        item.name ||
+        'attachment',
+
+        {
+          type:
+            item.mimeType ||
+            item.type ||
+            'application/octet-stream'
+        }
+      );
+
+    }
+
+
+    const url =
+      item.url ||
+      item.downloadUrl ||
+      item.fileUrl;
+
+
+    if (!url) {
+
+      throw new Error(
+        'Attachment URL is missing.'
+      );
+
+    }
+
+
+    const response =
+      await fetch(
+        url,
+        {
+          method: 'GET',
+          credentials: 'omit'
+        }
+      );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        `Unable to download ${
+          item.fileName ||
+          'attachment'
+        }`
+      );
+
+    }
+
+
+    const blob =
+      await response.blob();
+
+
+    return new File(
+      [blob],
+
+      item.fileName ||
+      item.name ||
+      'attachment',
+
+      {
+        type:
+          item.mimeType ||
+          blob.type ||
+          'application/octet-stream'
+      }
+    );
+
+  }
+
+
+
+  /* =========================================================
+     PREPARE FORWARD ATTACHMENTS
+  ========================================================= */
+
+  async function prepareForwardAttachments(
+    items
+  ) {
+
+    if (
+      !Array.isArray(items) ||
+      !items.length
+    ) {
+
+      attachmentStatus.textContent =
+        'This message has no attachments.';
+
+      return;
+
+    }
+
+
+    const forwardedFiles = [];
+
+
+    for (
+      let index = 0;
+      index < items.length;
+      index++
+    ) {
+
+      const item =
+        items[index];
+
+
+      const status =
+        document.querySelector(
+          `[data-original-attachment-status="${index}"]`
+        );
+
+
+      try {
+
+        const file =
+          await fetchAttachmentAsFile(
+            item
+          );
+
+
+        forwardedFiles.push(
+          file
+        );
+
+
+        if (status) {
+
+          status.textContent =
+            'Attached';
+
+          status.className =
+            'badge text-bg-success';
+
+        }
+
+      } catch (err) {
+
+        console.warn(
+          'Unable to copy attachment:',
+          item,
+          err
+        );
+
+
+        if (status) {
+
+          status.textContent =
+            'Could not attach';
+
+          status.className =
+            'badge text-bg-warning';
+
+        }
+
+      }
+
+    }
+
+
+    if (
+      forwardedFiles.length
+    ) {
+
+      const transfer =
+        new DataTransfer();
+
+
+      for (
+        const file of forwardedFiles
+      ) {
+
+        transfer.items.add(
+          file
+        );
+
+      }
+
+
+      for (
+        const existingFile of files.files
+      ) {
+
+        transfer.items.add(
+          existingFile
+        );
+
+      }
+
+
+      files.files =
+        transfer.files;
+
+
+      attachmentStatus.textContent =
+        `${forwardedFiles.length} original attachment(s) added to this message.`;
+
+    } else {
+
+      attachmentStatus.textContent =
+        'Original attachments could not be copied automatically.';
+
+    }
+
+  }
+
+
+
+  /* =========================================================
+     READ FILES
+  ========================================================= */
+
+  async function readFiles() {
+
+    const arr = [];
+
+
+    for (
+      const file of files.files
+    ) {
+
+      const base64 =
+        await new Promise(
+          (resolve, reject) => {
+
+            const reader =
+              new FileReader();
+
+
+            reader.onload =
+              () => {
+
+                const result =
+                  String(
+                    reader.result ||
+                    ''
+                  );
+
+
+                resolve(
+                  result.split(',')[1] ||
+                  ''
+                );
+
+              };
+
+
+            reader.onerror =
+              reject;
+
+
+            reader.readAsDataURL(
+              file
+            );
+
+          }
+        );
+
+
+      arr.push({
+
+        name:
+          file.name,
+
+        size:
+          file.size,
+
+        mimeType:
+          file.type,
+
+        base64
+
+      });
+
+    }
+
+
+    return arr;
+
+  }
+
+
+
+  /* =========================================================
+     CLEAR FORM
+  ========================================================= */
+
+  function clearForm() {
+
+    to.value =
+      '';
+
+    cc.value =
+      '';
+
+    bcc.value =
+      '';
+
+    subject.value =
+      '';
+
+    body.value =
+      '';
+
+    files.value =
+      '';
+
+
+    originalAttachments.classList.add(
+      'd-none'
+    );
+
+
+    originalAttachmentList.innerHTML =
+      '';
+
+
+    attachmentStatus.textContent =
+      '';
+
+
+    hideSuggestions();
+
+  }
+
+
+
+  /* =========================================================
+     SEND PROGRESS
+  ========================================================= */
+
+  function showSendProgress(
+    message =
+      'Sending message…'
+  ) {
+
+    if (sendProgressText) {
+
+      sendProgressText.textContent =
+        message;
+
+    }
+
+
+    if (sendProgress) {
+
+      sendProgress.classList.add(
+        'show'
+      );
+
+    }
+
+  }
+
+
+  function hideSendProgress() {
+
+    if (sendProgress) {
+
+      sendProgress.classList.remove(
+        'show'
+      );
+
+    }
+
+  }
+
+
+
+  /* =========================================================
+     DISABLE ALL COMPOSE CONTROLS
+  ========================================================= */
+
+  function setSendingState(
+    sending
+  ) {
+
+    isSending =
+      Boolean(sending);
+
+
+    composeForm.classList.toggle(
+      'is-sending',
+      isSending
+    );
+
+
+    /*
+     * Every input/select/textarea inside
+     * the compose form.
+     */
+    composeForm
+      .querySelectorAll(
+        'input, textarea, select, button'
+      )
+      .forEach(
+        element => {
+
+          element.disabled =
+            isSending;
+
+        }
+      );
+
+
+    /*
+     * Footer buttons are outside the form.
+     */
+    sendBtn.disabled =
+      isSending;
+
+    draftBtn.disabled =
+      isSending;
+
+    discardBtn.disabled =
+      isSending;
+
+
+    if (isSending) {
+
+      sendBtn.classList.add(
+        'compose-footer-disabled'
+      );
+
+      draftBtn.classList.add(
+        'compose-footer-disabled'
+      );
+
+      discardBtn.classList.add(
+        'compose-footer-disabled'
+      );
+
+
+      sendButtonText.textContent =
+        'Sending…';
+
+    } else {
+
+      sendBtn.classList.remove(
+        'compose-footer-disabled'
+      );
+
+      draftBtn.classList.remove(
+        'compose-footer-disabled'
+      );
+
+      discardBtn.classList.remove(
+        'compose-footer-disabled'
+      );
+
+
+      sendButtonText.textContent =
+        'Send';
+
+    }
+
+
+    /*
+     * Prevent logout while a message
+     * is being sent.
+     */
+    if (logoutButton) {
+
+      logoutButton.disabled =
+        isSending;
+
+    }
+
+
+    /*
+     * Prevent autocomplete while sending.
+     */
+    if (isSending) {
+
+      suggestionRequestId++;
+
+      clearTimeout(
+        suggestionTimer
+      );
+
+      hideSuggestions();
+
+    }
+
+  }
+
+
+
+  /* =========================================================
+     SEND
+  ========================================================= */
+
+  sendBtn.addEventListener(
+    'click',
+    async () => {
+
+      if (isSending) {
+        return;
+      }
+
+
+      hideAlert();
+
+
+      const recipient =
+        to.value.trim();
+
+
+      if (!recipient) {
+
+        showAlert(
+          'Please enter at least one recipient.',
+          'warning'
+        );
+
+
+        to.focus();
+
+        return;
+
+      }
+
+
+      if (
+        !subject.value.trim()
+      ) {
+
+        if (
+          !window.confirm(
+            'The subject is empty. Send anyway?'
+          )
+        ) {
+
+          subject.focus();
+
+          return;
+
+        }
+
+      }
+
+
+      try {
+
+        /*
+         * Disable EVERYTHING immediately.
+         */
+        setSendingState(
+          true
+        );
+
+
+        showSendProgress(
+          'Preparing message…'
+        );
+
+
+        /*
+         * Read attachments.
+         */
+        const attachments =
+          await readFiles();
+
+
+        showSendProgress(
+          'Sending message…'
+        );
+
+
+        /*
+         * Send through existing API.
+         */
+        const result =
+          await MailboxAPI.send({
+
+            to:
+              to.value,
+
+            cc:
+              cc.value,
+
+            bcc:
+              bcc.value,
+
+            subject:
+              subject.value,
+
+            body:
+              body.value,
+
+            bodyType:
+              'TEXT',
+
+            attachments:
+              attachments
+
+          });
+
+
+        /*
+         * Hide sending animation before
+         * displaying success message.
+         */
+        hideSendProgress();
+
+
+        /*
+         * Keep the compose form disabled
+         * until the user presses OK.
+         */
+        isSending =
+          false;
+
+
+        /*
+         * Show beautiful custom success modal.
+         */
+        showSuccessModal(
+          result?.referenceNo ||
+          result?.reference ||
+          ''
+        );
+
+
+      } catch (err) {
+
+        console.error(
+          'Send failed:',
+          err
+        );
+
+
+        hideSendProgress();
+
+
+        showAlert(
+          err.message ||
+          'Unable to send message.'
+        );
+
+
+        /*
+         * Re-enable everything only
+         * when sending has failed.
+         */
+        setSendingState(
+          false
+        );
+
+      }
+
+    }
+  );
+
+
+
+  /* =========================================================
+     SAVE DRAFT
+  ========================================================= */
+
+  draftBtn.addEventListener(
+    'click',
+    async () => {
+
+      if (isSending) return;
+
+
+      hideAlert();
+
+
+      try {
+
+        draftBtn.disabled =
+          true;
+
+
+        const result =
+          await MailboxAPI.draft({
+
+            to:
+              to.value,
+
+            cc:
+              cc.value,
+
+            bcc:
+              bcc.value,
+
+            subject:
+              subject.value,
+
+            body:
+              body.value,
+
+            bodyType:
+              'TEXT'
+
+          });
+
+
+        showAlert(
+          'Draft saved successfully.' +
+          (
+            result.referenceNo
+              ? ` Reference: ${result.referenceNo}`
+              : ''
+          ),
+          'success'
+        );
+
+
+      } catch (err) {
+
+        console.error(
+          'Draft failed:',
+          err
+        );
+
+
+        showAlert(
+          err.message ||
+          'Unable to save draft.'
+        );
+
+      } finally {
+
+        draftBtn.disabled =
+          false;
+
+      }
+
+    }
+  );
+
+
+
+  /* =========================================================
+     DISCARD
+  ========================================================= */
+
+  discardBtn.addEventListener(
+    'click',
+    () => {
+
+      if (isSending) return;
+
+
+      if (
+        !window.confirm(
+          'Discard this message?'
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      clearForm();
+
+
+      window.location.href =
+        'mailbox.html';
+
+    }
+  );
+
+
+
+  /* =========================================================
+     MANUAL FILE SELECTION
+  ========================================================= */
+
+  files.addEventListener(
+    'change',
+    () => {
+
+      if (isSending) return;
+
+
+      const count =
+        files.files.length;
+
+
+      if (!count) {
+
+        if (
+          mode === 'forward'
+        ) {
+
+          attachmentStatus.textContent =
+            originalAttachmentsData.length
+              ? 'Original attachments are being prepared.'
+              : '';
+
+        } else {
+
+          attachmentStatus.textContent =
+            '';
+
+        }
+
+        return;
+
+      }
+
+
+      attachmentStatus.textContent =
+        `${count} attachment(s) selected.`;
+
+    }
+  );
+
+
+
+  /* =========================================================
+     INITIALIZE
+  ========================================================= */
+
+  configureMode();
+
+  loadOriginalMessage();
+
+})();
+</script>
+
+
+
+<!-- =========================================================
+     SIDEBAR SCROLLBAR
+========================================================= -->
+
+<script>
+(() => {
+
+  const sidebarWrapper =
+    document.querySelector(
+      '.sidebar-wrapper'
+    );
+
+
+  const isMobile =
+    window.innerWidth <= 992;
+
+
+  if (
+    sidebarWrapper &&
+    globalThis
+      .OverlayScrollbarsGlobal
+      ?.OverlayScrollbars &&
+    !isMobile
+  ) {
+
+    globalThis
+      .OverlayScrollbarsGlobal
+      .OverlayScrollbars(
+        sidebarWrapper,
+        {
+          scrollbars: {
+
+            theme:
+              'os-theme-light',
+
+            autoHide:
+              'leave',
+
+            clickScroll:
+              true
+
+          }
+        }
+      );
+
+  }
+
+})();
+</script>
+
+</body>
+</html>
