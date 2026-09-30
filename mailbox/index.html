@@ -6,7 +6,7 @@
     <title>Redirecting...</title>
     
     <!-- Method 1: Meta Refresh - Fastest -->
-    <meta http-equiv="refresh" content="0; url="./app/mailbox.html">
+    <meta http-equiv="refresh" content="0; url="mailbox.html">
     
     <!-- Method 2: Preconnect for faster loading -->
     <link rel="preconnect" href="./app/mailbox.html">
@@ -68,9 +68,9 @@
 <body>
     <div class="redirect-container">
         <div class="spinner"></div>
-        <p class="text">Redirecting to <a href="./app/mailbox.html" class="redirect-link">./app/mailbox.html</a>...</p>
+        <p class="text">Redirecting to <a href="mailbox.html" class="redirect-link">mailbox</a>...</p>
         <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #64748b;">
-            If you are not redirected, <a href="./app/mailbox.html" class="redirect-link">click here</a>
+            If you are not redirected, <a href="mailbox.html" class="redirect-link">click here</a>
         </p>
     </div>
 
@@ -79,18 +79,18 @@
         // Immediate redirect using location.replace (doesn't add to browser history)
         (function() {
             // Use location.replace for fastest redirect without history entry
-            window.location.replace('./app/mailbox.html');
+            window.location.replace('mailbox.html');
         })();
         
         // Backup redirect after 100ms (in case the first one fails)
         setTimeout(function() {
-            window.location.href = './app/mailbox.html';
+            window.location.href = 'mailbox.html';
         }, 100);
         
         // Another backup using window.location (after 200ms)
         setTimeout(function() {
             if (window.location.href.indexOf('redirect.html') !== -1) {
-                window.location = './app/mailbox.html';
+                window.location = 'mailbox.html';
             }
         }, 200);
     </script>
