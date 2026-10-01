@@ -8,6 +8,147 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="icon" type="image/svg+xml" href="favicon.png">
 <link rel="stylesheet" href="mailbox-common.css">
+<style>
+/* --- unified alert box --- */
+.alert-box {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  min-width: 280px;
+  max-width: 90vw;
+  padding: 14px 20px;
+  border-radius: 12px;
+  background: var(--panel, #fff);
+  color: var(--text, #1e293b);
+  box-shadow: 0 12px 32px rgba(0,0,0,.18);
+  border-left: 6px solid var(--primary, #2563eb);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+  transform: translateX(-50%) translateY(-12px);
+}
+.alert-box.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.alert-box.alert-error { border-left-color: #dc2626; }
+.alert-box.alert-warning { border-left-color: #f59e0b; }
+.alert-box.alert-success { border-left-color: #16a34a; }
+.alert-box .alert-icon { font-size: 20px; line-height: 1; }
+.alert-box .alert-msg { flex: 1; }
+.alert-box .alert-close { background: none; border: 0; font-size: 20px; cursor: pointer; color: var(--muted, #64748b); }
+
+/* --- composer workspace --- */
+.compose-workspace { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.compose-workspace.show { display: flex; }
+.compose { display: flex; flex-direction: column; height: 100%; background: var(--panel, #fff); border-radius: 12px; border: 1px solid var(--border, #e2e8f0); overflow: hidden; }
+.compose-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid var(--border, #e2e8f0); background: var(--soft, #f8fafc); }
+.compose-body { flex: 1; overflow-y: auto; padding: 18px; }
+.compose-foot { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-top: 1px solid var(--border, #e2e8f0); background: var(--soft, #f8fafc); gap: 8px; flex-wrap: wrap; }
+.compose-left { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* --- folder loader --- */
+.list-loading { display: flex; align-items: center; justify-content: center; padding: 40px 0; color: var(--muted, #64748b); gap: 10px; }
+
+/* =========================================================
+   PROFILE DRAWER (original attached HTML styling)
+   ========================================================= */
+.profile-drawer {
+  position: fixed; z-index: 120; right: 0; top: 0; bottom: 0;
+  width: min(340px, 90vw); padding: 22px;
+  background: var(--panel); border-left: 1px solid var(--border);
+  box-shadow: var(--shadow); transform: translateX(105%);
+  transition: transform .24s ease; text-align: center;
+}
+.profile-drawer.open { transform: translateX(0); }
+.profile-drawer-head { display: flex; justify-content: space-between; align-items: center; }
+.profile-avatar {
+  margin: 28px auto 12px; width: 64px; height: 64px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--primary);
+  color: white; font-weight: 700; font-size: 20px;
+}
+.profile-drawer p { color: var(--muted); font-size: 13px; margin: 8px; }
+.theme-palette { position: absolute; bottom: 24px; left: 20px; right: 20px; text-align: left; }
+.theme-swatches { display: flex; gap: 12px; margin-top: 14px; }
+.theme-swatches button {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--swatch); border: 3px solid var(--panel);
+  outline: 1px solid var(--border);
+}
+.workspace-tabs {
+  height: 42px; display: flex; align-items: end;
+  padding-left: 12px; background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+.workspace-tab, .compose-tab {
+  padding: 9px 15px; border: 1px solid var(--border);
+  border-bottom: 0; border-radius: 9px 9px 0 0;
+  background: var(--soft); color: var(--text); font-size: 12px;
+}
+.workspace-tab.active { background: var(--selected); color: var(--primary); }
+.rich-editor { white-space: normal; overflow: auto; min-height: 220px; }
+.rich-editor:empty:before { content: attr(data-placeholder); color: var(--muted); }
+.editor-tools { display: flex; gap: 7px; padding: 5px 0; }
+.editor-tools button {
+  border: 1px solid var(--border); background: var(--soft);
+  color: var(--text); border-radius: 6px; padding: 5px 9px;
+}
+
+/* =========================================================
+   SORT DROPDOWN — visible and styled
+   ========================================================= */
+.list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.list-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sort-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.sort-wrap::after {
+  content: '\F282';
+  font-family: 'bootstrap-icons';
+  position: absolute;
+  right: 8px;
+  font-size: 10px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.sort-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--soft);
+  color: var(--text);
+  font-size: 12px;
+  padding: 0 26px 0 8px;
+  cursor: pointer;
+  outline: none;
+  min-width: 130px;
+}
+.sort-select:focus {
+  border-color: var(--primary);
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -16,17 +157,34 @@
   <div class="search"><svg class="search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="searchInput" type="search" placeholder="Search mail..." autocomplete="off"><button id="clearSearch" class="clear-search" type="button">×</button></div>
   <div class="account"><button id="refreshBtn" class="icon-btn" title="Refresh"><i class="bi bi-arrow-clockwise"></i></button><button id="avatar" class="avatar" type="button" aria-label="Open account details" aria-expanded="false">U</button></div>
 </header>
-<aside id="profileDrawer" class="profile-drawer" aria-hidden="true"><div class="profile-drawer-head"><strong>Account details</strong><button id="closeProfile" class="icon-btn" aria-label="Close profile">×</button></div><div class="profile-avatar" id="drawerAvatar">U</div><h3 id="drawerName">User</h3><p id="drawerEmail"></p><p id="drawerRole"></p><div class="theme-palette"><strong>Theme colour</strong><div class="theme-swatches"><button data-theme="#2563eb" style="--swatch:#2563eb" aria-label="Blue"></button><button data-theme="#0f9d78" style="--swatch:#0f9d78" aria-label="Teal"></button><button data-theme="#7c3aed" style="--swatch:#7c3aed" aria-label="Violet"></button><button data-theme="#db6b18" style="--swatch:#db6b18" aria-label="Orange"></button><button data-theme="#c0266d" style="--swatch:#c0266d" aria-label="Pink"></button></div></div></aside>
+
+<aside id="profileDrawer" class="profile-drawer" aria-hidden="true">
+  <div class="profile-drawer-head">
+    <strong>Account details</strong>
+    <button id="closeProfile" class="icon-btn" aria-label="Close profile">×</button>
+  </div>
+  <div class="profile-avatar" id="drawerAvatar">U</div>
+  <h3 id="drawerName">User</h3>
+  <p id="drawerEmail"></p>
+  <p id="drawerRole"></p>
+  <div class="theme-palette">
+    <strong>Theme colour</strong>
+    <div class="theme-swatches">
+      <button data-theme="#2563eb" style="--swatch:#2563eb" aria-label="Blue"></button>
+      <button data-theme="#0f9d78" style="--swatch:#0f9d78" aria-label="Teal"></button>
+      <button data-theme="#7c3aed" style="--swatch:#7c3aed" aria-label="Violet"></button>
+      <button data-theme="#db6b18" style="--swatch:#db6b18" aria-label="Orange"></button>
+      <button data-theme="#c0266d" style="--swatch:#c0266d" aria-label="Pink"></button>
+    </div>
+  </div>
+</aside>
 
 <nav class="workspace-tabs">
   <button class="workspace-tab active" id="foldersTab" type="button">Folders</button>
   <div id="composeTabs" class="compose-tabs"></div>
 </nav>
 
-<!-- ONE stage. Two workspaces. Exactly one visible at a time. -->
 <div id="workspaceStage" class="workspace-stage">
-
-  <!-- Workspace 1: Folders/Mailbox -->
   <main class="main" id="foldersWorkspace">
     <aside class="sidebar">
       <button id="composeBtn" class="compose-btn"><i class="bi bi-pencil-square"></i><span>Compose</span></button>
@@ -41,7 +199,23 @@
       <div class="logout-side"><button id="logoutBtn"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button></div>
     </aside>
     <section class="mail-area">
-      <div class="list-head"><div id="listTitle" class="list-title">Inbox</div><div class="list-actions"><button id="selectAllBtn" class="icon-btn" title="Select all"><i class="bi bi-check2-square"></i></button><button id="refreshListBtn" class="icon-btn" title="Refresh"><i class="bi bi-arrow-clockwise"></i></button></div></div>
+      <div class="list-head">
+        <div id="listTitle" class="list-title">Inbox</div>
+        <div class="list-actions">
+          <span class="sort-wrap">
+            <select id="sortSelect" class="sort-select" title="Sort messages">
+              <option value="date-desc">Newest first</option>
+              <option value="date-asc">Oldest first</option>
+              <option value="sender-asc">Sender A → Z</option>
+              <option value="sender-desc">Sender Z → A</option>
+              <option value="subject-asc">Subject A → Z</option>
+              <option value="subject-desc">Subject Z → A</option>
+            </select>
+          </span>
+          <button id="selectAllBtn" class="icon-btn" title="Select all"><i class="bi bi-check2-square"></i></button>
+          <button id="refreshListBtn" class="icon-btn" title="Refresh"><i class="bi bi-arrow-clockwise"></i></button>
+        </div>
+      </div>
       <div id="toolbar" class="toolbar"><button class="icon-btn" id="markReadBtn" title="Mark read"><i class="bi bi-envelope-open"></i></button><button class="icon-btn" id="markUnreadBtn" title="Mark unread"><i class="bi bi-envelope"></i></button><button class="icon-btn" id="archiveBtn" title="Archive"><i class="bi bi-archive"></i></button><button class="icon-btn" id="spamBtn" title="Spam"><i class="bi bi-exclamation-octagon"></i></button><button class="icon-btn" id="deleteBtn" title="Trash"><i class="bi bi-trash3"></i></button></div>
       <div id="mailList" class="mail-list"><div class="loading-inline"><span class="panel-spinner" aria-label="Loading"></span></div></div>
       <div class="pager"><span id="rangeText">—</span><div style="display:flex;align-items:center;gap:5px"><select id="pageSize"><option value="25">25</option><option value="50">50</option></select><button id="prevPage" disabled>‹</button><span id="pageText">1 / 1</span><button id="nextPage" disabled>›</button></div></div>
@@ -56,35 +230,20 @@
     </section>
   </main>
 
-  <!-- Workspace 2: Compose (real sibling, not a modal, not a child of .main) -->
-  <div id="composeModal" class="compose-workspace" aria-hidden="true">
-    <div class="compose">
-      <div class="compose-head"><div><span id="composeTitle" class="compose-title">New message</span><span id="modeBadge" class="mode-badge hidden"></span></div><button id="closeCompose" class="icon-btn" type="button" title="Close"><i class="bi bi-x-lg"></i></button></div>
-      <div class="compose-body">
-        <div id="composeAlert" class="alert hidden"></div>
-        <div id="composeLoading" class="alert hidden">Loading original message…</div>
-        <div class="compose-row"><label class="compose-label">To</label><div class="compose-to-wrap"><input id="mailTo" class="compose-input" autocomplete="off" placeholder="Recipient email"><div id="suggestions" class="autocomplete"></div></div></div>
-        <div class="compose-row"><label class="compose-label">Cc</label><input id="mailCc" class="compose-input" autocomplete="off" placeholder="Optional"></div>
-        <div class="compose-row"><label class="compose-label">Bcc</label><input id="mailBcc" class="compose-input" autocomplete="off" placeholder="Optional"></div>
-        <div class="compose-row"><label class="compose-label">Subject</label><input id="mailSubject" class="compose-input" placeholder="Subject"></div>
-        <div id="mailBody" class="compose-area rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Write your message…"></div><div class="editor-tools"><button type="button" data-cmd="bold"><b>B</b></button><button type="button" data-cmd="italic"><i>I</i></button><button type="button" data-cmd="underline"><u>U</u></button><button type="button" data-cmd="insertUnorderedList">• List</button><button type="button" data-cmd="createLink">Link</button></div>
-        <div id="fileList" class="file-list"></div><div id="composeStatus" class="compose-status"></div>
-      </div>
-      <div class="compose-foot"><div class="compose-left"><input id="mailFiles" type="file" multiple class="hidden"><button id="attachBtn" class="secondary-btn" type="button"><i class="bi bi-paperclip"></i> Attach</button><button id="draftBtn" class="secondary-btn" type="button">Save draft</button><button id="discardBtn" class="secondary-btn" type="button">Discard</button></div><button id="sendBtn" class="send-btn" type="button"><span class="send-spinner"></span><span class="send-label">Send</span></button></div>
-    </div>
-  </div>
-
+  <div id="composeContainer" class="compose-workspace" aria-hidden="true"></div>
 </div>
 </div>
 
-<!-- Success modal (this one stays a modal - it's a notification, not a view) -->
 <div id="successModal" class="modal"><div class="success-box"><div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div><h3>Message Sent</h3><p>Your message has been successfully delivered.</p><div id="successReference" class="reference">Reference: —</div><div style="margin-top:20px"><button id="successOk" class="send-btn" style="margin:auto;min-width:80px">OK</button></div></div></div>
 <div id="loadingOverlay" class="loading-overlay" aria-hidden="true"><div class="loading-box"><span class="big-spinner" aria-label="Loading"></span></div></div>
 
+<div id="unifiedAlert" class="alert-box" role="alert">
+  <span class="alert-icon" id="alertIcon">ℹ️</span>
+  <span class="alert-msg" id="alertMsg"></span>
+  <button class="alert-close" id="alertClose" aria-label="Close">×</button>
+</div>
+
 <script>
-/* =========================================================
-   API CLIENT - same API contract as the existing application
-   ========================================================= */
 window.MAILBOX_API_URL=window.MAILBOX_API_URL||'https://script.google.com/macros/s/AKfycbztFYkp6V7YglnFLtZ7GbEXzoctYiBilV4lA4VgLm3WFKF8lYENWdM90_zy0uC1gmdG/exec';
 const MailboxAPI=(()=>{
  async function request(action,payload={}){const response=await fetch(window.MAILBOX_API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action},payload)),redirect:'follow'});if(!response.ok)throw new Error('Server error: '+response.status);const data=await response.json();if(!data.ok)throw new Error(data.error||'Request failed.');return data}
@@ -112,11 +271,42 @@ const user=MailboxAPI.user()||{};
 $('avatar').textContent=initials(user.name||user.fullName,user.email||user.emailAddress);
 
 /* =========================================================
+   SORTING STATE
+   ========================================================= */
+let currentSort = localStorage.getItem('mailbox_sort') || 'date-desc';
+
+function sortMessages(list) {
+  const arr = Array.isArray(list) ? list.slice() : [];
+  const [field, dir] = currentSort.split('-');
+  const mul = dir === 'asc' ? 1 : -1;
+  arr.sort((a, b) => {
+    let va, vb;
+    switch (field) {
+      case 'date':
+        va = new Date(a.date || 0).getTime();
+        vb = new Date(b.date || 0).getTime();
+        break;
+      case 'sender':
+        va = String(a.senderName || a.senderEmail || a.to || '').toLowerCase();
+        vb = String(b.senderName || b.senderEmail || b.to || '').toLowerCase();
+        break;
+      case 'subject':
+        va = String(a.subject || '').toLowerCase();
+        vb = String(b.subject || '').toLowerCase();
+        break;
+      default:
+        va = new Date(a.date || 0).getTime();
+        vb = new Date(b.date || 0).getTime();
+    }
+    if (va < vb) return -1 * mul;
+    if (va > vb) return 1 * mul;
+    return 0;
+  });
+  return arr;
+}
+
+/* =========================================================
    CENTRAL VIEW STATE
-   activeView is the SINGLE source of truth.
-   Allowed: 'folders' | 'compose'
-   The mailbox folder (INBOX/SENT/...) is tracked separately by
-   currentFolder. "folders" view shows whichever folder is current.
    ========================================================= */
 let activeView = 'folders';
 
@@ -127,71 +317,394 @@ function formatDate(v){if(!v)return '';const d=new Date(v);if(Number.isNaN(d.get
 function formatSize(bytes){const n=Number(bytes||0);if(!n)return '';if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';if(n<1073741824)return (n/1048576).toFixed(1)+' MB';return (n/1073741824).toFixed(1)+' GB'}
 function showOverlay(){ $('loadingOverlay').classList.add('show'); $('loadingOverlay').setAttribute('aria-hidden','false') }
 function hideOverlay(){ $('loadingOverlay').classList.remove('show'); $('loadingOverlay').setAttribute('aria-hidden','true') }
-function alertCompose(msg,type='error'){const b=$('composeAlert');b.textContent=msg;b.className='alert '+type}
-function hideComposeAlert(){$('composeAlert').className='alert hidden';$('composeAlert').textContent=''}
 function saveFolder(){sessionStorage.setItem('mailbox_folder',currentFolder)}
 function updateFolderUI(){document.querySelectorAll('.folder').forEach(b=>b.classList.toggle('active',b.dataset.folder===currentFolder));$('listTitle').textContent=folders[currentFolder]||currentFolder}
 function signature(list){return (list||[]).map(m=>[m.mailId,m.date,m.subject,m.isRead?'1':'0',m.isStarred?'1':'0'].join('|')).join('~')}
 
 /* =========================================================
-   THE ONE TRUE VIEW SWITCHER
-   =========================================================
-   switchView('folders') -> mailbox takes over the stage
-   switchView('compose') -> composer takes over the stage
+   UNIFIED ALERT BOX
+   ========================================================= */
+function showAlert(message, type='info', duration=4000) {
+  const box = $('unifiedAlert');
+  const msg = $('alertMsg');
+  const icon = $('alertIcon');
+  const icons = { info:'ℹ️', success:'✅', warning:'⚠️', error:'❌' };
+  msg.textContent = message;
+  icon.textContent = icons[type] || icons.info;
+  box.className = 'alert-box show alert-' + type;
+  clearTimeout(box._timer);
+  if (duration > 0) {
+    box._timer = setTimeout(() => box.classList.remove('show'), duration);
+  }
+}
+$('alertClose').addEventListener('click', () => $('unifiedAlert').classList.remove('show'));
 
-   This is the ONLY function that toggles visibility of the two
-   workspaces. openCompose/closeCompose/folder clicks/tab clicks
-   all funnel through here.
+/* =========================================================
+   NOTIFICATION TUNE
+   ========================================================= */
+let notificationAudio = null;
+let audioReady = false;
+
+function initNotificationAudio() {
+  if (notificationAudio) return;
+  notificationAudio = new Audio('notification.mp3');
+  notificationAudio.volume = 0.6;
+  notificationAudio.load();
+  const unlock = () => {
+    if (audioReady) return;
+    notificationAudio.play().then(() => {
+      notificationAudio.pause();
+      notificationAudio.currentTime = 0;
+      audioReady = true;
+    }).catch(() => {});
+  };
+  document.addEventListener('click', unlock, { once: true });
+  document.addEventListener('keydown', unlock, { once: true });
+  document.addEventListener('touchstart', unlock, { once: true });
+}
+
+function playNotificationTune() {
+  if (!notificationAudio) initNotificationAudio();
+  if (!notificationAudio) return;
+  const clone = notificationAudio.cloneNode();
+  clone.volume = 0.6;
+  clone.play().catch(() => {
+    const retry = () => {
+      clone.play().catch(() => {});
+      document.removeEventListener('click', retry);
+    };
+    document.addEventListener('click', retry, { once: true });
+  });
+}
+
+let lastInboxCount = 0;
+let lastMailIds = new Set();
+
+/* =========================================================
+   THE ONE TRUE VIEW SWITCHER
    ========================================================= */
 function switchView(viewName){
   if(viewName!=='folders' && viewName!=='compose') return;
   activeView = viewName;
 
   const foldersWorkspace = $('foldersWorkspace');
-  const composeWorkspace = $('composeModal');
+  const composeContainer = $('composeContainer');
   const foldersTab       = $('foldersTab');
 
   if(viewName === 'compose'){
     foldersWorkspace.classList.add('workspace-hidden');
     foldersWorkspace.setAttribute('aria-hidden','true');
-
-    composeWorkspace.classList.add('show');
-    composeWorkspace.setAttribute('aria-hidden','false');
-
+    composeContainer.classList.add('show');
+    composeContainer.setAttribute('aria-hidden','false');
     foldersTab.classList.remove('active');
-    if(composeTab) composeTab.classList.add('active');
+    if (typeof ComposerManager !== 'undefined') ComposerManager.activateCurrent();
   } else {
-    composeWorkspace.classList.remove('show');
-    composeWorkspace.setAttribute('aria-hidden','true');
-
+    composeContainer.classList.remove('show');
+    composeContainer.setAttribute('aria-hidden','true');
     foldersWorkspace.classList.remove('workspace-hidden');
     foldersWorkspace.removeAttribute('aria-hidden');
-
     foldersTab.classList.add('active');
-    if(composeTab) composeTab.classList.remove('active');
+    if (typeof ComposerManager !== 'undefined') ComposerManager.deactivateAll();
   }
 }
 
+/* =========================================================
+   MULTI-COMPOSER MANAGER
+   ========================================================= */
+const ComposerManager = (() => {
+  let composers = new Map();
+  let activeId = null;
+  let nextId = 1;
+
+  const container = $('composeContainer');
+  const tabsEl = $('composeTabs');
+
+  function createComposer(mode = 'new', message = null, attachments = []) {
+    const id = 'composer-' + (nextId++);
+    const el = document.createElement('div');
+    el.className = 'compose';
+    el.dataset.composerId = id;
+    el.innerHTML = `
+      <div class="compose-head">
+        <div><span class="compose-title" data-role="title">New message</span><span class="mode-badge hidden" data-role="badge"></span></div>
+        <button class="icon-btn" data-action="close" title="Close"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="compose-body">
+        <div class="alert hidden" data-role="alert"></div>
+        <div class="alert hidden" data-role="loading">Loading original message…</div>
+        <div class="compose-row"><label class="compose-label">To</label><div class="compose-to-wrap"><input class="compose-input" data-field="to" autocomplete="off" placeholder="Recipient email"><div class="autocomplete" data-role="suggestions"></div></div></div>
+        <div class="compose-row"><label class="compose-label">Cc</label><input class="compose-input" data-field="cc" autocomplete="off" placeholder="Optional"></div>
+        <div class="compose-row"><label class="compose-label">Bcc</label><input class="compose-input" data-field="bcc" autocomplete="off" placeholder="Optional"></div>
+        <div class="compose-row"><label class="compose-label">Subject</label><input class="compose-input" data-field="subject" placeholder="Subject"></div>
+        <div class="compose-area rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-field="body" data-placeholder="Write your message…"></div>
+        <div class="editor-tools">
+          <button type="button" data-cmd="bold"><b>B</b></button>
+          <button type="button" data-cmd="italic"><i>I</i></button>
+          <button type="button" data-cmd="underline"><u>U</u></button>
+          <button type="button" data-cmd="insertUnorderedList">• List</button>
+          <button type="button" data-cmd="createLink">Link</button>
+        </div>
+        <div class="file-list" data-role="files"></div>
+        <div class="compose-status" data-role="status"></div>
+      </div>
+      <div class="compose-foot">
+        <div class="compose-left">
+          <input type="file" multiple class="hidden" data-role="file-input">
+          <button class="secondary-btn" type="button" data-action="attach"><i class="bi bi-paperclip"></i> Attach</button>
+          <button class="secondary-btn" type="button" data-action="draft">Save draft</button>
+          <button class="secondary-btn" type="button" data-action="discard">Discard</button>
+        </div>
+        <button class="send-btn" type="button" data-action="send"><span class="send-spinner"></span><span class="send-label">Send</span></button>
+      </div>
+    `;
+    container.appendChild(el);
+
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'compose-tab';
+    tab.dataset.composerId = id;
+    tab.innerHTML = '<span class="compose-tab-label"></span><span class="compose-tab-close" role="button" aria-label="Close compose tab">×</span>';
+    tabsEl.appendChild(tab);
+
+    const state = { id, el, tab, mode, originalMessage: message, originalAttachments: attachments || [], attachmentFiles: [], sending: false, suggestTimer: null, suggestSeq: 0 };
+    composers.set(id, state);
+    bindComposerEvents(state);
+    initComposerFields(state, mode, message, attachments);
+    activateComposer(id);
+    return state;
+  }
+
+  function initComposerFields(state, mode, message, attachments) {
+    const el = state.el;
+    const titleEl = el.querySelector('[data-role="title"]');
+    const badgeEl = el.querySelector('[data-role="badge"]');
+    const toInput = el.querySelector('[data-field="to"]');
+    const subjectInput = el.querySelector('[data-field="subject"]');
+    const bodyEl = el.querySelector('[data-field="body"]');
+
+    titleEl.textContent = mode === 'reply' ? 'Reply message' : mode === 'forward' ? 'Forward message' : 'New message';
+    badgeEl.classList.toggle('hidden', mode === 'new');
+    badgeEl.textContent = mode === 'reply' ? 'Reply' : 'Forward';
+
+    if (mode === 'reply' && message) { toInput.value = message.senderEmail || ''; subjectInput.value = replySubject(message.subject); bodyEl.innerHTML = '<br><br>'; }
+    if (mode === 'forward' && message) { subjectInput.value = forwardSubject(message.subject); bodyEl.innerHTML = createForwarded(message); }
+
+    Object.defineProperty(bodyEl, 'value', { get() { return this.innerHTML; }, set(v) { this.innerHTML = v || ''; }, configurable: true });
+
+    if (mode === 'forward' && attachments.length) prepareForwardAttachments(state, attachments);
+    toInput.focus();
+    syncTabLabel(state);
+  }
+
+  function bindComposerEvents(state) {
+    const el = state.el;
+    const tab = state.tab;
+    tab.addEventListener('click', (e) => { if (e.target.closest('.compose-tab-close')) { closeComposer(state.id); return; } activateComposer(state.id); });
+    el.querySelector('[data-action="close"]').addEventListener('click', () => closeComposer(state.id));
+    el.querySelector('[data-action="send"]').addEventListener('click', () => sendComposer(state));
+
+    const fileInput = el.querySelector('[data-role="file-input"]');
+    el.querySelector('[data-action="attach"]').addEventListener('click', () => { if (!state.sending) fileInput.click(); });
+    fileInput.addEventListener('change', (e) => {
+      if (state.sending) return;
+      for (const f of [...e.target.files]) state.attachmentFiles.push(f);
+      renderFiles(state);
+      el.querySelector('[data-role="status"]').textContent = `${state.attachmentFiles.length} attachment(s) selected.`;
+      e.target.value = '';
+    });
+
+    el.querySelector('[data-action="draft"]').addEventListener('click', () => saveDraftComposer(state));
+    el.querySelector('[data-action="discard"]').addEventListener('click', () => { if (confirm('Discard this message?')) closeComposer(state.id); });
+
+    el.querySelectorAll('[data-cmd]').forEach(b => {
+      b.addEventListener('click', () => {
+        const cmd = b.dataset.cmd;
+        document.execCommand(cmd, false, cmd === 'createLink' ? prompt('Enter link URL') : null);
+        el.querySelector('[data-field="body"]').focus();
+      });
+    });
+
+    el.querySelector('[data-field="subject"]').addEventListener('input', () => syncTabLabel(state));
+
+    const toInput = el.querySelector('[data-field="to"]');
+    const suggestions = el.querySelector('[data-role="suggestions"]');
+    toInput.addEventListener('input', () => {
+      clearTimeout(state.suggestTimer);
+      const q = toInput.value.split(',').pop().trim();
+      if (!q) { hideSuggestions(suggestions); return; }
+      const seq = ++state.suggestSeq;
+      state.suggestTimer = setTimeout(async () => {
+        try { const r = await MailboxAPI.suggestRecipients(q); if (seq === state.suggestSeq) renderSuggestions(suggestions, r.items || [], toInput); } catch (_) { hideSuggestions(suggestions); }
+      }, 180);
+    });
+    toInput.addEventListener('blur', () => setTimeout(() => hideSuggestions(suggestions), 180));
+  }
+
+  function hideSuggestions(container) { container.classList.remove('show'); container.innerHTML = ''; }
+  function renderSuggestions(container, items, input) {
+    if (!items.length) { hideSuggestions(container); return; }
+    container.innerHTML = items.map((x, i) => `<div class="suggestion" data-suggest-index="${i}"><div class="suggestion-name">${esc(x.name || x.email)}</div><div class="suggestion-email">${esc(x.email)}${x.department ? ' · ' + esc(x.department) : ''}</div></div>`).join('');
+    container.classList.add('show');
+    container.querySelectorAll('[data-suggest-index]').forEach(el => {
+      el.addEventListener('mousedown', (e) => { e.preventDefault(); const x = items[Number(el.dataset.suggestIndex)]; input.value = x.email; hideSuggestions(container); });
+    });
+  }
+
+  function syncTabLabel(state) {
+    const el = state.el;
+    const title = el.querySelector('[data-role="title"]').textContent;
+    const subject = el.querySelector('[data-field="subject"]').value.trim();
+    const label = title === 'Reply message' ? 'Reply: ' + (subject || 'message') : title === 'Forward message' ? 'Forward: ' + (subject || 'message') : 'New message';
+    state.tab.querySelector('.compose-tab-label').textContent = label;
+  }
+
+  function activateComposer(id) {
+    const state = composers.get(id);
+    if (!state) return;
+    composers.forEach(s => { s.el.style.display = 'none'; s.tab.classList.remove('active'); });
+    state.el.style.display = 'flex';
+    state.tab.classList.add('active');
+    activeId = id;
+    switchView('compose');
+  }
+
+  function deactivateAll() { composers.forEach(s => { s.el.style.display = 'none'; s.tab.classList.remove('active'); }); activeId = null; }
+  function activateCurrent() { if (activeId && composers.has(activeId)) activateComposer(activeId); else if (composers.size > 0) activateComposer(composers.keys().next().value); else switchView('folders'); }
+
+  function closeComposer(id) {
+    const state = composers.get(id);
+    if (!state || state.sending) return;
+    state.el.remove(); state.tab.remove(); composers.delete(id);
+    if (activeId === id) {
+      activeId = null;
+      if (composers.size > 0) activateComposer(composers.keys().next().value);
+      else switchView('folders');
+    }
+  }
+
+  function removeAll() { composers.forEach(s => { s.el.remove(); s.tab.remove(); }); composers.clear(); activeId = null; }
+  function prepareForwardAttachments(state, items) {
+    const statusEl = state.el.querySelector('[data-role="status"]');
+    statusEl.textContent = 'Preparing original attachments…';
+    (async () => {
+      for (const item of items) { try { const file = await attachmentToFile(item); state.attachmentFiles.push(file); renderFiles(state); } catch (e) { console.warn('Forward attachment failed', e); } }
+      statusEl.textContent = state.attachmentFiles.length ? `${state.attachmentFiles.length} original attachment(s) prepared.` : 'Original attachments could not be copied automatically.';
+    })();
+  }
+
+  async function attachmentToFile(item) {
+    if (item.base64 || item.data) { const b = atob(item.base64 || item.data); const u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new File([u], item.fileName || item.name || 'attachment', { type: item.mimeType || item.type || 'application/octet-stream' }); }
+    const url = item.url || item.downloadUrl || item.fileUrl;
+    if (!url) throw new Error('Attachment URL is missing.');
+    const r = await fetch(url, { credentials: 'omit' });
+    if (!r.ok) throw new Error('Unable to download attachment.');
+    const blob = await r.blob();
+    return new File([blob], item.fileName || item.name || 'attachment', { type: item.mimeType || blob.type || 'application/octet-stream' });
+  }
+
+  function renderFiles(state) {
+    const c = state.el.querySelector('[data-role="files"]');
+    c.innerHTML = state.attachmentFiles.map((f, i) => `<div class="file-chip"><span><i class="bi bi-paperclip"></i> ${esc(f.name)} · ${esc(formatSize(f.size))}</span><button type="button" data-remove-file="${i}">×</button></div>`).join('');
+    c.querySelectorAll('[data-remove-file]').forEach(b => { b.addEventListener('click', () => { state.attachmentFiles.splice(Number(b.dataset.removeFile), 1); renderFiles(state); }); });
+  }
+
+  function readFiles(state) {
+    return Promise.all(state.attachmentFiles.map(file => new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve({ name: file.name, size: file.size, mimeType: file.type, base64: String(r.result || '').split(',')[1] || '' });
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    })));
+  }
+
+  function setSendingState(state, isSending) {
+    state.sending = isSending;
+    state.el.querySelectorAll('input, textarea, button, [contenteditable]').forEach(el => el.disabled = isSending);
+    const sendBtn = state.el.querySelector('[data-action="send"]');
+    sendBtn.classList.toggle('loading', isSending);
+    sendBtn.disabled = isSending;
+  }
+
+  async function sendComposer(state) {
+    if (state.sending) return;
+    const el = state.el;
+    el.querySelector('[data-role="alert"]').classList.add('hidden');
+    const to = el.querySelector('[data-field="to"]').value.trim();
+    if (!to) { showAlert('Please enter at least one recipient.', 'warning'); el.querySelector('[data-field="to"]').focus(); return; }
+    const subject = el.querySelector('[data-field="subject"]').value.trim();
+    if (!subject && !confirm('The subject is empty. Send anyway?')) return;
+    try {
+      setSendingState(state, true);
+      el.querySelector('[data-role="status"]').textContent = 'Preparing message…';
+      const attachments = await readFiles(state);
+      el.querySelector('[data-role="status"]').textContent = 'Sending message…';
+      const result = await MailboxAPI.send({ to, cc: el.querySelector('[data-field="cc"]').value, bcc: el.querySelector('[data-field="bcc"]').value, subject, body: el.querySelector('[data-field="body"]').innerHTML, bodyType: 'HTML', attachments });
+      setSendingState(state, false);
+      closeComposer(state.id);
+      $('successReference').textContent = 'Reference: ' + (result.referenceNo || '—');
+      $('successModal').classList.add('show');
+      invalidateFolderCache('SENT'); invalidateFolderCache('INBOX');
+      await load(1);
+    } catch (err) { setSendingState(state, false); showAlert(err.message || 'Unable to send message.', 'error'); el.querySelector('[data-role="status"]').textContent = ''; }
+  }
+
+  async function saveDraftComposer(state) {
+    if (state.sending) return;
+    const el = state.el;
+    try {
+      setSendingState(state, true);
+      const result = await MailboxAPI.draft({ to: el.querySelector('[data-field="to"]').value, cc: el.querySelector('[data-field="cc"]').value, bcc: el.querySelector('[data-field="bcc"]').value, subject: el.querySelector('[data-field="subject"]').value, body: el.querySelector('[data-field="body"]').innerHTML, bodyType: 'HTML' });
+      setSendingState(state, false);
+      el.querySelector('[data-role="status"]').textContent = 'Draft saved' + (result.referenceNo ? ' · ' + result.referenceNo : '');
+      invalidateFolderCache('DRAFT');
+      await load(1);
+    } catch (err) { setSendingState(state, false); showAlert(err.message || 'Unable to save draft.', 'error'); }
+  }
+
+  function replySubject(s) { return /^re:/i.test(String(s || '')) ? String(s) : 'Re: ' + String(s || '(No subject)'); }
+  function forwardSubject(s) { return /^fwd:/i.test(String(s || '')) ? String(s) : 'Fwd: ' + String(s || '(No subject)'); }
+  function createForwarded(m) { return `\n\n---------- Forwarded message ----------\nFrom: ${m.senderName || ''} <${m.senderEmail || ''}>\nDate: ${m.date || ''}\nSubject: ${m.subject || '(No subject)'}\nTo: ${m.to || ''}${m.cc ? '\nCc: ' + m.cc : ''}\n\n${String(m.body || '')}`; }
+
+  return { createComposer, closeComposer, activateComposer, activateCurrent, deactivateAll, removeAll, getActiveId: () => activeId, hasComposers: () => composers.size > 0 };
+})();
+
+/* =========================================================
+   MAILBOX LOADING
+   ========================================================= */
 function cacheKey(folder=currentFolder,page=1){return `${folder}|${$('searchInput').value.trim().toLowerCase()}|${page}|${pageSize}`}
+
 function applyMailboxData(data){
- currentMessages=Array.isArray(data.messages)?data.messages.slice().sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)):[];
+ currentMessages=sortMessages(data.messages);
  currentPage=data.page||1;
  totalPages=data.totalPages||1;
  selectedIds.clear();
- renderList();updatePager(data);updateToolbar();folderViews.set(currentFolder,{html:$('mailList').innerHTML,scrollTop:$('mailList').scrollTop,messages:currentMessages,page:currentPage,totalPages:totalPages});
- if(currentFolder==='INBOX'){showInboxCount(currentMessages.filter(m=>!m.isRead).length)}
+ renderList();updatePager(data);updateToolbar();
+ folderViews.set(currentFolder,{html:$('mailList').innerHTML,scrollTop:$('mailList').scrollTop,messages:currentMessages,page:currentPage,totalPages:totalPages});
+ if(currentFolder==='INBOX'){
+   const unread = currentMessages.filter(m=>!m.isRead).length;
+   showInboxCount(unread);
+   const currentIds = new Set(currentMessages.map(m => m.mailId));
+   let hasNew = false;
+   if (lastMailIds.size > 0) {
+     for (const id of currentIds) { if (!lastMailIds.has(id)) { hasNew = true; break; } }
+   }
+   if (hasNew) {
+     playNotificationTune();
+     showAlert('New mail received!', 'info', 4000);
+   }
+   lastMailIds = currentIds;
+   lastInboxCount = unread;
+ }
 }
-function renderListLoading(){ $('mailList').innerHTML='<div class="loading-inline"><span class="panel-spinner" aria-label="Loading"></span></div>'; }
+
+function renderListLoading(){ $('mailList').innerHTML='<div class="list-loading"><span class="panel-spinner" aria-label="Loading"></span> Loading messages…</div>'; }
 
 async function load(page=1,opts={}){
  const seq=++loadSequence;
  const key=cacheKey(currentFolder,page);
  const cached=folderCache.get(key);
  const fresh=cached && (Date.now()-cached.time<CACHE_TTL);
- if(cached){
-   applyMailboxData(cached.data);
-   if(fresh && opts.cacheOnly)return;
- }
+ if(cached){ applyMailboxData(cached.data); if(fresh && opts.cacheOnly)return; }
  loading=true;
  if(!cached && !opts.silent)renderListLoading();
  try{
@@ -212,16 +725,20 @@ async function load(page=1,opts={}){
 }
 
 function showInboxCount(n){const b=$('inboxCount');if(n>0){b.textContent=n;b.classList.remove('hidden')}else b.classList.add('hidden')}
-function renderList(){if(!currentMessages.length){$('mailList').innerHTML='<div class="empty"><div class="empty-title">No messages found</div><div class="empty-text">This folder does not contain any messages.</div></div>';return}$('mailList').innerHTML=currentMessages.map(m=>`<div class="mail-row ${m.isRead?'':'unread'} ${m.mailId===selectedMailId?'selected':''}" data-id="${escAttr(m.mailId)}"><div class="mail-check"><input type="checkbox" data-select="${escAttr(m.mailId)}" ${selectedIds.has(m.mailId)?'checked':''}></div><div class="mail-main"><div class="mail-top"><div class="sender">${esc(m.senderName||m.senderEmail||m.to||'Unknown')}</div><div class="date">${esc(formatDate(m.date))}</div></div><div class="subject">${esc(m.subject||'(No subject)')} ${m.hasAttachment?'<span class="attachment-dot"><i class="bi bi-paperclip"></i></span>':''}</div><div class="preview">${esc(m.body||'')}</div></div><button class="star ${m.isStarred?'active':''}" data-star="${escAttr(m.mailId)}" title="${m.isStarred?'Unstar':'Star'}"><i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i></button></div>`).join('');
+
+function renderList(){
+ if(!currentMessages.length){$('mailList').innerHTML='<div class="empty"><div class="empty-title">No messages found</div><div class="empty-text">This folder does not contain any messages.</div></div>';return}
+ $('mailList').innerHTML=currentMessages.map(m=>`<div class="mail-row ${m.isRead?'':'unread'} ${m.mailId===selectedMailId?'selected':''}" data-id="${escAttr(m.mailId)}"><div class="mail-check"><input type="checkbox" data-select="${escAttr(m.mailId)}" ${selectedIds.has(m.mailId)?'checked':''}></div><div class="mail-main"><div class="mail-top"><div class="sender">${esc(m.senderName||m.senderEmail||m.to||'Unknown')}</div><div class="date">${esc(formatDate(m.date))}</div></div><div class="subject">${esc(m.subject||'(No subject)')} ${m.hasAttachment?'<span class="attachment-dot"><i class="bi bi-paperclip"></i></span>':''}</div><div class="preview">${esc(m.body||'')}</div></div><button class="star ${m.isStarred?'active':''}" data-star="${escAttr(m.mailId)}" title="${m.isStarred?'Unstar':'Star'}"><i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i></button></div>`).join('');
  document.querySelectorAll('[data-select]').forEach(c=>c.addEventListener('click',e=>{e.stopPropagation();const id=c.dataset.select;if(c.checked)selectedIds.add(id);else selectedIds.delete(id);updateToolbar()}));
- document.querySelectorAll('[data-star]').forEach(b=>b.addEventListener('click',async e=>{e.stopPropagation();const id=b.dataset.star;const m=currentMessages.find(x=>x.mailId===id);try{b.disabled=true;await MailboxAPI.update({mailId:id,Is_Starred:m&&!m.isStarred?'YES':'NO'});invalidateFolderCache();await load(currentPage,{silent:true})}catch(err){alert(err.message||'Unable to update star.')}finally{b.disabled=false}}));
+ document.querySelectorAll('[data-star]').forEach(b=>b.addEventListener('click',async e=>{e.stopPropagation();const id=b.dataset.star;const m=currentMessages.find(x=>x.mailId===id);try{b.disabled=true;await MailboxAPI.update({mailId:id,Is_Starred:m&&!m.isStarred?'YES':'NO'});invalidateFolderCache();await load(currentPage,{silent:true})}catch(err){showAlert(err.message||'Unable to update star.','error')}finally{b.disabled=false}}));
  document.querySelectorAll('.mail-row').forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('input,button'))return;openMessage(r.dataset.id)}));
 }
+
 function updatePager(data){const total=Number(data.total||0);const start=total?((currentPage-1)*pageSize+1):0;const end=Math.min(currentPage*pageSize,total);$('rangeText').textContent=total?`${start}-${end} of ${total}`:'0 messages';$('pageText').textContent=`${currentPage} / ${totalPages}`;$('prevPage').disabled=!data.hasPrevious;$('nextPage').disabled=!data.hasNext;$('pageSize').value=String(pageSize)}
 function updateToolbar(){$('toolbar').classList.toggle('show',selectedIds.size>0)}
 function invalidateFolderCache(folder=currentFolder){for(const k of [...folderCache.keys()])if(k.startsWith(folder+'|'))folderCache.delete(k)}
 
-async function applySelected(changes){const ids=[...selectedIds];if(!ids.length)return;try{await Promise.all(ids.map(mailId=>MailboxAPI.update(Object.assign({mailId},changes))));selectedIds.clear();invalidateFolderCache();await load(currentPage)}catch(err){alert(err.message||'Unable to update messages.')}}
+async function applySelected(changes){const ids=[...selectedIds];if(!ids.length)return;try{await Promise.all(ids.map(mailId=>MailboxAPI.update(Object.assign({mailId},changes))));selectedIds.clear();invalidateFolderCache();await load(currentPage)}catch(err){showAlert(err.message||'Unable to update messages.','error')}}
 
 function paintReadHeader(m){
  selectedMailId=m.mailId||selectedMailId;
@@ -235,6 +752,7 @@ function paintReadHeader(m){
  $('readStarBtn').innerHTML=`<i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i>`;
  $('readStarBtn').style.color=m.isStarred?'#f59e0b':'';
 }
+
 async function openMessage(id){
  const row=currentMessages.find(x=>x.mailId===id);if(!row)return;
  selectedMailId=id;selectedMessage=row;selectedAttachments=[];
@@ -244,107 +762,33 @@ async function openMessage(id){
  if(row.isRead===false||!row.isRead){row.isRead=true;renderList();}
  try{const result=await MailboxAPI.get(id);if(selectedMailId!==id)return;selectedMessage=result.message||row;selectedAttachments=result.attachments||[];renderMessage(result)}catch(err){$('readBody').textContent=err.message||'Unable to load message.'}
 }
+
 function renderMessage(result){const m=result.message||{};paintReadHeader(m);const row=currentMessages.find(x=>x.mailId===selectedMailId);if(row)row.isRead=true;const body=$('readBody');if(String(m.bodyType||'').toUpperCase()==='HTML'){body.innerHTML=m.body||''}else{body.textContent=m.body||''}renderAttachments(result.attachments||[]);selectedMessage=m;selectedAttachments=result.attachments||[];renderList()}
 function renderAttachments(items){const c=$('attachmentList');c.innerHTML=(Array.isArray(items)?items:[]).map(a=>`<a class="attachment" href="${escAttr(a.url||'#')}" target="_blank" rel="noopener noreferrer"><span><i class="bi bi-paperclip"></i></span><span title="${escAttr(a.fileName)}">${esc(a.fileName||'Attachment')}</span><small>${esc(formatSize(a.size))}</small></a>`).join('')}
 
 function closeRead(){selectedMailId='';selectedMessage=null;selectedAttachments=[];$('readContent').classList.add('hidden');$('readEmpty').classList.remove('hidden');$('readPane').classList.remove('mobile-show');renderList()}
-async function readAction(changes){if(!selectedMailId)return;try{await MailboxAPI.update(Object.assign({mailId:selectedMailId},changes));invalidateFolderCache();await load(currentPage,{silent:true});if(changes.Folder||changes.Is_Deleted){closeRead()}else{await openMessage(selectedMailId)}}catch(err){alert(err.message||'Unable to update message.')}}
-
-/* =========================================================
-   COMPOSER — now a real workspace, not a modal
-   ========================================================= */
-function openCompose(mode='new',message=null,attachments=[]){
- composeMode=mode;originalMessage=message;originalAttachments=attachments||[];attachmentFiles=[];
- hideComposeAlert();$('composeLoading').classList.add('hidden');$('composeStatus').textContent='';$('fileList').innerHTML='';
- $('mailTo').value='';$('mailCc').value='';$('mailBcc').value='';$('mailSubject').value='';$('mailBody').value='';$('mailFiles').value='';
- $('modeBadge').classList.toggle('hidden',mode==='new');
- $('modeBadge').textContent=mode==='reply'?'Reply':'Forward';
- $('composeTitle').textContent=mode==='reply'?'Reply message':mode==='forward'?'Forward message':'New message';
- if(mode==='reply'&&message){$('mailTo').value=message.senderEmail||'';$('mailSubject').value=replySubject(message.subject);$('mailBody').value='\n\n'}
- if(mode==='forward'&&message){$('mailSubject').value=forwardSubject(message.subject);$('mailBody').value=createForwarded(message)}
-
- ensureComposeTab();
- switchView('compose');   // <-- ONE call, no other class toggling
-
- $('mailTo').focus();
- if(mode==='forward'&&originalAttachments.length)prepareForwardAttachments(originalAttachments);
-}
-function replySubject(s){return /^re:/i.test(String(s||''))?String(s):'Re: '+String(s||'(No subject)')}
-function forwardSubject(s){return /^fwd:/i.test(String(s||''))?String(s):'Fwd: '+String(s||'(No subject)')}
-function createForwarded(m){return `\n\n---------- Forwarded message ----------\nFrom: ${m.senderName||''} <${m.senderEmail||''}>\nDate: ${m.date||''}\nSubject: ${m.subject||'(No subject)'}\nTo: ${m.to||''}${m.cc?'\nCc: '+m.cc:''}\n\n${String(m.body||'')}`}
-function closeCompose(){
- if(sending)return;
- removeComposeTab();
- switchView('folders');   // <-- restore whatever folder was current
-}
-
-async function prepareForwardAttachments(items){$('composeStatus').textContent='Preparing original attachments…';for(const item of items){try{const file=await attachmentToFile(item);attachmentFiles.push(file);renderFiles()}catch(e){console.warn('Forward attachment failed',e)}}$('composeStatus').textContent=attachmentFiles.length?`${attachmentFiles.length} original attachment(s) prepared.`:'Original attachments could not be copied automatically.'}
-async function attachmentToFile(item){if(item.base64||item.data){const b=atob(item.base64||item.data),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new File([u],item.fileName||item.name||'attachment',{type:item.mimeType||item.type||'application/octet-stream'})}const url=item.url||item.downloadUrl||item.fileUrl;if(!url)throw new Error('Attachment URL is missing.');const r=await fetch(url,{credentials:'omit'});if(!r.ok)throw new Error('Unable to download attachment.');const blob=await r.blob();return new File([blob],item.fileName||item.name||'attachment',{type:item.mimeType||blob.type||'application/octet-stream'})}
-function renderFiles(){const c=$('fileList');c.innerHTML=attachmentFiles.map((f,i)=>`<div class="file-chip"><span><i class="bi bi-paperclip"></i> ${esc(f.name)} · ${esc(formatSize(f.size))}</span><button type="button" data-remove-file="${i}">×</button></div>`).join('');document.querySelectorAll('[data-remove-file]').forEach(b=>b.addEventListener('click',()=>{attachmentFiles.splice(Number(b.dataset.removeFile),1);renderFiles()}))}
-function readFiles(){return Promise.all(attachmentFiles.map(file=>new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve({name:file.name,size:file.size,mimeType:file.type,base64:String(r.result||'').split(',')[1]||''});r.onerror=reject;r.readAsDataURL(file)})))}
-function setSendingState(state){sending=state;document.querySelectorAll('#composeModal input,#composeModal textarea,#composeModal button').forEach(el=>el.disabled=state);$('sendBtn').classList.toggle('loading',state);$('sendBtn').disabled=state;$('sendBtn').querySelector('.send-label').textContent='Send'}
-
-async function sendMessage(){if(sending)return;hideComposeAlert();const to=$('mailTo').value.trim();if(!to){alertCompose('Please enter at least one recipient.','warning');$('mailTo').focus();return}if(!$('mailSubject').value.trim()&&!confirm('The subject is empty. Send anyway?'))return;try{setSendingState(true);$('composeStatus').textContent='Preparing message…';const attachments=await readFiles();$('composeStatus').textContent='Sending message…';const result=await MailboxAPI.send({to,cc:$('mailCc').value,bcc:$('mailBcc').value,subject:$('mailSubject').value,body:$('mailBody').innerHTML,bodyType:'HTML',attachments});setSendingState(false);closeCompose();$('successReference').textContent='Reference: '+(result.referenceNo||'—');$('successModal').classList.add('show');invalidateFolderCache('SENT');invalidateFolderCache('INBOX');await load(1)}catch(err){setSendingState(false);alertCompose(err.message||'Unable to send message.','error');$('composeStatus').textContent=''}}
-async function saveDraft(){if(sending)return;try{setSendingState(true);const result=await MailboxAPI.draft({to:$('mailTo').value,cc:$('mailCc').value,bcc:$('mailBcc').value,subject:$('mailSubject').value,body:$('mailBody').innerHTML,bodyType:'HTML'});setSendingState(false);$('composeStatus').textContent='Draft saved'+(result.referenceNo?' · '+result.referenceNo:'');invalidateFolderCache('DRAFT');await load(1)}catch(err){setSendingState(false);alertCompose(err.message||'Unable to save draft.')}}
-
-let suggestTimer=null,suggestSeq=0;
-function hideSuggestions(){$('suggestions').classList.remove('show');$('suggestions').innerHTML=''}
-function renderSuggestions(items){const c=$('suggestions');if(!items.length){hideSuggestions();return}c.innerHTML=items.map((x,i)=>`<div class="suggestion" data-suggest-index="${i}"><div class="suggestion-name">${esc(x.name||x.email)}</div><div class="suggestion-email">${esc(x.email)}${x.department?' · '+esc(x.department):''}</div></div>`).join('');c.classList.add('show');document.querySelectorAll('[data-suggest-index]').forEach(el=>el.addEventListener('mousedown',e=>{e.preventDefault();const x=items[Number(el.dataset.suggestIndex)];$('mailTo').value=x.email;hideSuggestions()}))}
-$('mailTo').addEventListener('input',()=>{clearTimeout(suggestTimer);const q=$('mailTo').value.split(',').pop().trim();if(!q){hideSuggestions();return}const seq=++suggestSeq;suggestTimer=setTimeout(async()=>{try{const r=await MailboxAPI.suggestRecipients(q);if(seq===suggestSeq)renderSuggestions(r.items||[])}catch(_){hideSuggestions()}},180)});
-$('mailTo').addEventListener('blur',()=>setTimeout(hideSuggestions,180));
-
-/* =========================================================
-   COMPOSE TAB (internal application tab, NOT a browser tab)
-   ========================================================= */
-let composeTab = null;
-const composeTabsEl = $('composeTabs');
-
-function composeTabLabel(){
-  const mode = $('composeTitle').textContent;
-  const subject = $('mailSubject').value.trim();
-  return mode==='Reply message'?'Reply: '+(subject||'message')
-       : mode==='Forward message'?'Forward: '+(subject||'message')
-       : 'New message';
-}
-function ensureComposeTab(){
-  if(composeTab) return composeTab;
-  composeTab = document.createElement('button');
-  composeTab.type = 'button';
-  composeTab.className = 'compose-tab';
-  composeTab.innerHTML = '<span class="compose-tab-label"></span><span class="compose-tab-close" role="button" aria-label="Close compose tab">×</span>';
-  composeTab.querySelector('.compose-tab-label').textContent = composeTabLabel();
-  composeTab.addEventListener('click', e=>{
-    if(e.target.closest('.compose-tab-close')){ closeCompose(); return; }
-    switchView('compose');
-  });
-  composeTabsEl.appendChild(composeTab);
-  return composeTab;
-}
-function syncComposeTabLabel(){
-  if(composeTab) composeTab.querySelector('.compose-tab-label').textContent = composeTabLabel();
-}
-function removeComposeTab(){
-  if(composeTab){ composeTab.remove(); composeTab = null; }
-}
+async function readAction(changes){if(!selectedMailId)return;try{await MailboxAPI.update(Object.assign({mailId:selectedMailId},changes));invalidateFolderCache();await load(currentPage,{silent:true});if(changes.Folder||changes.Is_Deleted){closeRead()}else{await openMessage(selectedMailId)}}catch(err){showAlert(err.message||'Unable to update message.','error')}}
 
 /* =========================================================
    WIRE-UP
    ========================================================= */
-$('composeBtn').addEventListener('click',()=>openCompose('new'));
-$('closeCompose').addEventListener('click',closeCompose);
-$('discardBtn').addEventListener('click',()=>{if(confirm('Discard this message?'))closeCompose()});
-$('sendBtn').addEventListener('click',sendMessage);
-$('draftBtn').addEventListener('click',saveDraft);
-$('attachBtn').addEventListener('click',()=>!sending&&$('mailFiles').click());
-$('mailFiles').addEventListener('change',e=>{if(sending)return;for(const f of [...e.target.files])attachmentFiles.push(f);renderFiles();$('composeStatus').textContent=`${attachmentFiles.length} attachment(s) selected.`;e.target.value=''});
+$('composeBtn').addEventListener('click',()=>ComposerManager.createComposer('new'));
 $('successOk').addEventListener('click',()=>{$('successModal').classList.remove('show');});
-
-$('replyBtn').addEventListener('click',()=>{if(selectedMessage)openCompose('reply',selectedMessage,selectedAttachments)});
-$('forwardBtn').addEventListener('click',()=>{if(selectedMessage)openCompose('forward',selectedMessage,selectedAttachments)});
+$('replyBtn').addEventListener('click',()=>{if(selectedMessage)ComposerManager.createComposer('reply',selectedMessage,selectedAttachments)});
+$('forwardBtn').addEventListener('click',()=>{if(selectedMessage)ComposerManager.createComposer('forward',selectedMessage,selectedAttachments)});
 $('readArchiveBtn').addEventListener('click',()=>readAction({Folder:'ARCHIVE',Is_Archived:'YES',Is_Deleted:'NO',Is_Spam:'NO'}));
 $('readDeleteBtn').addEventListener('click',()=>{if(confirm('Move this message to Trash?'))readAction({Folder:'TRASH',Is_Deleted:'YES'})});
-$('readStarBtn').addEventListener('click',async()=>{if(!selectedMailId)return;try{await readAction({Is_Starred:selectedMessage&&selectedMessage.isStarred?'NO':'YES'})}catch(e){alert(e.message)}});
+$('readStarBtn').addEventListener('click',async()=>{if(!selectedMailId)return;try{await readAction({Is_Starred:selectedMessage&&selectedMessage.isStarred?'NO':'YES'})}catch(e){showAlert(e.message,'error')}});
 $('backBtn').addEventListener('click',closeRead);
+
+/* sort dropdown — sync with saved preference */
+$('sortSelect').value = currentSort;
+$('sortSelect').addEventListener('change',()=>{
+  currentSort = $('sortSelect').value;
+  localStorage.setItem('mailbox_sort', currentSort);
+  currentMessages = sortMessages(currentMessages);
+  renderList();
+});
 
 const prefetchTimers=new Map();
 const prefetchPromises=new Map();
@@ -355,18 +799,15 @@ function prefetchFolder(folder){
  prefetchPromises.set(key,promise);
 }
 document.querySelectorAll('.folder').forEach(b=>{
- b.addEventListener('mouseenter',()=>{
-  const folder=b.dataset.folder;
-  clearTimeout(prefetchTimers.get(folder));
-  prefetchTimers.set(folder,setTimeout(()=>prefetchFolder(folder),180));
- });
+ b.addEventListener('mouseenter',()=>{ const folder=b.dataset.folder; clearTimeout(prefetchTimers.get(folder)); prefetchTimers.set(folder,setTimeout(()=>prefetchFolder(folder),180)); });
  b.addEventListener('mouseleave',()=>clearTimeout(prefetchTimers.get(b.dataset.folder)));
  b.addEventListener('click',()=>{
    if(currentFolder===b.dataset.folder) { switchView('folders'); return; }
    folderViews.set(currentFolder,{html:$('mailList').innerHTML,scrollTop:$('mailList').scrollTop,messages:currentMessages,page:currentPage,totalPages:totalPages});
    currentFolder=b.dataset.folder;currentPage=1;selectedMailId='';selectedMessage=null;selectedAttachments=[];saveFolder();updateFolderUI();closeRead();
    const view=folderViews.get(currentFolder);const c=folderCache.get(cacheKey(currentFolder,1));
-   if(view&&view.messages){currentMessages=view.messages;currentPage=view.page||1;totalPages=view.totalPages||1;renderList();updatePager({total:currentMessages.length,page:currentPage,totalPages:totalPages,hasPrevious:currentPage>1,hasNext:currentPage<totalPages});requestAnimationFrame(()=>{$('mailList').scrollTop=view.scrollTop||0});}
+   if(!c && !view) { renderListLoading(); }
+   else if(view&&view.messages){ currentMessages=sortMessages(view.messages);currentPage=view.page||1;totalPages=view.totalPages||1;renderList();updatePager({total:currentMessages.length,page:currentPage,totalPages:totalPages,hasPrevious:currentPage>1,hasNext:currentPage<totalPages});requestAnimationFrame(()=>{$('mailList').scrollTop=view.scrollTop||0}); }
    else if(c)applyMailboxData(c.data);
    load(1,{silent:true});
    switchView('folders');
@@ -380,20 +821,54 @@ function runSearch(){clearTimeout(searchTimer);searchTimer=setTimeout(()=>load(1
 $('searchInput').addEventListener('input',runSearch);$('searchInput').addEventListener('keydown',e=>{if(e.key==='Escape'){$('searchInput').value='';runSearch()}});$('clearSearch').addEventListener('click',()=>{$('searchInput').value='';runSearch();$('searchInput').focus()});
 $('logoutBtn').addEventListener('click',async()=>{try{await MailboxAPI.logout()}catch(_){}MailboxAPI.clearSession();location.href='login.html'});
 
-/* Folders tab: always brings back whichever folder is currently selected */
 $('foldersTab').addEventListener('click',()=>switchView('folders'));
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if($('successModal').classList.contains('show')) $('successModal').classList.remove('show');
-    else if(activeView==='compose') closeCompose();
+    else if(activeView==='compose') { const activeId = ComposerManager.getActiveId(); if (activeId) ComposerManager.closeComposer(activeId); }
     else if($('readPane').classList.contains('mobile-show')) closeRead();
   }
 });
 
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load(currentPage,{silent:true})});
-async function silentRefresh(){if(document.hidden){silentTimer=setTimeout(silentRefresh,45000);return}try{const key=cacheKey(currentFolder,currentPage);const data=await MailboxAPI.list(currentFolder,$('searchInput').value.trim(),currentPage,pageSize);folderCache.set(key,{data,time:Date.now()});const sig=signature(data.messages||[]);if(sig!==signature(currentMessages)){currentMessages=data.messages||[];currentPage=data.page||currentPage;totalPages=data.totalPages||1;renderList();updatePager(data)}}catch(_){}finally{silentTimer=setTimeout(silentRefresh,45000)}}
-function startSilent(){clearTimeout(silentTimer);silentTimer=setTimeout(silentRefresh,45000)}
+
+/* =========================================================
+   SILENT REFRESH — every 30 seconds
+   ========================================================= */
+async function silentRefresh(){
+  if(document.hidden){silentTimer=setTimeout(silentRefresh,30000);return}
+  try{
+    const key=cacheKey(currentFolder,currentPage);
+    const data=await MailboxAPI.list(currentFolder,$('searchInput').value.trim(),currentPage,pageSize);
+    folderCache.set(key,{data,time:Date.now()});
+    const sig=signature(data.messages||[]);
+    if(sig!==signature(currentMessages)){
+      currentMessages=sortMessages(data.messages);
+      currentPage=data.page||currentPage;
+      totalPages=data.totalPages||1;
+      renderList();
+      updatePager(data);
+      if(currentFolder==='INBOX'){
+        const unread = currentMessages.filter(m=>!m.isRead).length;
+        showInboxCount(unread);
+        const currentIds = new Set(currentMessages.map(m => m.mailId));
+        let hasNew = false;
+        if (lastMailIds.size > 0) {
+          for (const id of currentIds) { if (!lastMailIds.has(id)) { hasNew = true; break; } }
+        }
+        if (hasNew) {
+          playNotificationTune();
+          showAlert('New mail received!', 'info', 4000);
+        }
+        lastMailIds = currentIds;
+        lastInboxCount = unread;
+      }
+    }
+  }catch(_){}
+  finally{silentTimer=setTimeout(silentRefresh,30000)}
+}
+function startSilent(){clearTimeout(silentTimer);silentTimer=setTimeout(silentRefresh,30000)}
 
 function initSplitter(){
  const handle=$('paneSplitter'),main=document.querySelector('.main'),mailArea=document.querySelector('.mail-area');
@@ -407,18 +882,15 @@ function initSplitter(){
 }
 window.addEventListener('resize',()=>{if(window.matchMedia('(max-width:760px)').matches){document.querySelector('.mail-area').style.width=''}else{const w=parseInt(localStorage.getItem('mailbox_list_width')||'',10);if(w)document.querySelector('.mail-area').style.width=w+'px';document.querySelector('.mail-area').style.flexBasis=w+'px'}});
 
+initNotificationAudio();
 initSplitter();
 updateFolderUI();
-switchView('folders');   // ensure initial state is unambiguous
+switchView('folders');
 load(1).finally(()=>startSilent());
 })();
 </script>
-<style>
-.profile-drawer{position:fixed;z-index:120;right:0;top:0;bottom:0;width:min(340px,90vw);padding:22px;background:var(--panel);border-left:1px solid var(--border);box-shadow:var(--shadow);transform:translateX(105%);transition:transform .24s ease;text-align:center}.profile-drawer.open{transform:translateX(0)}.profile-drawer-head{display:flex;justify-content:space-between;align-items:center}.profile-avatar{margin:28px auto 12px;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--primary);color:white;font-weight:700;font-size:20px}.profile-drawer p{color:var(--muted);font-size:13px;margin:8px}.theme-palette{position:absolute;bottom:24px;left:20px;right:20px;text-align:left}.theme-swatches{display:flex;gap:12px;margin-top:14px}.theme-swatches button{width:30px;height:30px;border-radius:50%;background:var(--swatch);border:3px solid var(--panel);outline:1px solid var(--border)}.workspace-tabs{height:42px;display:flex;align-items:end;padding-left:12px;background:var(--panel);border-bottom:1px solid var(--border)}.workspace-tab,.compose-tab{padding:9px 15px;border:1px solid var(--border);border-bottom:0;border-radius:9px 9px 0 0;background:var(--soft);color:var(--text);font-size:12px}.workspace-tab.active{background:var(--selected);color:var(--primary)}.rich-editor{white-space:normal;overflow:auto;min-height:220px}.rich-editor:empty:before{content:attr(data-placeholder);color:var(--muted)}.editor-tools{display:flex;gap:7px;padding:5px 0}.editor-tools button{border:1px solid var(--border);background:var(--soft);color:var(--text);border-radius:6px;padding:5px 9px}
-</style>
 <script>
-/* Profile drawer, theme, editor tools, and compose-tab label sync.
-   NOTE: view-switching is owned entirely by the main script above. */
+/* Profile drawer, theme, editor tools */
 (()=>{
  const $=id=>document.getElementById(id);
  const user=(()=>{try{return JSON.parse(sessionStorage.getItem('mailbox_user')||'{}')}catch(e){return {}}})();
@@ -432,13 +904,6 @@ load(1).finally(()=>startSilent());
  av.addEventListener('click',()=>{drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');av.setAttribute('aria-expanded','true')});
  $('closeProfile').addEventListener('click',()=>{drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');av.setAttribute('aria-expanded','false')});
  document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.theme;document.documentElement.style.setProperty('--mailbox-accent',c);document.documentElement.style.setProperty('--primary',c);localStorage.setItem('mailbox_theme_color',c)}));
- document.querySelectorAll('[data-cmd]').forEach(b=>b.addEventListener('click',()=>{const cmd=b.dataset.cmd;document.execCommand(cmd,false,cmd==='createLink'?prompt('Enter link URL'):null);$('mailBody').focus()}));
- const body=$('mailBody');
- if(body){Object.defineProperty(body,'value',{get(){return this.innerHTML},set(v){this.innerHTML=v||''},configurable:true})}
- // Keep the compose tab label in sync with the subject while the composer is active
- $('mailSubject').addEventListener('input',()=>{
-   if(typeof syncComposeTabLabel==='function') syncComposeTabLabel();
- });
 })();
 </script>
 </body>
