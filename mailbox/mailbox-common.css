@@ -842,6 +842,145 @@ body{overflow:hidden}
 .sort-select:focus {
   border-color: var(--primary);
 }
+/* =========================================================
+   CUSTOM CONFIRM DIALOG
+   Replaces native confirm() with a themed modal.
+   ========================================================= */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, .45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  padding: 20px;
+}
+.confirm-overlay.show { display: flex; }
 
+.confirm-dialog {
+  background: var(--panel, #fff);
+  color: var(--text, #1e293b);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .28);
+  width: min(400px, 100%);
+  padding: 24px;
+  text-align: center;
+  animation: confirmPop .22s ease;
+}
+
+@keyframes confirmPop {
+  from { opacity: 0; transform: scale(.94) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.confirm-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  background: var(--selected, #eff6ff);
+  color: var(--primary, #2563eb);
+}
+.confirm-icon.warn   { background: #fef3c7; color: #d97706; }
+.confirm-icon.danger { background: #fee2e2; color: #dc2626; }
+
+.confirm-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--text, #1e293b);
+}
+.confirm-message {
+  font-size: 13.5px;
+  color: var(--muted, #64748b);
+  margin: 0 0 22px;
+  line-height: 1.5;
+}
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.confirm-btn {
+  border: 1px solid var(--border, #e2e8f0);
+  background: var(--soft, #f8fafc);
+  color: var(--text, #1e293b);
+  border-radius: 9px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 96px;
+  transition: background .15s ease, border-color .15s ease, filter .15s ease;
+}
+.confirm-btn:hover { background: var(--selected, #eff6ff); }
+.confirm-btn.primary {
+  background: var(--primary, #2563eb);
+  border-color: var(--primary, #2563eb);
+  color: #fff;
+}
+.confirm-btn.primary:hover { filter: brightness(1.08); background: var(--primary, #2563eb); }
+.confirm-btn.danger {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+.confirm-btn.danger:hover { filter: brightness(1.08); background: #dc2626; }
+
+/* =========================================================
+   SEND BUTTON — unified animation
+   Overrides any earlier partial .send-btn / .send-spinner rules.
+   ========================================================= */
+.send-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 108px;
+  height: 39px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--primary), var(--primary2));
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter .15s ease, opacity .15s ease;
+}
+.send-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.send-btn:disabled { opacity: .7; cursor: not-allowed; }
+
+.send-btn .send-spinner {
+  display: none;
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, .4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+.send-btn.loading .send-spinner { display: inline-block; }
+.send-btn.loading .send-label   { display: none; }
+
+/* Legacy alias used by older markup — keep consistent */
+.send-only-spinner {
+  display: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+.send-btn.loading .send-only-spinner { display: inline-block; }
 @media(max-width:760px){.workspace-tabs{padding-left:8px;padding-right:8px}.compose-tab{max-width:230px}.compose-tab-label{max-width:175px}}
 @media(max-width:520px){.workspace-tabs{flex-basis:42px}.workspace-stage>.compose-workspace .compose-body{padding:12px}.workspace-stage>.compose-workspace .compose-area{min-height:220px}}
