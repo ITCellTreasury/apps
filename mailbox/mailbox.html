@@ -358,9 +358,9 @@ const ComposerManager = (() => {
       <div class="compose-body">
         <div class="alert hidden" data-role="alert"></div>
         <div class="alert hidden" data-role="loading">Loading original message…</div>
-        <div class="compose-row"><label class="compose-label">To</label><div class="compose-to-wrap"><input class="compose-input" data-field="to" autocomplete="off" placeholder="Recipient email"><div class="autocomplete" data-role="suggestions"></div></div></div>
-        <div class="compose-row"><label class="compose-label">Cc</label><input class="compose-input" data-field="cc" autocomplete="off" placeholder="Optional"></div>
-        <div class="compose-row"><label class="compose-label">Bcc</label><input class="compose-input" data-field="bcc" autocomplete="off" placeholder="Optional"></div>
+        <div class="compose-row"><label class="compose-label">To</label><div class="recipient-box" data-recipient-box="to"><div class="recipient-chips" data-chips="to"></div><input class="compose-input recipient-entry" data-field="to" autocomplete="off" placeholder="Recipient email"><div class="autocomplete" data-role="suggestions-to"></div></div></div>
+        <div class="compose-row"><label class="compose-label">Cc</label><div class="recipient-box" data-recipient-box="cc"><div class="recipient-chips" data-chips="cc"></div><input class="compose-input recipient-entry" data-field="cc" autocomplete="off" placeholder="Optional"><div class="autocomplete" data-role="suggestions-cc"></div></div></div>
+        <div class="compose-row"><label class="compose-label">Bcc</label><div class="recipient-box" data-recipient-box="bcc"><div class="recipient-chips" data-chips="bcc"></div><input class="compose-input recipient-entry" data-field="bcc" autocomplete="off" placeholder="Optional"><div class="autocomplete" data-role="suggestions-bcc"></div></div></div>
         <div class="compose-row"><label class="compose-label">Subject</label><input class="compose-input" data-field="subject" placeholder="Subject"></div>
         <div class="compose-area rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-field="body" data-placeholder="Write your message…"></div>
         <div class="editor-tools">
@@ -392,7 +392,7 @@ const ComposerManager = (() => {
     tab.innerHTML = '<span class="compose-tab-label"></span><span class="compose-tab-close" role="button" aria-label="Close compose tab">×</span>';
     tabsEl.appendChild(tab);
 
-    const state = { id, el, tab, mode, originalMessage: message, originalAttachments: attachments || [], attachmentFiles: [], sending: false, suggestTimer: null, suggestSeq: 0, dirty: false };
+    const state = { id, el, tab, mode, originalMessage: message, originalAttachments: attachments || [], attachmentFiles: [], recipients: {to:[],cc:[],bcc:[]}, sending: false, suggestTimer: null, suggestSeq: 0, dirty: false };
     composers.set(id, state);
     bindComposerEvents(state);
     initComposerFields(state, mode, message, attachments);
@@ -412,7 +412,7 @@ const ComposerManager = (() => {
     badgeEl.classList.toggle('hidden', mode === 'new');
     badgeEl.textContent = mode === 'reply' ? 'Reply' : 'Forward';
 
-    if (mode === 'reply' && message) { toInput.value = message.senderEmail || ''; subjectInput.value = replySubject(message.subject); bodyEl.innerHTML = '<br><br>'; }
+    if (mode === 'reply' && message) { addRecipient(state, 'to', message.senderEmail || '', false); subjectInput.value = replySubject(message.subject); bodyEl.innerHTML = '<br><br>'; }
     if (mode === 'forward' && message) { subjectInput.value = forwardSubject(message.subject); bodyEl.innerHTML = createForwarded(message); }
 
     Object.defineProperty(bodyEl, 'value', { get() { return this.innerHTML; }, set(v) { this.innerHTML = v || ''; }, configurable: true });
@@ -452,27 +452,59 @@ const ComposerManager = (() => {
 
     el.querySelector('[data-field="subject"]').addEventListener('input', () => syncTabLabel(state));
 
-    const toInput = el.querySelector('[data-field="to"]');
-    const suggestions = el.querySelector('[data-role="suggestions"]');
-    toInput.addEventListener('input', () => {
-      clearTimeout(state.suggestTimer);
-      const q = toInput.value.split(',').pop().trim();
-      if (!q) { hideSuggestions(suggestions); return; }
-      const seq = ++state.suggestSeq;
-      state.suggestTimer = setTimeout(async () => {
-        try { const r = await MailboxAPI.suggestRecipients(q); if (seq === state.suggestSeq) renderSuggestions(suggestions, r.items || [], toInput); } catch (_) { hideSuggestions(suggestions); }
-      }, 180);
+    ['to','cc','bcc'].forEach(field => {
+      const input = el.querySelector(`[data-field="${field}"]`);
+      const suggestions = el.querySelector(`[data-role="suggestions-${field}"]`);
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ',' || e.key === ';') { e.preventDefault(); commitRecipient(state, field); }
+        if (e.key === 'Backspace' && !input.value && state.recipients[field].length) { state.recipients[field].pop(); renderRecipientChips(state, field); }
+      });
+      input.addEventListener('input', () => {
+        const raw = input.value;
+        if (/[;,]$/.test(raw)) { commitRecipient(state, field); hideSuggestions(suggestions); return; }
+        clearTimeout(state.suggestTimer);
+        const q = raw.trim();
+        if (!q || !q.includes('@')) { hideSuggestions(suggestions); return; }
+        const seq = ++state.suggestSeq;
+        state.suggestTimer = setTimeout(async () => {
+          try { const r = await MailboxAPI.suggestRecipients(q); if (seq === state.suggestSeq) renderSuggestions(suggestions, r.items || [], input, state, field); } catch (_) { hideSuggestions(suggestions); }
+        }, 180);
+      });
+      input.addEventListener('blur', () => setTimeout(() => { commitRecipient(state, field); hideSuggestions(suggestions); }, 180));
+      el.querySelector(`[data-recipient-box="${field}"]`).addEventListener('click', () => input.focus());
     });
-    toInput.addEventListener('blur', () => setTimeout(() => hideSuggestions(suggestions), 180));
   }
 
+  function validEmail(v) { return /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(v); }
+  function addRecipient(state, field, value, clearInput = true) {
+    const email = String(value || '').trim().replace(/[;,]+$/, '');
+    if (!email) return;
+    if (!validEmail(email)) { showAlert(`Please check this email address: ${email}`, 'warning'); return; }
+    const list = state.recipients[field];
+    if (!list.some(x => x.toLowerCase() === email.toLowerCase())) list.push(email);
+    if (clearInput) state.el.querySelector(`[data-field="${field}"]`).value = '';
+    renderRecipientChips(state, field);
+  }
+  function commitRecipient(state, field) {
+    const input = state.el.querySelector(`[data-field="${field}"]`);
+    const raw = input.value.trim();
+    if (!raw) return;
+    raw.split(/[;,]+/).map(x => x.trim()).filter(Boolean).forEach(x => addRecipient(state, field, x, false));
+    input.value = '';
+  }
+  function renderRecipientChips(state, field) {
+    const host = state.el.querySelector(`[data-chips="${field}"]`);
+    host.innerHTML = state.recipients[field].map((email, i) => `<span class="recipient-chip"><span>${esc(email)}</span><button type="button" aria-label="Remove ${esc(email)}" data-remove-recipient="${i}">×</button></span>`).join('');
+    host.querySelectorAll('[data-remove-recipient]').forEach(btn => btn.addEventListener('click', () => { state.recipients[field].splice(Number(btn.dataset.removeRecipient), 1); renderRecipientChips(state, field); }));
+  }
+  function recipientValue(state, field) { commitRecipient(state, field); return state.recipients[field].join(', '); }
   function hideSuggestions(container) { container.classList.remove('show'); container.innerHTML = ''; }
-  function renderSuggestions(container, items, input) {
+  function renderSuggestions(container, items, input, state, field) {
     if (!items.length) { hideSuggestions(container); return; }
     container.innerHTML = items.map((x, i) => `<div class="suggestion" data-suggest-index="${i}"><div class="suggestion-name">${esc(x.name || x.email)}</div><div class="suggestion-email">${esc(x.email)}${x.department ? ' · ' + esc(x.department) : ''}</div></div>`).join('');
     container.classList.add('show');
     container.querySelectorAll('[data-suggest-index]').forEach(el => {
-      el.addEventListener('mousedown', (e) => { e.preventDefault(); const x = items[Number(el.dataset.suggestIndex)]; input.value = x.email; hideSuggestions(container); });
+      el.addEventListener('mousedown', (e) => { e.preventDefault(); const x = items[Number(el.dataset.suggestIndex)]; addRecipient(state, field, x.email); hideSuggestions(container); });
     });
   }
 
@@ -518,9 +550,9 @@ const ComposerManager = (() => {
 
   function isComposerDirty(state) {
     const el = state.el;
-    const to = el.querySelector('[data-field="to"]').value.trim();
-    const cc = el.querySelector('[data-field="cc"]').value.trim();
-    const bcc = el.querySelector('[data-field="bcc"]').value.trim();
+    const to = recipientValue(state, 'to');
+    const cc = recipientValue(state, 'cc');
+    const bcc = recipientValue(state, 'bcc');
     const subject = el.querySelector('[data-field="subject"]').value.trim();
     const bodyHtml = el.querySelector('[data-field="body"]').innerHTML.trim();
     const bodyText = bodyHtml.replace(/<br\s*\/?>/gi, '').replace(/<[^>]+>/g, '').trim();
@@ -599,7 +631,9 @@ const ComposerManager = (() => {
     if (state.sending) return;
     const el = state.el;
     el.querySelector('[data-role="alert"]').classList.add('hidden');
-    const to = el.querySelector('[data-field="to"]').value.trim();
+    const to = recipientValue(state, 'to');
+    const cc = recipientValue(state, 'cc');
+    const bcc = recipientValue(state, 'bcc');
     if (!to) { showAlert('Please enter at least one recipient.', 'warning'); el.querySelector('[data-field="to"]').focus(); return; }
     const subject = el.querySelector('[data-field="subject"]').value.trim();
     if (!subject) {
@@ -617,7 +651,7 @@ const ComposerManager = (() => {
       el.querySelector('[data-role="status"]').textContent = 'Preparing message…';
       const attachments = await readFiles(state);
       el.querySelector('[data-role="status"]').textContent = 'Sending message…';
-      const result = await MailboxAPI.send({ to, cc: el.querySelector('[data-field="cc"]').value, bcc: el.querySelector('[data-field="bcc"]').value, subject, body: el.querySelector('[data-field="body"]').innerHTML, bodyType: 'HTML', attachments });
+      const result = await MailboxAPI.send({ to, cc, bcc, subject, body: el.querySelector('[data-field="body"]').innerHTML, bodyType: 'HTML', attachments });
       setSendingState(state, false);
       closeComposer(state.id);
       $('successReference').textContent = 'Reference: ' + (result.referenceNo || '—');
@@ -632,7 +666,7 @@ const ComposerManager = (() => {
     const el = state.el;
     try {
       setSendingState(state, true);
-      const result = await MailboxAPI.draft({ to: el.querySelector('[data-field="to"]').value, cc: el.querySelector('[data-field="cc"]').value, bcc: el.querySelector('[data-field="bcc"]').value, subject: el.querySelector('[data-field="subject"]').value, body: el.querySelector('[data-field="body"]').innerHTML, bodyType: 'HTML' });
+      const result = await MailboxAPI.draft({ to: recipientValue(state, 'to'), cc: recipientValue(state, 'cc'), bcc: recipientValue(state, 'bcc'), subject: el.querySelector('[data-field="subject"]').value, body: el.querySelector('[data-field="body"]').innerHTML, bodyType: 'HTML' });
       setSendingState(state, false);
       el.querySelector('[data-role="status"]').textContent = 'Draft saved' + (result.referenceNo ? ' · ' + result.referenceNo : '');
       invalidateFolderCache('DRAFT');
