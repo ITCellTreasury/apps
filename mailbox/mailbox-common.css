@@ -949,7 +949,7 @@ body{overflow:hidden}
   padding: 0 20px;
   border: 0;
   border-radius: 11px;
-  background: linear-gradient(135deg, var(--primary), var(--primary2));
+  background:  var(--primary);
   color: #fff;
   font-size: 12px;
   font-weight: 700;
@@ -987,10 +987,10 @@ body{overflow:hidden}
 
 
 /* Multiple recipient chips */
-.recipient-box{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-height:38px;width:100%;padding:4px 8px;border:1px solid var(--border,#d7dce3);border-radius:7px;background:var(--surface,#fff)}
+.recipient-box{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-height:38px;width:100%;padding:4px 8px;/*border:1px solid var(--border,#d7dce3);border-radius:7px;background:var(--surface,#fff)*/}
 .recipient-box:focus-within{outline:2px solid var(--accent,#6b8afd);outline-offset:1px}
 .recipient-chips{display:contents}
 .recipient-box .recipient-entry{flex:1 1 140px;min-width:120px;width:auto;border:0!important;outline:0!important;box-shadow:none!important;padding:5px 2px;background:transparent}
-.recipient-chip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:4px 8px;border-radius:14px;background:var(--surface-2,#edf1f7);font-size:12px;overflow-wrap:anywhere}
+.recipient-chip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:4px 8px;border-radius:14px;background:var(--surface-2,var(--primary));font-size:12px;overflow-wrap:anywhere}
 .recipient-chip button{border:0;background:transparent;cursor:pointer;font-size:16px;line-height:1;padding:0 1px;color:inherit}
 .recipient-box .autocomplete{left:0;right:0;top:100%;z-index:30}
