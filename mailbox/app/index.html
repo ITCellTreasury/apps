@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    
+    <!-- Method 1: Meta Refresh - Fastest -->
+    <meta http-equiv="refresh" content="0; url="./app/mailbox.html">
+    
+    <!-- Method 2: Preconnect for faster loading -->
+    <link rel="preconnect" href="./app/mailbox.html">
+    
+    <style>
+        /* Minimal styles for loading state */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .redirect-container {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .text {
+            color: #1e293b;
+            font-size: 1rem;
+        }
+        
+        .redirect-link {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .redirect-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="redirect-container">
+        <div class="spinner"></div>
+        <p class="text">Redirecting to <a href="./app/mailbox.html" class="redirect-link">./app/mailbox.html</a>...</p>
+        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #64748b;">
+            If you are not redirected, <a href="./app/mailbox.html" class="redirect-link">click here</a>
+        </p>
+    </div>
+
+    <!-- Method 3: JavaScript Redirect - Immediate (fastest) -->
+    <script>
+        // Immediate redirect using location.replace (doesn't add to browser history)
+        (function() {
+            // Use location.replace for fastest redirect without history entry
+            window.location.replace('./app/mailbox.html');
+        })();
+        
+        // Backup redirect after 100ms (in case the first one fails)
+        setTimeout(function() {
+            window.location.href = './app/mailbox.html';
+        }, 100);
+        
+        // Another backup using window.location (after 200ms)
+        setTimeout(function() {
+            if (window.location.href.indexOf('redirect.html') !== -1) {
+                window.location = './app/mailbox.html';
+            }
+        }, 200);
+    </script>
+</body>
+</html>

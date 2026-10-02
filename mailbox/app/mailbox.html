@@ -1,2855 +1,957 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>MailBox | Mailbox</title>
-
-  <!--begin::Theme Init-->
-  <script>
-    (() => {
-      'use strict';
-
-      const root = document.documentElement;
-
-      if (root.getAttribute('data-lte-color-mode') === 'off') {
-        return;
-      }
-
-      const STORAGE_KEY = 'lte-theme';
-      let stored = null;
-
-      try {
-        stored = localStorage.getItem(STORAGE_KEY);
-      } catch (_) {}
-
-      const authored = root.getAttribute('data-bs-theme');
-
-      let resolved = 'light';
-
-      if (stored === 'dark' || stored === 'light') {
-        resolved = stored;
-      } else if (authored === 'dark' || authored === 'light') {
-        resolved = authored;
-      } else if (
-        globalThis.matchMedia &&
-        globalThis.matchMedia('(prefers-color-scheme: dark)').matches
-      ) {
-        resolved = 'dark';
-      }
-
-      root.setAttribute('data-bs-theme', resolved);
-      root.style.colorScheme = resolved;
-
-      if (resolved !== authored) {
-        root.setAttribute('data-lte-theme-resolved', '');
-      }
-    })();
-  </script>
-  <!--end::Theme Init-->
-
-  <!--begin::Accessibility Meta Tags-->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="color-scheme" content="light dark" />
-  <meta name="theme-color" content="#007bff" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
-  <!--end::Accessibility Meta Tags-->
-
-  <!--begin::Primary Meta Tags-->
-  <meta name="title" content="MailBox | Mailbox" />
-  <meta name="author" content="MailBox" />
-  <meta
-    name="description"
-    content="MailBox"
-  />
-  <!--end::Primary Meta Tags-->
-
-  <meta name="supported-color-schemes" content="light dark" />
-
-  <link rel="preload" href="../css/adminlte.css" as="style" />
-
-  <!--begin::Fonts-->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css"
-    crossorigin="anonymous"
-    media="print"
-    onload="this.media = 'all'"
-  />
-  <!--end::Fonts-->
-
-  <!--begin::OverlayScrollbars-->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/styles/overlayscrollbars.min.css"
-    crossorigin="anonymous"
-  />
-  <!--end::OverlayScrollbars-->
-
-  <!--begin::Bootstrap Icons-->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
-    crossorigin="anonymous"
-  />
-  <!--end::Bootstrap Icons-->
-
-  <!--begin::AdminLTE-->
-  <link rel="stylesheet" href="../css/adminlte.css" />
-  <!--end::AdminLTE-->
-
-  <style>
-    /* =========================================================
-       MailBox - Inbox Page
-       ========================================================= */
-
-    .mail-folder-link {
-      transition: all 0.15s ease-in-out;
-    }
-
-    .mail-folder-link.active {
-      background-color: var(--bs-primary) !important;
-      color: #fff !important;
-    }
-
-    .mail-folder-link.active i,
-    .mail-folder-link.active span {
-      color: #fff !important;
-    }
-
-    .mail-folder-link:not(.active):hover {
-      background-color: var(--bs-tertiary-bg);
-    }
-
-    .mail-label-link {
-      cursor: pointer;
-      transition: background-color 0.15s ease-in-out;
-    }
-
-    .mail-label-link.active {
-      background-color: var(--bs-primary-bg-subtle);
-      font-weight: 600;
-    }
-
-    .mail-label-link:hover {
-      background-color: var(--bs-tertiary-bg);
-    }
-
-    .mail-loading {
-      min-height: 240px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .mail-loading .spinner-border {
-      width: 2rem;
-      height: 2rem;
-    }
-
-    .mail-empty {
-      min-height: 220px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .mail-empty i {
-      font-size: 2.5rem;
-      opacity: 0.45;
-    }
-
-    .mail-error {
-      min-height: 220px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 0.75rem;
-      text-align: center;
-      padding: 2rem;
-    }
-
-    .message-row {
-      transition: background-color 0.15s ease-in-out;
-    }
-
-    .message-row:hover {
-      background-color: var(--bs-tertiary-bg);
-    }
-
-    .message-row.unread {
-      font-weight: 600;
-      background-color: var(--bs-secondary-bg);
-    }
-
-    .message-row.unread:hover {
-      background-color: var(--bs-tertiary-bg);
-    }
-
-    .mail-toolbar {
-      min-height: 52px;
-    }
-
-    .folder-title-icon {
-      width: 30px;
-      text-align: center;
-    }
-
-    .label-empty {
-      padding: 1rem;
-      text-align: center;
-      color: var(--bs-secondary-color);
-      font-size: 0.875rem;
-    }
-
-    @media (max-width: 575.98px) {
-      .mail-toolbar .btn-group .btn {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-      }
-
-      .mail-toolbar .message-range {
-        display: none;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Mailbox</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="icon" type="image/svg+xml" href="favicon.png">
+<link rel="stylesheet" href="mailbox-common.css">
 </head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><div class="brand-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v13H4z"/><path d="m4 7 8 6 8-6"/></svg></div><div><div class="brand-name">Mailbox</div><div class="brand-sub"></div></div></div>
+  <div class="search"><svg class="search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="searchInput" type="search" placeholder="Search mail..." autocomplete="off"><button id="clearSearch" class="clear-search" type="button">×</button></div>
+  <div class="account"><button id="refreshBtn" class="icon-btn" title="Refresh"><i class="bi bi-arrow-clockwise"></i></button><button id="avatar" class="avatar" type="button" aria-label="Open account details" aria-expanded="false">U</button></div>
+</header>
 
-<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
-
-<div class="app-wrapper">
-
-  <!-- =========================================================
-       HEADER
-       ========================================================= -->
-  <nav class="app-header navbar navbar-expand bg-body">
-
-    <div class="container-fluid">
-
-      <!-- Left Navbar -->
-      <ul class="navbar-nav">
-
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            data-lte-toggle="sidebar"
-            href="#"
-            role="button"
-            aria-label="Toggle sidebar"
-          >
-            <i class="bi bi-list"></i>
-          </a>
-        </li>
-
-      </ul>
-
-      <!-- Right Navbar -->
-      <ul class="navbar-nav ms-auto">
-
-        <!-- Search -->
-        <li class="nav-item d-md-none">
-          <a
-            class="nav-link"
-            href="../pages/search-results.html"
-            aria-label="Search"
-          >
-            <i class="bi bi-search" aria-hidden="true"></i>
-          </a>
-        </li>
-
-        <!-- Fullscreen -->
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="#"
-            data-lte-toggle="fullscreen"
-            aria-label="Toggle fullscreen"
-          >
-            <i
-              data-lte-icon="maximize"
-              class="bi bi-arrows-fullscreen"
-            ></i>
-
-            <i
-              data-lte-icon="minimize"
-              class="bi bi-fullscreen-exit d-none"
-            ></i>
-          </a>
-        </li>
-
-        <!-- Color Mode -->
-        <li class="nav-item dropdown">
-
-          <a
-            class="nav-link"
-            href="#"
-            id="bd-theme"
-            aria-label="Toggle color scheme"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            <i
-              class="bi bi-sun-fill"
-              data-lte-theme-icon="light"
-            ></i>
-
-            <i
-              class="bi bi-moon-fill d-none"
-              data-lte-theme-icon="dark"
-            ></i>
-
-            <i
-              class="bi bi-circle-half d-none"
-              data-lte-theme-icon="auto"
-            ></i>
-          </a>
-
-          <ul
-            class="dropdown-menu dropdown-menu-end"
-            aria-labelledby="bd-theme"
-            style="--bs-dropdown-min-width: 8rem"
-          >
-
-            <li>
-              <button
-                type="button"
-                class="dropdown-item d-flex align-items-center"
-                data-bs-theme-value="light"
-                aria-pressed="false"
-              >
-                <i class="bi bi-sun-fill me-2"></i>
-                Light
-                <i class="bi bi-check-lg ms-auto d-none"></i>
-              </button>
-            </li>
-
-            <li>
-              <button
-                type="button"
-                class="dropdown-item d-flex align-items-center"
-                data-bs-theme-value="dark"
-                aria-pressed="false"
-              >
-                <i class="bi bi-moon-fill me-2"></i>
-                Dark
-                <i class="bi bi-check-lg ms-auto d-none"></i>
-              </button>
-            </li>
-
-            <li>
-              <button
-                type="button"
-                class="dropdown-item d-flex align-items-center active"
-                data-bs-theme-value="auto"
-                aria-pressed="true"
-              >
-                <i class="bi bi-circle-half me-2"></i>
-                Auto
-                <i class="bi bi-check-lg ms-auto d-none"></i>
-              </button>
-            </li>
-
-          </ul>
-
-        </li>
-
-        <!-- =====================================================
-             LOGOUT
-             Same implementation used in read.html
-             ===================================================== -->
-        <li class="nav-item">
-          <button
-            id="logout-button"
-            class="btn btn-link nav-link text-danger"
-            type="button"
-            aria-label="Logout"
-            title="Logout"
-          >
-            <i
-              class="bi bi-box-arrow-right"
-              aria-hidden="true"
-            ></i>
-
-            <span class="d-none d-md-inline ms-1">
-              Logout
-            </span>
-          </button>
-        </li>
-
-      </ul>
-
+<aside id="profileDrawer" class="profile-drawer" aria-hidden="true">
+  <div class="profile-drawer-head">
+    <strong>Account details</strong>
+    <button id="closeProfile" class="icon-btn" aria-label="Close profile">×</button>
+  </div>
+  <div class="profile-avatar" id="drawerAvatar">U</div>
+  <h3 id="drawerName">User</h3>
+  <p id="drawerEmail"></p>
+  <p id="drawerRole"></p>
+  <div class="theme-palette">
+    <strong>Theme colour</strong>
+    <div class="theme-swatches">
+      <button data-theme="#2563eb" style="--swatch:#2563eb" aria-label="Blue"></button>
+      <button data-theme="#0f9d78" style="--swatch:#0f9d78" aria-label="Teal"></button>
+      <button data-theme="#7c3aed" style="--swatch:#7c3aed" aria-label="Violet"></button>
+      <button data-theme="#db6b18" style="--swatch:#db6b18" aria-label="Orange"></button>
+      <button data-theme="#c0266d" style="--swatch:#c0266d" aria-label="Pink"></button>
     </div>
-  </nav>
+  </div>
+</aside>
 
+<nav class="workspace-tabs">
+  <button class="workspace-tab active" id="foldersTab" type="button">Folders</button>
+  <div id="composeTabs" class="compose-tabs"></div>
+</nav>
 
-  <!-- =========================================================
-       SIDEBAR
-       ========================================================= -->
-  <aside
-    class="app-sidebar bg-body-secondary shadow"
-    data-bs-theme="dark"
-  >
-
-    <!-- Brand -->
-    <div class="sidebar-brand">
-
-      <a
-        href="mailbox.html"
-        class="brand-link"
-      >
-
-        <img
-          src="../assets/img/AdminLTELogo.png"
-          alt="MailBox Logo"
-          class="brand-image opacity-75 shadow"
-        />
-
-        <span class="brand-text fw-light">
-          MailBox
-        </span>
-
-      </a>
-
-    </div>
-
-
-    <!-- Sidebar Search -->
-    <div
-      class="sidebar-search"
-      role="search"
-    >
-
-      <label
-        for="sidebar-search-input"
-        class="visually-hidden"
-      >
-        Filter menu
-      </label>
-
-      <input
-        type="search"
-        id="sidebar-search-input"
-        class="form-control form-control-sm"
-        placeholder="Filter menu…"
-        autocomplete="off"
-        data-lte-toggle="sidebar-search"
-        data-lte-target="#navigation"
-      />
-
-      <p
-        class="fs-7 text-secondary mt-2 mb-0"
-        data-lte-search-empty
-        role="status"
-        hidden
-      >
-        No matching pages.
-      </p>
-
-    </div>
-
-
-    <!-- Sidebar Navigation -->
-    <div class="sidebar-wrapper">
-
-      <nav
-        class="mt-2"
-        aria-label="Main navigation"
-      >
-
-        <ul
-          class="nav sidebar-menu flex-column"
-          data-lte-toggle="treeview"
-          data-accordion="false"
-          id="navigation"
-        >
-
-          <li class="nav-item menu-open">
-
-            <a
-              href="#"
-              class="nav-link active"
-            >
-
-              <i class="nav-icon bi bi-envelope"></i>
-
-              <p>
-                Mailbox
-                <i class="nav-arrow bi bi-chevron-right"></i>
-              </p>
-
-            </a>
-
-
-            <ul class="nav nav-treeview">
-
-              <li class="nav-item">
-
-                <a
-                  href="mailbox.html"
-                  class="nav-link active"
-                >
-
-                  <i class="nav-icon bi bi-circle"></i>
-
-                  <p>
-                    Folders
-                  </p>
-
-                </a>
-
-              </li>
-
-
-              <li class="nav-item">
-
-                <a
-                  href="compose.html"
-                  class="nav-link"
-                >
-
-                  <i class="nav-icon bi bi-circle"></i>
-
-                  <p>
-                    Compose
-                  </p>
-
-                </a>
-
-              </li>
-
-            </ul>
-
-          </li>
-
-        </ul>
-
-      </nav>
-
-    </div>
-
-  </aside>
-
-
-  <!-- =========================================================
-       MAIN
-       ========================================================= -->
-  <main class="app-main">
-
-    <!-- Page Header -->
-    <div class="app-content-header">
-
-      <div class="container-fluid">
-
-        <div class="row">
-
-          <div class="col-sm-6">
-
-            <h1
-              class="mb-0 fs-3"
-              id="page-heading"
-            >
-              Inbox
-            </h1>
-
-          </div>
-
-
-          <div class="col-sm-6">
-
-            <nav aria-label="breadcrumb">
-
-              <ol class="breadcrumb float-sm-end">
-
-                <li class="breadcrumb-item">
-                  <a href="mailbox.html">
-                    Home
-                  </a>
-                </li>
-
-                <li
-                  class="breadcrumb-item active"
-                  aria-current="page"
-                  id="breadcrumb-folder"
-                >
-                  Inbox
-                </li>
-
-              </ol>
-
-            </nav>
-
-          </div>
-
+<div id="workspaceStage" class="workspace-stage">
+  <main class="main" id="foldersWorkspace">
+    <aside class="sidebar">
+      <button id="composeBtn" class="compose-btn"><i class="bi bi-pencil-square"></i><span>Compose</span></button>
+      <div class="folder-title">Folders</div>
+      <button class="folder active" data-folder="INBOX"><i class="bi bi-inbox"></i><span>Inbox</span><b id="inboxCount" class="folder-count hidden">0</b></button>
+      <button class="folder" data-folder="SENT"><i class="bi bi-send"></i><span>Sent</span></button>
+      <button class="folder" data-folder="DRAFT"><i class="bi bi-file-earmark-text"></i><span>Drafts</span></button>
+      <button class="folder" data-folder="STARRED"><i class="bi bi-star"></i><span>Starred</span></button>
+      <button class="folder" data-folder="ARCHIVE"><i class="bi bi-archive"></i><span>Archive</span></button>
+      <button class="folder" data-folder="SPAM"><i class="bi bi-exclamation-triangle"></i><span>Spam</span></button>
+      <button class="folder" data-folder="TRASH"><i class="bi bi-trash3"></i><span>Trash</span></button>
+      <div class="logout-side"><button id="logoutBtn"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button></div>
+    </aside>
+    <section class="mail-area">
+      <div class="list-head">
+        <div id="listTitle" class="list-title">Inbox</div>
+        <div class="list-actions">
+          <span class="sort-wrap">
+            <select id="sortSelect" class="sort-select" title="Sort messages">
+              <option value="date-desc">Newest first</option>
+              <option value="date-asc">Oldest first</option>
+              <option value="sender-asc">Sender A → Z</option>
+              <option value="sender-desc">Sender Z → A</option>
+              <option value="subject-asc">Subject A → Z</option>
+              <option value="subject-desc">Subject Z → A</option>
+            </select>
+          </span>
+          <button id="selectAllBtn" class="icon-btn" title="Select all"><i class="bi bi-check2-square"></i></button>
+          <button id="refreshListBtn" class="icon-btn" title="Refresh"><i class="bi bi-arrow-clockwise"></i></button>
         </div>
-
       </div>
-
-    </div>
-
-
-    <!-- Main Content -->
-    <div class="app-content">
-
-      <div class="container-fluid">
-
-        <div class="row g-3">
-
-
-          <!-- ===================================================
-               LEFT FOLDER PANEL
-               =================================================== -->
-          <div class="col-lg-3">
-
-            <!-- Compose -->
-            <a
-              href="compose.html"
-              class="btn btn-primary w-100 mb-3"
-            >
-
-              <i
-                class="bi bi-pencil-square me-1"
-                aria-hidden="true"
-              ></i>
-
-              Compose
-
-            </a>
-
-
-            <!-- Folders -->
-            <div class="card">
-
-              <div class="card-header">
-
-                <h3
-                  class="card-title"
-                  style="font-size: 1em;"
-                >
-                  Folders
-                </h3>
-
-              </div>
-
-
-              <div class="card-body p-0">
-
-                <ul
-                  class="nav nav-pills flex-column mb-0"
-                  id="folder-list"
-                >
-
-                  <!-- Inbox -->
-                  <li class="nav-item">
-
-                    <a
-                      href="mailbox.html"
-                      class="nav-link mail-folder-link rounded-0 d-flex justify-content-between"
-                      data-folder="INBOX"
-                      data-label="Inbox"
-                    >
-
-                      <span>
-                        <i class="bi bi-inbox me-2"></i>
-                        Inbox
-                      </span>
-
-                      <span
-                        class="badge text-bg-primary folder-count"
-                        data-count-folder="INBOX"
-                      ></span>
-
-                    </a>
-
-                  </li>
-
-
-                  <!-- Sent -->
-                  <li class="nav-item">
-
-                    <a
-                      href="#"
-                      class="nav-link mail-folder-link rounded-0"
-                      data-folder="SENT"
-                      data-label="Sent"
-                    >
-
-                      <i class="bi bi-send me-2"></i>
-                      Sent
-
-                    </a>
-
-                  </li>
-
-
-                  <!-- Drafts -->
-                  <li class="nav-item">
-
-                    <a
-                      href="#"
-                      class="nav-link mail-folder-link rounded-0 d-flex justify-content-between"
-                      data-folder="DRAFT"
-                      data-label="Drafts"
-                    >
-
-                      <span>
-                        <i class="bi bi-file-earmark me-2"></i>
-                        Drafts
-                      </span>
-
-                      <span
-                        class="badge text-bg-secondary folder-count"
-                        data-count-folder="DRAFT"
-                      ></span>
-
-                    </a>
-
-                  </li>
-
-
-                  <!-- Starred -->
-                  <li class="nav-item">
-
-                    <a
-                      href="#"
-                      class="nav-link mail-folder-link rounded-0"
-                      data-folder="STARRED"
-                      data-label="Starred"
-                    >
-
-                      <i class="bi bi-star me-2"></i>
-                      Starred
-
-                    </a>
-
-                  </li>
-
-
-                  <!-- Archive -->
-                  <li class="nav-item">
-
-                    <a
-                      href="#"
-                      class="nav-link mail-folder-link rounded-0"
-                      data-folder="ARCHIVE"
-                      data-label="Archive"
-                    >
-
-                      <i class="bi bi-archive me-2"></i>
-                      Archive
-
-                    </a>
-
-                  </li>
-
-
-                  <!-- Spam -->
-                  <li class="nav-item">
-
-                    <a
-                      href="#"
-                      class="nav-link mail-folder-link rounded-0"
-                      data-folder="SPAM"
-                      data-label="Spam"
-                    >
-
-                      <i class="bi bi-exclamation-octagon me-2"></i>
-                      Spam
-
-                    </a>
-
-                  </li>
-
-
-                  <!-- Trash -->
-                  <li class="nav-item">
-
-                    <a
-                      href="#"
-                      class="nav-link mail-folder-link rounded-0"
-                      data-folder="TRASH"
-                      data-label="Trash"
-                    >
-
-                      <i class="bi bi-trash me-2"></i>
-                      Trash
-
-                    </a>
-
-                  </li>
-
-                </ul>
-
-              </div>
-
-            </div>
-
-
-            <!-- =================================================
-                 LABELS
-                 ================================================= -->
-            <div class="card mt-3" style="display:none" >
-
-              <div class="card-header">
-
-                <h3
-                  class="card-title"
-                  style="font-size: 1em;"
-                >
-                  Labels
-                </h3>
-
-              </div>
-
-
-              <div class="card-body p-0">
-
-                <ul
-                  class="nav flex-column mb-0"
-                  id="label-list"
-                >
-
-                  <!-- Dynamically populated -->
-
-                  <li
-                    class="label-empty"
-                    id="label-loading"
-                  >
-                    Loading labels…
-                  </li>
-
-                </ul>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <!-- ===================================================
-               MESSAGE LIST
-               =================================================== -->
-          <div class="col-lg-9">
-
-            <div class="card">
-
-
-              <!-- Card Header -->
-              <div class="card-header">
-
-                <h3
-                  class="card-title d-flex align-items-center gap-2"
-                  id="folder-title"
-                >
-
-                  <i
-                    class="bi bi-inbox folder-title-icon"
-                    id="folder-title-icon"
-                  ></i>
-
-                  <span>
-                    Inbox
-                  </span>
-
-                </h3>
-
-              </div>
-
-
-              <!-- Card Body -->
-              <div class="card-body p-0">
-
-
-                <!-- Toolbar -->
-                <div
-                  class="d-flex align-items-center flex-wrap gap-2 px-3 py-2 border-bottom mail-toolbar"
-                >
-
-                  <!-- Select All -->
-                  <div class="form-check mb-0">
-
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="select-all"
-                    />
-
-                    <label
-                      class="form-check-label visually-hidden"
-                      for="select-all"
-                    >
-                      Select all
-                    </label>
-
-                  </div>
-
-
-                  <!-- Search -->
-                  <div class="input-group input-group-sm ms-0 ms-md-3" style="max-width:320px; flex:1 1 220px;">
-
-                    <span class="input-group-text">
-                      <i class="bi bi-search" aria-hidden="true"></i>
-                    </span>
-
-                    <input
-                      type="search"
-                      class="form-control"
-                      id="mail-search"
-                      placeholder="Search mail..."
-                      autocomplete="off"
-                      spellcheck="false"
-                      aria-label="Search mail"
-                    >
-
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      id="mail-search-clear"
-                      title="Clear search"
-                      aria-label="Clear search"
-                      style="display:none;"
-                    >
-                      <i class="bi bi-x-lg"></i>
-                    </button>
-
-                  </div>
-
-
-                  <!-- Toolbar Buttons -->
-                  <div class="btn-group btn-group-sm ms-3">
-
-                    <button
-                      id="refresh-button"
-                      class="btn btn-outline-secondary"
-                      type="button"
-                      title="Refresh"
-                      aria-label="Refresh"
-                    >
-                      <i class="bi bi-arrow-clockwise"></i>
-                    </button>
-
-
-                    <button
-                      class="btn btn-outline-secondary"
-                      type="button"
-                      title="Mark as read"
-                      id="toolbar-read"
-                      disabled
-                    >
-                      <i class="bi bi-envelope-open"></i>
-                    </button>
-
-
-                    <button
-                      class="btn btn-outline-secondary"
-                      type="button"
-                      title="Mark as unread"
-                      id="toolbar-unread"
-                      disabled
-                    >
-                      <i class="bi bi-envelope"></i>
-                    </button>
-
-
-                    <button
-                      class="btn btn-outline-secondary"
-                      type="button"
-                      title="Archive"
-                      id="toolbar-archive"
-                    >
-                      <i class="bi bi-archive"></i>
-                    </button>
-
-
-                    <button
-                      class="btn btn-outline-secondary"
-                      type="button"
-                      title="Mark as spam"
-                      id="toolbar-spam"
-                    >
-                      <i class="bi bi-exclamation-octagon"></i>
-                    </button>
-
-
-                    <button
-                      class="btn btn-outline-secondary"
-                      type="button"
-                      title="Delete"
-                      id="toolbar-delete"
-                    >
-                      <i class="bi bi-trash"></i>
-                    </button>
-
-                  </div>
-
-
-                  <!-- Range / pagination -->
-                  <span
-                    class="ms-auto text-secondary small message-range"
-                    id="message-range"
-                  >
-                    0 of 0
-                  </span>
-
-                  <div class="d-flex align-items-center gap-1 ms-2">
-
-                    <select
-                      id="mail-page-size"
-                      class="form-select form-select-sm"
-                      style="width:auto;"
-                      title="Messages per page"
-                      aria-label="Messages per page"
-                    >
-                      <option value="25">25</option>
-                      <option value="50">50</option>
-                    </select>
-
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-secondary"
-                      id="mail-prev-page"
-                      title="Previous page"
-                      aria-label="Previous page"
-                      disabled
-                    >
-                      <i class="bi bi-chevron-left"></i>
-                    </button>
-
-                    <span
-                      id="mail-page-number"
-                      class="text-secondary small px-1"
-                    >
-                      1 / 1
-                    </span>
-
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-secondary"
-                      id="mail-next-page"
-                      title="Next page"
-                      aria-label="Next page"
-                      disabled
-                    >
-                      <i class="bi bi-chevron-right"></i>
-                    </button>
-
-                  </div>
-
-                </div>
-
-
-                <!-- Message List -->
-                <ul
-                  class="list-group list-group-flush mb-0"
-                  id="message-list"
-                >
-
-                  <!-- Loading content inserted here -->
-
-                </ul>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
+      <div id="toolbar" class="toolbar"><button class="icon-btn" id="markReadBtn" title="Mark read"><i class="bi bi-envelope-open"></i></button><button class="icon-btn" id="markUnreadBtn" title="Mark unread"><i class="bi bi-envelope"></i></button><button class="icon-btn" id="archiveBtn" title="Archive"><i class="bi bi-archive"></i></button><button class="icon-btn" id="spamBtn" title="Spam"><i class="bi bi-exclamation-octagon"></i></button><button class="icon-btn" id="deleteBtn" title="Trash"><i class="bi bi-trash3"></i></button></div>
+      <div id="mailList" class="mail-list"><div class="loading-inline"><span class="panel-spinner" aria-label="Loading"></span></div></div>
+      <div class="pager"><span id="rangeText">—</span><div style="display:flex;align-items:center;gap:5px"><select id="pageSize"><option value="25">25</option><option value="50">50</option></select><button id="prevPage" disabled>‹</button><span id="pageText">1 / 1</span><button id="nextPage" disabled>›</button></div></div>
+    </section>
+    <div id="paneSplitter" class="splitter" role="separator" aria-orientation="vertical" aria-label="Resize mail list and reading pane" title="Drag to resize"></div>
+    <section id="readPane" class="read-pane">
+      <div id="readEmpty" class="read-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><strong>Select a message</strong><span>Choose an email from the list to read it here.</span></div>
+      <div id="readContent" class="read-content hidden">
+        <div class="read-header"><div class="read-actions"><button id="backBtn" class="icon-btn mobile-back" title="Back"><i class="bi bi-chevron-left"></i></button><button id="replyBtn" class="icon-btn" title="Reply"><i class="bi bi-reply"></i></button><button id="forwardBtn" class="icon-btn" title="Forward"><i class="bi bi-forward"></i></button><button id="readArchiveBtn" class="icon-btn" title="Archive"><i class="bi bi-archive"></i></button><button id="readDeleteBtn" class="icon-btn" title="Trash"><i class="bi bi-trash3"></i></button><button id="readStarBtn" class="icon-btn" title="Star"><i class="bi bi-star"></i></button></div><div id="readSubject" class="read-subject">(No subject)</div><div class="read-meta"><div id="readAvatar" class="read-avatar">U</div><div class="read-sender"><div id="readSenderName" class="read-sender-name"></div><div id="readSenderEmail" class="read-sender-email"></div><div id="readRecipients" class="read-recipients"></div></div><div id="readDate" class="read-date"></div></div></div>
+        <div id="readBody" class="read-body"></div><div id="attachmentList" class="attachment-list"></div>
       </div>
-
-    </div>
-
+    </section>
   </main>
 
-
-  <!-- =========================================================
-       FOOTER
-       ========================================================= -->
-  <footer class="app-footer">
-
-    <div class="float-end d-none d-sm-inline">
-      MailBox
-    </div>
-
-    <strong>
-      Copyright &copy; 2014-2026&nbsp;
-
-      <a
-        href="#"
-        class="text-decoration-none"
-      >
-        MailBox
-      </a>.
-
-    </strong>
-
-    All rights reserved.
-
-  </footer>
-
+  <div id="composeContainer" class="compose-workspace" aria-hidden="true"></div>
+</div>
 </div>
 
+<div id="successModal" class="modal"><div class="success-box"><div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div><h3>Message Sent</h3><p>Your message has been successfully delivered.</p><div id="successReference" class="reference">Reference: —</div><div style="margin-top:20px"><button id="successOk" class="send-btn" style="margin:auto;min-width:80px">OK</button></div></div></div>
+<div id="loadingOverlay" class="loading-overlay" aria-hidden="true"><div class="loading-box"><span class="big-spinner" aria-label="Loading"></span></div></div>
 
-<!-- ===========================================================
-     JAVASCRIPT LIBRARIES
-     =========================================================== -->
+<div id="unifiedAlert" class="alert-box" role="alert">
+  <span class="alert-icon" id="alertIcon">ℹ️</span>
+  <span class="alert-msg" id="alertMsg"></span>
+  <button class="alert-close" id="alertClose" aria-label="Close">×</button>
+</div>
 
-<script
-  src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js"
-  crossorigin="anonymous"
-></script>
+<!-- Custom confirm dialog -->
+<div id="confirmOverlay" class="confirm-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="confirm-dialog">
+    <div class="confirm-icon" id="confirmIcon">?</div>
+    <h3 class="confirm-title" id="confirmTitle">Are you sure?</h3>
+    <p class="confirm-message" id="confirmMessage"></p>
+    <div class="confirm-actions">
+      <button class="confirm-btn" id="confirmCancel">Cancel</button>
+      <button class="confirm-btn primary" id="confirmOk">Confirm</button>
+    </div>
+  </div>
+</div>
 
-
-<script
-  src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
-  crossorigin="anonymous"
-></script>
-
-
-<script
-  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"
-  crossorigin="anonymous"
-></script>
-
-
-<script src="../js/adminlte.js"></script>
-
-
-<!-- ===========================================================
-     OverlayScrollbars
-     =========================================================== -->
 <script>
-  const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
+window.MAILBOX_API_URL=window.MAILBOX_API_URL||'https://script.google.com/macros/s/AKfycbztFYkp6V7YglnFLtZ7GbEXzoctYiBilV4lA4VgLm3WFKF8lYENWdM90_zy0uC1gmdG/exec';
+const MailboxAPI=(()=>{
+ async function request(action,payload={}){const response=await fetch(window.MAILBOX_API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action},payload)),redirect:'follow'});if(!response.ok)throw new Error('Server error: '+response.status);const data=await response.json();if(!data.ok)throw new Error(data.error||'Request failed.');return data}
+ const token=()=>sessionStorage.getItem('mailbox_token')||'';
+ const user=()=>{try{return JSON.parse(sessionStorage.getItem('mailbox_user')||'null')}catch(_){return null}};
+ const setSession=data=>{sessionStorage.setItem('mailbox_token',data.token);sessionStorage.setItem('mailbox_user',JSON.stringify(data.user))};
+ const clearSession=()=>{sessionStorage.removeItem('mailbox_token');sessionStorage.removeItem('mailbox_user')};
+ const requireLogin=()=>{if(!token())location.href='login.html'};
+ return{request,token,user,setSession,clearSession,requireLogin,logout:()=>request('logout',{token:token()}),bootstrap:()=>request('bootstrap',{token:token()}),list:(folder,search='',page=1,pageSize=25)=>request('mailbox',{token:token(),folder,search,page,pageSize}),get:mailId=>request('getMessage',{token:token(),mailId}),suggestRecipients:query=>request('suggestRecipients',{token:token(),query}),send:payload=>request('sendMessage',Object.assign({token:token()},payload)),draft:payload=>request('saveDraft',Object.assign({token:token()},payload)),update:payload=>request('updateMessage',Object.assign({token:token()},payload))}
+})();
 
-  const Default = {
-    scrollbarTheme: 'os-theme-light',
-    scrollbarAutoHide: 'leave',
-    scrollbarClickScroll: true
-  };
-
-  document.addEventListener('DOMContentLoaded', function () {
-
-    const sidebarWrapper =
-      document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
-
-    const isMobile = window.innerWidth <= 992;
-
-    if (
-      sidebarWrapper &&
-      typeof OverlayScrollbarsGlobal !== 'undefined' &&
-      OverlayScrollbarsGlobal.OverlayScrollbars !== undefined &&
-      !isMobile
-    ) {
-
-      OverlayScrollbarsGlobal.OverlayScrollbars(
-        sidebarWrapper,
-        {
-          scrollbars: {
-            theme: Default.scrollbarTheme,
-            autoHide: Default.scrollbarAutoHide,
-            clickScroll: Default.scrollbarClickScroll
-          }
-        }
-      );
-
-    }
-
-  });
-</script>
-
-
-<!-- ===========================================================
-     MAILBOX API 
-     =========================================================== -->
-<script>
-  window.MAILBOX_API_URL =
-    'https://script.google.com/macros/s/AKfycbztFYkp6V7YglnFLtZ7GbEXzoctYiBilV4lA4VgLm3WFKF8lYENWdM90_zy0uC1gmdG/exec';
-</script>
-
-<script src="mailbox-api.js"></script>
-
-
-<!-- ===========================================================
-     MAILBOX APPLICATION
-     =========================================================== -->
-<script>
 (() => {
+'use strict';
+MailboxAPI.requireLogin();
+const $=id=>document.getElementById(id);
+const folders={INBOX:'Inbox',SENT:'Sent',DRAFT:'Drafts',STARRED:'Starred',ARCHIVE:'Archive',SPAM:'Spam',TRASH:'Trash'};
+let currentFolder=sessionStorage.getItem('mailbox_folder')||'INBOX';
+let currentPage=1,pageSize=25,totalPages=1,currentMessages=[],selectedIds=new Set(),selectedMailId='',selectedMessage=null,selectedAttachments=[];
+let searchTimer=null,silentTimer=null,loading=false,loadSequence=0,composeMode='new',originalMessage=null,originalAttachments=[],sending=false,attachmentFiles=[];
+const folderCache=new Map();
+const folderViews=new Map();
+const CACHE_TTL=45000;
+let splitterDragging=false;
+const user=MailboxAPI.user()||{};
+$('avatar').textContent=initials(user.name||user.fullName,user.email||user.emailAddress);
 
-  'use strict';
+/* =========================================================
+   SORTING STATE
+   ========================================================= */
+let currentSort = localStorage.getItem('mailbox_sort') || 'date-desc';
 
-
-  /* =========================================================
-     LOGIN
-     ========================================================= */
-
-  MailboxAPI.requireLogin();
-
-
-  /* =========================================================
-     DOM
-     ========================================================= */
-
-  const messageList =
-    document.getElementById('message-list');
-
-  const messageRange =
-    document.getElementById('message-range');
-
-  const pageSizeSelect =
-    document.getElementById('mail-page-size');
-
-  const previousPageButton =
-    document.getElementById('mail-prev-page');
-
-  const nextPageButton =
-    document.getElementById('mail-next-page');
-
-  const pageNumber =
-    document.getElementById('mail-page-number');
-
-  const selectAll =
-    document.getElementById('select-all');
-
-  const refreshButton =
-    document.getElementById('refresh-button');
-
-  const searchInput =
-    document.getElementById('mail-search');
-
-  const searchClearButton =
-    document.getElementById('mail-search-clear');
-
-  const toolbarArchive =
-    document.getElementById('toolbar-archive');
-
-  const toolbarSpam =
-    document.getElementById('toolbar-spam');
-
-  const toolbarDelete =
-    document.getElementById('toolbar-delete');
-
-  const toolbarRead =
-    document.getElementById('toolbar-read');
-
-  const toolbarUnread =
-    document.getElementById('toolbar-unread');
-
-  const folderTitle =
-    document.getElementById('folder-title');
-
-  const folderTitleIcon =
-    document.getElementById('folder-title-icon');
-
-  const pageHeading =
-    document.getElementById('page-heading');
-
-  const breadcrumbFolder =
-    document.getElementById('breadcrumb-folder');
-
-  const labelList =
-    document.getElementById('label-list');
-
-  const logoutButton =
-    document.getElementById('logout-button');
-
-
-  /* =========================================================
-     FOLDER DEFINITIONS
-     ========================================================= */
-
-  const folders = {
-
-    INBOX: {
-      label: 'Inbox',
-      icon: 'bi-inbox'
-    },
-
-    SENT: {
-      label: 'Sent',
-      icon: 'bi-send'
-    },
-
-    DRAFT: {
-      label: 'Drafts',
-      icon: 'bi-file-earmark'
-    },
-
-    STARRED: {
-      label: 'Starred',
-      icon: 'bi-star'
-    },
-
-    ARCHIVE: {
-      label: 'Archive',
-      icon: 'bi-archive'
-    },
-
-    SPAM: {
-      label: 'Spam',
-      icon: 'bi-exclamation-octagon'
-    },
-
-    TRASH: {
-      label: 'Trash',
-      icon: 'bi-trash'
+function sortMessages(list) {
+  const arr = Array.isArray(list) ? list.slice() : [];
+  const [field, dir] = currentSort.split('-');
+  const mul = dir === 'asc' ? 1 : -1;
+  arr.sort((a, b) => {
+    let va, vb;
+    switch (field) {
+      case 'date':
+        va = new Date(a.date || 0).getTime();
+        vb = new Date(b.date || 0).getTime();
+        break;
+      case 'sender':
+        va = String(a.senderName || a.senderEmail || a.to || '').toLowerCase();
+        vb = String(b.senderName || b.senderEmail || b.to || '').toLowerCase();
+        break;
+      case 'subject':
+        va = String(a.subject || '').toLowerCase();
+        vb = String(b.subject || '').toLowerCase();
+        break;
+      default:
+        va = new Date(a.date || 0).getTime();
+        vb = new Date(b.date || 0).getTime();
     }
+    if (va < vb) return -1 * mul;
+    if (va > vb) return 1 * mul;
+    return 0;
+  });
+  return arr;
+}
 
+/* =========================================================
+   CENTRAL VIEW STATE
+   ========================================================= */
+let activeView = 'folders';
+
+function initials(name,email){const s=String(name||email||'U').trim();const p=s.split(/\s+/).filter(Boolean);return (p.length>1?p[0][0]+p[1][0]:s.slice(0,2)).toUpperCase()}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function escAttr(v){return esc(v)}
+function formatDate(v){if(!v)return '';const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v);const now=new Date();const same=d.toDateString()===now.toDateString();return same?d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString([], {day:'2-digit',month:'short',year:'numeric'})}
+function formatSize(bytes){const n=Number(bytes||0);if(!n)return '';if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';if(n<1073741824)return (n/1048576).toFixed(1)+' MB';return (n/1073741824).toFixed(1)+' GB'}
+function showOverlay(){ $('loadingOverlay').classList.add('show'); $('loadingOverlay').setAttribute('aria-hidden','false') }
+function hideOverlay(){ $('loadingOverlay').classList.remove('show'); $('loadingOverlay').setAttribute('aria-hidden','true') }
+function saveFolder(){sessionStorage.setItem('mailbox_folder',currentFolder)}
+function updateFolderUI(){document.querySelectorAll('.folder').forEach(b=>b.classList.toggle('active',b.dataset.folder===currentFolder));$('listTitle').textContent=folders[currentFolder]||currentFolder}
+function signature(list){return (list||[]).map(m=>[m.mailId,m.date,m.subject,m.isRead?'1':'0',m.isStarred?'1':'0'].join('|')).join('~')}
+
+/* =========================================================
+   UNIFIED ALERT BOX
+   ========================================================= */
+function showAlert(message, type='info', duration=4000) {
+  const box = $('unifiedAlert');
+  const msg = $('alertMsg');
+  const icon = $('alertIcon');
+  const icons = { info:'ℹ️', success:'✅', warning:'⚠️', error:'❌' };
+  msg.textContent = message;
+  icon.textContent = icons[type] || icons.info;
+  box.className = 'alert-box show alert-' + type;
+  clearTimeout(box._timer);
+  if (duration > 0) {
+    box._timer = setTimeout(() => box.classList.remove('show'), duration);
+  }
+}
+$('alertClose').addEventListener('click', () => $('unifiedAlert').classList.remove('show'));
+
+/* =========================================================
+   CUSTOM CONFIRM DIALOG
+   ========================================================= */
+let confirmResolver = null;
+
+function showConfirm(options = {}) {
+  const {
+    title = 'Are you sure?',
+    message = '',
+    confirmText = 'Confirm',
+    cancelText = 'Cancel',
+    variant = 'primary' // primary | danger | warn
+  } = options;
+
+  const overlay = $('confirmOverlay');
+  const iconEl = $('confirmIcon');
+  const titleEl = $('confirmTitle');
+  const msgEl = $('confirmMessage');
+  const okBtn = $('confirmOk');
+  const cancelBtn = $('confirmCancel');
+
+  titleEl.textContent = title;
+  msgEl.textContent = message;
+  okBtn.textContent = confirmText;
+  cancelBtn.textContent = cancelText;
+
+  okBtn.className = 'confirm-btn ' + (variant === 'danger' ? 'danger' : 'primary');
+  iconEl.className = 'confirm-icon' + (variant === 'danger' ? ' danger' : variant === 'warn' ? ' warn' : '');
+  iconEl.textContent = variant === 'danger' ? '🗑️' : variant === 'warn' ? '⚠️' : '❓';
+
+  overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden', 'false');
+
+  return new Promise((resolve) => {
+    confirmResolver = resolve;
+  });
+}
+
+function closeConfirm(result) {
+  const overlay = $('confirmOverlay');
+  overlay.classList.remove('show');
+  overlay.setAttribute('aria-hidden', 'true');
+  if (confirmResolver) {
+    confirmResolver(result);
+    confirmResolver = null;
+  }
+}
+
+$('confirmOk').addEventListener('click', () => closeConfirm(true));
+$('confirmCancel').addEventListener('click', () => closeConfirm(false));
+$('confirmOverlay').addEventListener('click', (e) => {
+  if (e.target === $('confirmOverlay')) closeConfirm(false);
+});
+
+/* =========================================================
+   NOTIFICATION TUNE
+   ========================================================= */
+let notificationAudio = null;
+let audioReady = false;
+
+function initNotificationAudio() {
+  if (notificationAudio) return;
+  notificationAudio = new Audio('notification.mp3');
+  notificationAudio.volume = 0.6;
+  notificationAudio.load();
+  const unlock = () => {
+    if (audioReady) return;
+    notificationAudio.play().then(() => {
+      notificationAudio.pause();
+      notificationAudio.currentTime = 0;
+      audioReady = true;
+    }).catch(() => {});
   };
+  document.addEventListener('click', unlock, { once: true });
+  document.addEventListener('keydown', unlock, { once: true });
+  document.addEventListener('touchstart', unlock, { once: true });
+}
 
+function playNotificationTune() {
+  if (!notificationAudio) initNotificationAudio();
+  if (!notificationAudio) return;
+  const clone = notificationAudio.cloneNode();
+  clone.volume = 0.6;
+  clone.play().catch(() => {
+    const retry = () => {
+      clone.play().catch(() => {});
+      document.removeEventListener('click', retry);
+    };
+    document.addEventListener('click', retry, { once: true });
+  });
+}
 
-  /* =========================================================
-     STATE
-     ========================================================= */
+let lastInboxCount = 0;
+let lastMailIds = new Set();
 
-  let currentFolder = 'INBOX';
+/* =========================================================
+   THE ONE TRUE VIEW SWITCHER
+   ========================================================= */
+function switchView(viewName){
+  if(viewName!=='folders' && viewName!=='compose') return;
+  activeView = viewName;
 
-  let currentMessages = [];
+  const foldersWorkspace = $('foldersWorkspace');
+  const composeContainer = $('composeContainer');
+  const foldersTab       = $('foldersTab');
 
-  let currentLabel = '';
+  if(viewName === 'compose'){
+    foldersWorkspace.classList.add('workspace-hidden');
+    foldersWorkspace.setAttribute('aria-hidden','true');
+    composeContainer.classList.add('show');
+    composeContainer.setAttribute('aria-hidden','false');
+    foldersTab.classList.remove('active');
+    if (typeof ComposerManager !== 'undefined') ComposerManager.activateCurrent();
+  } else {
+    composeContainer.classList.remove('show');
+    composeContainer.setAttribute('aria-hidden','true');
+    foldersWorkspace.classList.remove('workspace-hidden');
+    foldersWorkspace.removeAttribute('aria-hidden');
+    foldersTab.classList.add('active');
+    if (typeof ComposerManager !== 'undefined') ComposerManager.deactivateAll();
+  }
+}
 
-  let isLoading = false;
+/* =========================================================
+   MULTI-COMPOSER MANAGER
+   ========================================================= */
+const ComposerManager = (() => {
+  let composers = new Map();
+  let activeId = null;
+  let nextId = 1;
 
-  let currentPage = 1;
-  let currentPageSize = 25;
-  let totalPages = 1;
-  let totalMessages = 0;
+  const container = $('composeContainer');
+  const tabsEl = $('composeTabs');
 
-  /* =========================================================
-     SILENT AUTO REFRESH
-     ---------------------------------------------------------
-     Refreshes the currently selected folder every 10 seconds.
-     No loading spinner, page jump, popup, or button animation
-     is triggered by the background refresh.
-     ========================================================= */
+  function createComposer(mode = 'new', message = null, attachments = []) {
+    const id = 'composer-' + (nextId++);
+    const el = document.createElement('div');
+    el.className = 'compose';
+    el.dataset.composerId = id;
+    el.innerHTML = `
+      <div class="compose-head">
+        <div><span class="compose-title" data-role="title">New message</span><span class="mode-badge hidden" data-role="badge"></span></div>
+        <button class="icon-btn" data-action="close" title="Close"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="compose-body">
+        <div class="alert hidden" data-role="alert"></div>
+        <div class="alert hidden" data-role="loading">Loading original message…</div>
+        <div class="compose-row"><label class="compose-label">To</label><div class="recipient-box" data-recipient-box="to"><div class="recipient-chips" data-chips="to"></div><input class="compose-input recipient-entry" data-field="to" autocomplete="off" placeholder="Recipient email"><div class="autocomplete" data-role="suggestions-to"></div></div></div>
+        <div class="compose-row"><label class="compose-label">Cc</label><div class="recipient-box" data-recipient-box="cc"><div class="recipient-chips" data-chips="cc"></div><input class="compose-input recipient-entry" data-field="cc" autocomplete="off" placeholder="Optional"><div class="autocomplete" data-role="suggestions-cc"></div></div></div>
+        <div class="compose-row"><label class="compose-label">Bcc</label><div class="recipient-box" data-recipient-box="bcc"><div class="recipient-chips" data-chips="bcc"></div><input class="compose-input recipient-entry" data-field="bcc" autocomplete="off" placeholder="Optional"><div class="autocomplete" data-role="suggestions-bcc"></div></div></div>
+        <div class="compose-row"><label class="compose-label">Subject</label><input class="compose-input" data-field="subject" placeholder="Subject"></div>
+        <div class="compose-area rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-field="body" data-placeholder="Write your message…"></div>
+        <div class="editor-tools">
+          <button type="button" data-cmd="bold"><b>B</b></button>
+          <button type="button" data-cmd="italic"><i>I</i></button>
+          <button type="button" data-cmd="underline"><u>U</u></button>
+          <button type="button" data-cmd="insertUnorderedList">• List</button>
+          <button type="button" data-cmd="createLink">Link</button>
+        </div>
+        <div class="file-list" data-role="files"></div>
+        <div class="compose-status" data-role="status"></div>
+      </div>
+      <div class="compose-foot">
+        <div class="compose-left">
+          <input type="file" multiple class="hidden" data-role="file-input">
+          <button class="secondary-btn" type="button" data-action="attach"><i class="bi bi-paperclip"></i> Attach</button>
+          <button class="secondary-btn" type="button" data-action="draft">Save draft</button>
+          <button class="secondary-btn" type="button" data-action="discard">Discard</button>
+        </div>
+        <button class="send-btn" type="button" data-action="send"><span class="send-spinner"></span><span class="send-label">Send</span></button>
+      </div>
+    `;
+    container.appendChild(el);
 
-  const SILENT_REFRESH_INTERVAL = 10000;
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'compose-tab';
+    tab.dataset.composerId = id;
+    tab.innerHTML = '<span class="compose-tab-label"></span><span class="compose-tab-close" role="button" aria-label="Close compose tab">×</span>';
+    tabsEl.appendChild(tab);
 
-  let silentRefreshTimer = null;
-  let silentRefreshRunning = false;
-  let lastSilentSignature = '';
-  let pageIsVisible = !document.hidden;
-
-  function messageSignature(messages) {
-    return (Array.isArray(messages) ? messages : [])
-      .map(message => [
-        message?.mailId || '',
-        message?.date || '',
-        message?.subject || '',
-        message?.senderEmail || '',
-        message?.senderName || '',
-        message?.isRead ? '1' : '0',
-        message?.isStarred ? '1' : '0',
-        message?.label || '',
-        message?.body || ''
-      ].join('¦'))
-      .join('§');
+    const state = { id, el, tab, mode, originalMessage: message, originalAttachments: attachments || [], attachmentFiles: [], recipients: {to:[],cc:[],bcc:[]}, sending: false, suggestTimer: null, suggestSeq: 0, dirty: false };
+    composers.set(id, state);
+    bindComposerEvents(state);
+    initComposerFields(state, mode, message, attachments);
+    activateComposer(id);
+    return state;
   }
 
-  function updateSilentSignature(messages) {
-    lastSilentSignature = messageSignature(messages);
+  function initComposerFields(state, mode, message, attachments) {
+    const el = state.el;
+    const titleEl = el.querySelector('[data-role="title"]');
+    const badgeEl = el.querySelector('[data-role="badge"]');
+    const toInput = el.querySelector('[data-field="to"]');
+    const subjectInput = el.querySelector('[data-field="subject"]');
+    const bodyEl = el.querySelector('[data-field="body"]');
+
+    titleEl.textContent = mode === 'reply' ? 'Reply message' : mode === 'forward' ? 'Forward message' : 'New message';
+    badgeEl.classList.toggle('hidden', mode === 'new');
+    badgeEl.textContent = mode === 'reply' ? 'Reply' : 'Forward';
+
+    if (mode === 'reply' && message) { addRecipient(state, 'to', message.senderEmail || '', false); subjectInput.value = replySubject(message.subject); bodyEl.innerHTML = '<br><br>'; }
+    if (mode === 'forward' && message) { subjectInput.value = forwardSubject(message.subject); bodyEl.innerHTML = createForwarded(message); }
+
+    Object.defineProperty(bodyEl, 'value', { get() { return this.innerHTML; }, set(v) { this.innerHTML = v || ''; }, configurable: true });
+
+    if (mode === 'forward' && attachments.length) prepareForwardAttachments(state, attachments);
+    toInput.focus();
+    syncTabLabel(state);
   }
 
-  async function silentRefresh() {
-    if (
-      silentRefreshRunning ||
-      isLoading ||
-      !pageIsVisible ||
-      !MailboxAPI.user()
-    ) {
+  function bindComposerEvents(state) {
+    const el = state.el;
+    const tab = state.tab;
+    tab.addEventListener('click', (e) => { if (e.target.closest('.compose-tab-close')) { requestCloseComposer(state.id); return; } activateComposer(state.id); });
+    el.querySelector('[data-action="close"]').addEventListener('click', () => requestCloseComposer(state.id));
+    el.querySelector('[data-action="send"]').addEventListener('click', () => sendComposer(state));
+
+    const fileInput = el.querySelector('[data-role="file-input"]');
+    el.querySelector('[data-action="attach"]').addEventListener('click', () => { if (!state.sending) fileInput.click(); });
+    fileInput.addEventListener('change', (e) => {
+      if (state.sending) return;
+      for (const f of [...e.target.files]) state.attachmentFiles.push(f);
+      renderFiles(state);
+      el.querySelector('[data-role="status"]').textContent = `${state.attachmentFiles.length} attachment(s) selected.`;
+      e.target.value = '';
+    });
+
+    el.querySelector('[data-action="draft"]').addEventListener('click', () => saveDraftComposer(state));
+    el.querySelector('[data-action="discard"]').addEventListener('click', () => requestDiscardComposer(state));
+
+    el.querySelectorAll('[data-cmd]').forEach(b => {
+      b.addEventListener('click', () => {
+        const cmd = b.dataset.cmd;
+        document.execCommand(cmd, false, cmd === 'createLink' ? prompt('Enter link URL') : null);
+        el.querySelector('[data-field="body"]').focus();
+      });
+    });
+
+    el.querySelector('[data-field="subject"]').addEventListener('input', () => syncTabLabel(state));
+
+    ['to','cc','bcc'].forEach(field => {
+      const input = el.querySelector(`[data-field="${field}"]`);
+      const suggestions = el.querySelector(`[data-role="suggestions-${field}"]`);
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ',' || e.key === ';') { e.preventDefault(); commitRecipient(state, field); }
+        if (e.key === 'Backspace' && !input.value && state.recipients[field].length) { state.recipients[field].pop(); renderRecipientChips(state, field); }
+      });
+      input.addEventListener('input', () => {
+        const raw = input.value;
+        if (/[;,]$/.test(raw)) { commitRecipient(state, field); hideSuggestions(suggestions); return; }
+        clearTimeout(state.suggestTimer);
+        const q = raw.trim();
+        if (!q || !q.includes('@')) { hideSuggestions(suggestions); return; }
+        const seq = ++state.suggestSeq;
+        state.suggestTimer = setTimeout(async () => {
+          try { const r = await MailboxAPI.suggestRecipients(q); if (seq === state.suggestSeq) renderSuggestions(suggestions, r.items || [], input, state, field); } catch (_) { hideSuggestions(suggestions); }
+        }, 180);
+      });
+      input.addEventListener('blur', () => setTimeout(() => { commitRecipient(state, field); hideSuggestions(suggestions); }, 180));
+      el.querySelector(`[data-recipient-box="${field}"]`).addEventListener('click', () => input.focus());
+    });
+  }
+
+  function validEmail(v) { return /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(v); }
+  function addRecipient(state, field, value, clearInput = true) {
+    const email = String(value || '').trim().replace(/[;,]+$/, '');
+    if (!email) return;
+    if (!validEmail(email)) { showAlert(`Please check this email address: ${email}`, 'warning'); return; }
+    const list = state.recipients[field];
+    if (!list.some(x => x.toLowerCase() === email.toLowerCase())) list.push(email);
+    if (clearInput) state.el.querySelector(`[data-field="${field}"]`).value = '';
+    renderRecipientChips(state, field);
+  }
+  function commitRecipient(state, field) {
+    const input = state.el.querySelector(`[data-field="${field}"]`);
+    const raw = input.value.trim();
+    if (!raw) return;
+    raw.split(/[;,]+/).map(x => x.trim()).filter(Boolean).forEach(x => addRecipient(state, field, x, false));
+    input.value = '';
+  }
+  function renderRecipientChips(state, field) {
+    const host = state.el.querySelector(`[data-chips="${field}"]`);
+    host.innerHTML = state.recipients[field].map((email, i) => `<span class="recipient-chip"><span>${esc(email)}</span><button type="button" aria-label="Remove ${esc(email)}" data-remove-recipient="${i}">×</button></span>`).join('');
+    host.querySelectorAll('[data-remove-recipient]').forEach(btn => btn.addEventListener('click', () => { state.recipients[field].splice(Number(btn.dataset.removeRecipient), 1); renderRecipientChips(state, field); }));
+  }
+  function recipientValue(state, field) { commitRecipient(state, field); return state.recipients[field].join(', '); }
+  function hideSuggestions(container) { container.classList.remove('show'); container.innerHTML = ''; }
+  function renderSuggestions(container, items, input, state, field) {
+    if (!items.length) { hideSuggestions(container); return; }
+    container.innerHTML = items.map((x, i) => `<div class="suggestion" data-suggest-index="${i}"><div class="suggestion-name">${esc(x.name || x.email)}</div><div class="suggestion-email">${esc(x.email)}${x.department ? ' · ' + esc(x.department) : ''}</div></div>`).join('');
+    container.classList.add('show');
+    container.querySelectorAll('[data-suggest-index]').forEach(el => {
+      el.addEventListener('mousedown', (e) => { e.preventDefault(); const x = items[Number(el.dataset.suggestIndex)]; addRecipient(state, field, x.email); hideSuggestions(container); });
+    });
+  }
+
+  function syncTabLabel(state) {
+    const el = state.el;
+    const title = el.querySelector('[data-role="title"]').textContent;
+    const subject = el.querySelector('[data-field="subject"]').value.trim();
+    const label = title === 'Reply message' ? 'Reply: ' + (subject || 'message') : title === 'Forward message' ? 'Forward: ' + (subject || 'message') : 'New message';
+    state.tab.querySelector('.compose-tab-label').textContent = label;
+  }
+
+  function activateComposer(id) {
+    const state = composers.get(id);
+    if (!state) return;
+    composers.forEach(s => { s.el.style.display = 'none'; s.tab.classList.remove('active'); });
+    state.el.style.display = 'flex';
+    state.tab.classList.add('active');
+    activeId = id;
+    switchView('compose');
+  }
+
+  function deactivateAll() { composers.forEach(s => { s.el.style.display = 'none'; s.tab.classList.remove('active'); }); activeId = null; }
+  function activateCurrent() { if (activeId && composers.has(activeId)) activateComposer(activeId); else if (composers.size > 0) activateComposer(composers.keys().next().value); else switchView('folders'); }
+
+  async function requestCloseComposer(id) {
+    const state = composers.get(id);
+    if (!state) return;
+    if (state.sending) {
+      showAlert('Please wait — the message is currently sending.', 'warning');
       return;
     }
+    const hasContent = isComposerDirty(state);
+    if (!hasContent) { closeComposer(id); return; }
+    const confirmed = await showConfirm({
+      title: 'Close this message?',
+      message: 'You have unsent changes. If you close this tab, your message will be discarded.',
+      confirmText: 'Close & discard',
+      cancelText: 'Keep editing',
+      variant: 'warn'
+    });
+    if (confirmed) closeComposer(id);
+  }
 
-    silentRefreshRunning = true;
+  function isComposerDirty(state) {
+    const el = state.el;
+    const to = recipientValue(state, 'to');
+    const cc = recipientValue(state, 'cc');
+    const bcc = recipientValue(state, 'bcc');
+    const subject = el.querySelector('[data-field="subject"]').value.trim();
+    const bodyHtml = el.querySelector('[data-field="body"]').innerHTML.trim();
+    const bodyText = bodyHtml.replace(/<br\s*\/?>/gi, '').replace(/<[^>]+>/g, '').trim();
+    if (to || cc || bcc || subject || bodyText) return true;
+    if (state.attachmentFiles.length) return true;
+    return false;
+  }
 
+  async function requestDiscardComposer(state) {
+    if (state.sending) return;
+    const confirmed = await showConfirm({
+      title: 'Discard this message?',
+      message: 'Your draft will be permanently removed and cannot be recovered.',
+      confirmText: 'Discard',
+      cancelText: 'Cancel',
+      variant: 'danger'
+    });
+    if (confirmed) closeComposer(state.id);
+  }
+
+  function closeComposer(id) {
+    const state = composers.get(id);
+    if (!state || state.sending) return;
+    state.el.remove(); state.tab.remove(); composers.delete(id);
+    if (activeId === id) {
+      activeId = null;
+      if (composers.size > 0) activateComposer(composers.keys().next().value);
+      else switchView('folders');
+    }
+  }
+
+  function removeAll() { composers.forEach(s => { s.el.remove(); s.tab.remove(); }); composers.clear(); activeId = null; }
+  function prepareForwardAttachments(state, items) {
+    const statusEl = state.el.querySelector('[data-role="status"]');
+    statusEl.textContent = 'Preparing original attachments…';
+    (async () => {
+      for (const item of items) { try { const file = await attachmentToFile(item); state.attachmentFiles.push(file); renderFiles(state); } catch (e) { console.warn('Forward attachment failed', e); } }
+      statusEl.textContent = state.attachmentFiles.length ? `${state.attachmentFiles.length} original attachment(s) prepared.` : 'Original attachments could not be copied automatically.';
+    })();
+  }
+
+  async function attachmentToFile(item) {
+    if (item.base64 || item.data) { const b = atob(item.base64 || item.data); const u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new File([u], item.fileName || item.name || 'attachment', { type: item.mimeType || item.type || 'application/octet-stream' }); }
+    const url = item.url || item.downloadUrl || item.fileUrl;
+    if (!url) throw new Error('Attachment URL is missing.');
+    const r = await fetch(url, { credentials: 'omit' });
+    if (!r.ok) throw new Error('Unable to download attachment.');
+    const blob = await r.blob();
+    return new File([blob], item.fileName || item.name || 'attachment', { type: item.mimeType || blob.type || 'application/octet-stream' });
+  }
+
+  function renderFiles(state) {
+    const c = state.el.querySelector('[data-role="files"]');
+    c.innerHTML = state.attachmentFiles.map((f, i) => `<div class="file-chip"><span><i class="bi bi-paperclip"></i> ${esc(f.name)} · ${esc(formatSize(f.size))}</span><button type="button" data-remove-file="${i}">×</button></div>`).join('');
+    c.querySelectorAll('[data-remove-file]').forEach(b => { b.addEventListener('click', () => { state.attachmentFiles.splice(Number(b.dataset.removeFile), 1); renderFiles(state); }); });
+  }
+
+  function readFiles(state) {
+    return Promise.all(state.attachmentFiles.map(file => new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve({ name: file.name, size: file.size, mimeType: file.type, base64: String(r.result || '').split(',')[1] || '' });
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    })));
+  }
+
+  function setSendingState(state, isSending) {
+    state.sending = isSending;
+    state.el.querySelectorAll('input, textarea, button, [contenteditable]').forEach(el => el.disabled = isSending);
+    const sendBtn = state.el.querySelector('[data-action="send"]');
+    sendBtn.classList.toggle('loading', isSending);
+    sendBtn.disabled = isSending;
+  }
+
+  async function sendComposer(state) {
+    if (state.sending) return;
+    const el = state.el;
+    el.querySelector('[data-role="alert"]').classList.add('hidden');
+    const to = recipientValue(state, 'to');
+    const cc = recipientValue(state, 'cc');
+    const bcc = recipientValue(state, 'bcc');
+    if (!to) { showAlert('Please enter at least one recipient.', 'warning'); el.querySelector('[data-field="to"]').focus(); return; }
+    const subject = el.querySelector('[data-field="subject"]').value.trim();
+    if (!subject) {
+      const ok = await showConfirm({
+        title: 'Send without a subject?',
+        message: 'Your message has no subject line. You can still send it, but adding a subject is recommended.',
+        confirmText: 'Send anyway',
+        cancelText: 'Add subject',
+        variant: 'warn'
+      });
+      if (!ok) { el.querySelector('[data-field="subject"]').focus(); return; }
+    }
     try {
-      const searchValue =
-        searchInput ? searchInput.value || '' : '';
-
-      const data = await MailboxAPI.list(
-        currentFolder,
-        searchValue,
-        currentPage,
-        currentPageSize
-      );
-
-      const freshMessages =
-        Array.isArray(data?.messages)
-          ? data.messages
-          : [];
-
-      const freshSignature =
-        messageSignature(freshMessages);
-
-      /*
-       * Do nothing when the returned mail data has not changed.
-       * This is what makes the refresh silent.
-       */
-      if (freshSignature === lastSilentSignature) {
-        return;
-      }
-
-      /*
-       * Preserve the current page, folder and label. Only redraw
-       * when the server actually returned different mail data.
-       */
-      currentMessages = freshMessages;
-
-      renderMessages(currentMessages);
-      renderLabels(currentMessages);
-      updatePagination(data);
-
-      updateSilentSignature(currentMessages);
-
-    } catch (error) {
-      /*
-       * Background refresh must never replace the user's mail
-       * list with an error screen. A session error is handled
-       * quietly by sending the user to login.
-       */
-      if (/session/i.test(error?.message || '')) {
-        MailboxAPI.clearSession();
-        window.location.href = 'login.html';
-      }
-    } finally {
-      silentRefreshRunning = false;
-    }
+      setSendingState(state, true);
+      el.querySelector('[data-role="status"]').textContent = 'Preparing message…';
+      const attachments = await readFiles(state);
+      el.querySelector('[data-role="status"]').textContent = 'Sending message…';
+      const result = await MailboxAPI.send({ to, cc, bcc, subject, body: el.querySelector('[data-field="body"]').innerHTML, bodyType: 'HTML', attachments });
+      setSendingState(state, false);
+      closeComposer(state.id);
+      $('successReference').textContent = 'Reference: ' + (result.referenceNo || '—');
+      $('successModal').classList.add('show');
+      invalidateFolderCache('SENT'); invalidateFolderCache('INBOX');
+      await load(1);
+    } catch (err) { setSendingState(state, false); showAlert(err.message || 'Unable to send message.', 'error'); el.querySelector('[data-role="status"]').textContent = ''; }
   }
 
-  function startSilentRefresh() {
-    stopSilentRefresh();
-
-    silentRefreshTimer =
-      window.setInterval(
-        silentRefresh,
-        SILENT_REFRESH_INTERVAL
-      );
+  async function saveDraftComposer(state) {
+    if (state.sending) return;
+    const el = state.el;
+    try {
+      setSendingState(state, true);
+      const result = await MailboxAPI.draft({ to: recipientValue(state, 'to'), cc: recipientValue(state, 'cc'), bcc: recipientValue(state, 'bcc'), subject: el.querySelector('[data-field="subject"]').value, body: el.querySelector('[data-field="body"]').innerHTML, bodyType: 'HTML' });
+      setSendingState(state, false);
+      el.querySelector('[data-role="status"]').textContent = 'Draft saved' + (result.referenceNo ? ' · ' + result.referenceNo : '');
+      invalidateFolderCache('DRAFT');
+      await load(1);
+    } catch (err) { setSendingState(state, false); showAlert(err.message || 'Unable to save draft.', 'error'); }
   }
 
-  function stopSilentRefresh() {
-    if (silentRefreshTimer !== null) {
-      window.clearInterval(silentRefreshTimer);
-      silentRefreshTimer = null;
-    }
+  function replySubject(s) { return /^re:/i.test(String(s || '')) ? String(s) : 'Re: ' + String(s || '(No subject)'); }
+  function forwardSubject(s) { return /^fwd:/i.test(String(s || '')) ? String(s) : 'Fwd: ' + String(s || '(No subject)'); }
+  function createForwarded(m) { return `\n\n---------- Forwarded message ----------\nFrom: ${m.senderName || ''} <${m.senderEmail || ''}>\nDate: ${m.date || ''}\nSubject: ${m.subject || '(No subject)'}\nTo: ${m.to || ''}${m.cc ? '\nCc: ' + m.cc : ''}\n\n${String(m.body || '')}`; }
+
+  return { createComposer, closeComposer, activateComposer, activateCurrent, deactivateAll, removeAll, getActiveId: () => activeId, hasComposers: () => composers.size > 0 };
+})();
+
+/* =========================================================
+   MAILBOX LOADING
+   ========================================================= */
+function cacheKey(folder=currentFolder,page=1){return `${folder}|${$('searchInput').value.trim().toLowerCase()}|${page}|${pageSize}`}
+
+function applyMailboxData(data){
+ currentMessages=sortMessages(data.messages);
+ currentPage=data.page||1;
+ totalPages=data.totalPages||1;
+ selectedIds.clear();
+ renderList();updatePager(data);updateToolbar();
+ folderViews.set(currentFolder,{html:$('mailList').innerHTML,scrollTop:$('mailList').scrollTop,messages:currentMessages,page:currentPage,totalPages:totalPages});
+ if(currentFolder==='INBOX'){
+   const unread = currentMessages.filter(m=>!m.isRead).length;
+   showInboxCount(unread);
+   const currentIds = new Set(currentMessages.map(m => m.mailId));
+   let hasNew = false;
+   if (lastMailIds.size > 0) {
+     for (const id of currentIds) { if (!lastMailIds.has(id)) { hasNew = true; break; } }
+   }
+   if (hasNew) {
+     playNotificationTune();
+     showAlert('New mail received!', 'info', 4000);
+   }
+   lastMailIds = currentIds;
+   lastInboxCount = unread;
+ }
+}
+
+function renderListLoading(){ $('mailList').innerHTML='<div class="list-loading"><span class="panel-spinner" aria-label="Loading"></span> Loading messages…</div>'; }
+
+async function load(page=1,opts={}){
+ const seq=++loadSequence;
+ const key=cacheKey(currentFolder,page);
+ const cached=folderCache.get(key);
+ const fresh=cached && (Date.now()-cached.time<CACHE_TTL);
+ if(cached){ applyMailboxData(cached.data); if(fresh && opts.cacheOnly)return; }
+ loading=true;
+ if(!cached && !opts.silent)renderListLoading();
+ try{
+  const data=await MailboxAPI.list(currentFolder,$('searchInput').value.trim(),page,pageSize);
+  if(seq!==loadSequence)return;
+  folderCache.set(key,{data,time:Date.now()});
+  const changed = signature(data.messages||[]) !== signature(currentMessages) || Number(data.total||0)!==Number(currentMessages.length);
+  if(changed || !cached) {
+    const scrollTop=$('mailList').scrollTop;
+    applyMailboxData(data);
+    if(cached && opts.silent) requestAnimationFrame(()=>{$('mailList').scrollTop=scrollTop});
   }
+ }catch(err){
+  if(seq!==loadSequence)return;
+  if(/session|login|revoked|inactive/i.test(err.message||'')){MailboxAPI.clearSession();location.href='login.html';return}
+  if(!cached) $('mailList').innerHTML='<div class="empty"><div class="empty-title">Unable to load mailbox</div><div class="empty-text">'+esc(err.message||'Request failed.')+'</div></div>';
+ }finally{if(seq===loadSequence)loading=false}
+}
 
-  document.addEventListener('visibilitychange', () => {
-    pageIsVisible = !document.hidden;
+function showInboxCount(n){const b=$('inboxCount');if(n>0){b.textContent=n;b.classList.remove('hidden')}else b.classList.add('hidden')}
 
-    if (pageIsVisible) {
-      /*
-       * Immediately check once when the user returns to the tab,
-       * then continue with the normal 10-second interval.
-       */
-      silentRefresh();
-    }
+function renderList(){
+ if(!currentMessages.length){
+   const folderName = folders[currentFolder] || currentFolder;
+   $('mailList').innerHTML='<div class="empty"><div class="empty-title">No messages in '+esc(folderName)+'</div><div class="empty-text">This folder is empty. New messages will appear here.</div></div>';
+   return
+ }
+ $('mailList').innerHTML=currentMessages.map(m=>`<div class="mail-row ${m.isRead?'':'unread'} ${m.mailId===selectedMailId?'selected':''}" data-id="${escAttr(m.mailId)}"><div class="mail-check"><input type="checkbox" data-select="${escAttr(m.mailId)}" ${selectedIds.has(m.mailId)?'checked':''}></div><div class="mail-main"><div class="mail-top"><div class="sender">${esc(m.senderName||m.senderEmail||m.to||'Unknown')}</div><div class="date">${esc(formatDate(m.date))}</div></div><div class="subject">${esc(m.subject||'(No subject)')} ${m.hasAttachment?'<span class="attachment-dot"><i class="bi bi-paperclip"></i></span>':''}</div><div class="preview">${esc(m.body||'')}</div></div><button class="star ${m.isStarred?'active':''}" data-star="${escAttr(m.mailId)}" title="${m.isStarred?'Unstar':'Star'}"><i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i></button></div>`).join('');
+ document.querySelectorAll('[data-select]').forEach(c=>c.addEventListener('click',e=>{e.stopPropagation();const id=c.dataset.select;if(c.checked)selectedIds.add(id);else selectedIds.delete(id);updateToolbar()}));
+ document.querySelectorAll('[data-star]').forEach(b=>b.addEventListener('click',async e=>{e.stopPropagation();const id=b.dataset.star;const m=currentMessages.find(x=>x.mailId===id);try{b.disabled=true;await MailboxAPI.update({mailId:id,Is_Starred:m&&!m.isStarred?'YES':'NO'});invalidateFolderCache();await load(currentPage,{silent:true})}catch(err){showAlert(err.message||'Unable to update star.','error')}finally{b.disabled=false}}));
+ document.querySelectorAll('.mail-row').forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('input,button'))return;openMessage(r.dataset.id)}));
+}
+
+function updatePager(data){const total=Number(data.total||0);const start=total?((currentPage-1)*pageSize+1):0;const end=Math.min(currentPage*pageSize,total);$('rangeText').textContent=total?`${start}-${end} of ${total}`:'0 messages';$('pageText').textContent=`${currentPage} / ${totalPages}`;$('prevPage').disabled=!data.hasPrevious;$('nextPage').disabled=!data.hasNext;$('pageSize').value=String(pageSize)}
+function updateToolbar(){$('toolbar').classList.toggle('show',selectedIds.size>0)}
+function invalidateFolderCache(folder=currentFolder){for(const k of [...folderCache.keys()])if(k.startsWith(folder+'|'))folderCache.delete(k)}
+
+async function applySelected(changes){const ids=[...selectedIds];if(!ids.length)return;try{await Promise.all(ids.map(mailId=>MailboxAPI.update(Object.assign({mailId},changes))));selectedIds.clear();invalidateFolderCache();await load(currentPage)}catch(err){showAlert(err.message||'Unable to update messages.','error')}}
+
+function paintReadHeader(m){
+ selectedMailId=m.mailId||selectedMailId;
+ $('readSubject').textContent=m.subject||'(No subject)';
+ $('readSenderName').textContent=m.senderName||m.senderEmail||m.to||'';
+ $('readSenderEmail').textContent=m.senderEmail?`<${m.senderEmail}>`:'';
+ $('readAvatar').textContent=initials(m.senderName,m.senderEmail);
+ $('readDate').textContent=formatDate(m.date)||m.date||'';
+ let rec='To: '+(m.to||'—');if(m.cc)rec+=' • Cc: '+m.cc;if(m.bcc)rec+=' • Bcc: '+m.bcc;
+ $('readRecipients').textContent=rec;
+ $('readStarBtn').innerHTML=`<i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i>`;
+ $('readStarBtn').style.color=m.isStarred?'#f59e0b':'';
+}
+
+async function openMessage(id){
+ const row=currentMessages.find(x=>x.mailId===id);if(!row)return;
+ selectedMailId=id;selectedMessage=row;selectedAttachments=[];
+ renderList();$('readEmpty').classList.add('hidden');$('readContent').classList.remove('hidden');$('readPane').classList.add('mobile-show');
+ paintReadHeader(row);
+ $('readBody').innerHTML='<div class="loading-inline"><span class="panel-spinner" aria-label="Loading"></span></div>';$('attachmentList').innerHTML='';
+ if(row.isRead===false||!row.isRead){row.isRead=true;renderList();}
+ try{const result=await MailboxAPI.get(id);if(selectedMailId!==id)return;selectedMessage=result.message||row;selectedAttachments=result.attachments||[];renderMessage(result)}catch(err){$('readBody').textContent=err.message||'Unable to load message.'}
+}
+
+function renderMessage(result){const m=result.message||{};paintReadHeader(m);const row=currentMessages.find(x=>x.mailId===selectedMailId);if(row)row.isRead=true;const body=$('readBody');if(String(m.bodyType||'').toUpperCase()==='HTML'){body.innerHTML=m.body||''}else{body.textContent=m.body||''}renderAttachments(result.attachments||[]);selectedMessage=m;selectedAttachments=result.attachments||[];renderList()}
+function renderAttachments(items){const c=$('attachmentList');c.innerHTML=(Array.isArray(items)?items:[]).map(a=>`<a class="attachment" href="${escAttr(a.url||'#')}" target="_blank" rel="noopener noreferrer"><span><i class="bi bi-paperclip"></i></span><span title="${escAttr(a.fileName)}">${esc(a.fileName||'Attachment')}</span><small>${esc(formatSize(a.size))}</small></a>`).join('')}
+
+function closeRead(){selectedMailId='';selectedMessage=null;selectedAttachments=[];$('readContent').classList.add('hidden');$('readEmpty').classList.remove('hidden');$('readPane').classList.remove('mobile-show');renderList()}
+async function readAction(changes){if(!selectedMailId)return;try{await MailboxAPI.update(Object.assign({mailId:selectedMailId},changes));invalidateFolderCache();await load(currentPage,{silent:true});if(changes.Folder||changes.Is_Deleted){closeRead()}else{await openMessage(selectedMailId)}}catch(err){showAlert(err.message||'Unable to update message.','error')}}
+
+/* =========================================================
+   WIRE-UP
+   ========================================================= */
+$('composeBtn').addEventListener('click',()=>ComposerManager.createComposer('new'));
+$('successOk').addEventListener('click',()=>{$('successModal').classList.remove('show');});
+$('replyBtn').addEventListener('click',()=>{if(selectedMessage)ComposerManager.createComposer('reply',selectedMessage,selectedAttachments)});
+$('forwardBtn').addEventListener('click',()=>{if(selectedMessage)ComposerManager.createComposer('forward',selectedMessage,selectedAttachments)});
+$('readArchiveBtn').addEventListener('click',()=>readAction({Folder:'ARCHIVE',Is_Archived:'YES',Is_Deleted:'NO',Is_Spam:'NO'}));
+$('readDeleteBtn').addEventListener('click',async()=>{
+  const ok = await showConfirm({
+    title: 'Move to Trash?',
+    message: 'This message will be moved to the Trash folder. You can restore it later.',
+    confirmText: 'Move to Trash',
+    cancelText: 'Cancel',
+    variant: 'danger'
   });
+  if (ok) readAction({Folder:'TRASH',Is_Deleted:'YES'});
+});
+$('readStarBtn').addEventListener('click',async()=>{if(!selectedMailId)return;try{await readAction({Is_Starred:selectedMessage&&selectedMessage.isStarred?'NO':'YES'})}catch(e){showAlert(e.message,'error')}});
+$('backBtn').addEventListener('click',closeRead);
 
-  window.addEventListener('beforeunload', stopSilentRefresh);
+/* sort dropdown — sync with saved preference */
+$('sortSelect').value = currentSort;
+$('sortSelect').addEventListener('change',()=>{
+  currentSort = $('sortSelect').value;
+  localStorage.setItem('mailbox_sort', currentSort);
+  currentMessages = sortMessages(currentMessages);
+  renderList();
+});
 
+const prefetchTimers=new Map();
+const prefetchPromises=new Map();
+function prefetchFolder(folder){
+ const key=cacheKey(folder,1);
+ if(folderCache.has(key)||prefetchPromises.has(key)||folder===currentFolder)return;
+ const promise=MailboxAPI.list(folder,'',1,pageSize).then(data=>{folderCache.set(key,{data,time:Date.now()});return data}).catch(()=>null).finally(()=>prefetchPromises.delete(key));
+ prefetchPromises.set(key,promise);
+}
+document.querySelectorAll('.folder').forEach(b=>{
+ b.addEventListener('mouseenter',()=>{ const folder=b.dataset.folder; clearTimeout(prefetchTimers.get(folder)); prefetchTimers.set(folder,setTimeout(()=>prefetchFolder(folder),180)); });
+ b.addEventListener('mouseleave',()=>clearTimeout(prefetchTimers.get(b.dataset.folder)));
+ b.addEventListener('click',()=>{
+   if(currentFolder===b.dataset.folder) { switchView('folders'); return; }
+   folderViews.set(currentFolder,{html:$('mailList').innerHTML,scrollTop:$('mailList').scrollTop,messages:currentMessages,page:currentPage,totalPages:totalPages});
+   currentFolder=b.dataset.folder;currentPage=1;selectedMailId='';selectedMessage=null;selectedAttachments=[];saveFolder();updateFolderUI();closeRead();
+   const view=folderViews.get(currentFolder);const c=folderCache.get(cacheKey(currentFolder,1));
+   if(!c && !view) { renderListLoading(); }
+   else if(view&&view.messages){ currentMessages=sortMessages(view.messages);currentPage=view.page||1;totalPages=view.totalPages||1;renderList();updatePager({total:currentMessages.length,page:currentPage,totalPages:totalPages,hasPrevious:currentPage>1,hasNext:currentPage<totalPages});requestAnimationFrame(()=>{$('mailList').scrollTop=view.scrollTop||0}); }
+   else if(c)applyMailboxData(c.data);
+   load(1,{silent:true});
+   switchView('folders');
+ });
+});
+$('prevPage').addEventListener('click',()=>load(Math.max(1,currentPage-1)));$('nextPage').addEventListener('click',()=>load(Math.min(totalPages,currentPage+1)));$('pageSize').addEventListener('change',()=>{pageSize=Number($('pageSize').value)||25;load(1)});
+$('selectAllBtn').addEventListener('click',()=>{const all=currentMessages.length&&selectedIds.size===currentMessages.length;if(all)selectedIds.clear();else currentMessages.forEach(m=>selectedIds.add(m.mailId));renderList();updateToolbar()});
+$('markReadBtn').addEventListener('click',()=>applySelected({Is_Read:'YES'}));$('markUnreadBtn').addEventListener('click',()=>applySelected({Is_Read:'NO'}));$('archiveBtn').addEventListener('click',()=>applySelected({Folder:'ARCHIVE',Is_Archived:'YES'}));$('spamBtn').addEventListener('click',()=>applySelected({Folder:'SPAM',Is_Spam:'YES'}));$('deleteBtn').addEventListener('click',async()=>{
+  const ok = await showConfirm({
+    title: 'Move selected to Trash?',
+    message: selectedIds.size + ' message(s) will be moved to the Trash folder.',
+    confirmText: 'Move to Trash',
+    cancelText: 'Cancel',
+    variant: 'danger'
+  });
+  if (ok) applySelected({Folder:'TRASH',Is_Deleted:'YES'});
+});
+$('refreshBtn').addEventListener('click',()=>load(currentPage));$('refreshListBtn').addEventListener('click',()=>load(currentPage));
+function runSearch(){clearTimeout(searchTimer);searchTimer=setTimeout(()=>load(1),260);$('clearSearch').style.display=$('searchInput').value?'block':'none'}
+$('searchInput').addEventListener('input',runSearch);$('searchInput').addEventListener('keydown',e=>{if(e.key==='Escape'){$('searchInput').value='';runSearch()}});$('clearSearch').addEventListener('click',()=>{$('searchInput').value='';runSearch();$('searchInput').focus()});
+$('logoutBtn').addEventListener('click',async()=>{
+  const ok = await showConfirm({
+    title: 'Log out?',
+    message: 'You will be signed out of your mailbox. Any unsent drafts will be lost.',
+    confirmText: 'Log out',
+    cancelText: 'Stay signed in',
+    variant: 'warn'
+  });
+  if (!ok) return;
+  try{await MailboxAPI.logout()}catch(_){}
+  MailboxAPI.clearSession();location.href='login.html';
+});
 
-  /* =========================================================
-     STORAGE
-     ========================================================= */
+$('foldersTab').addEventListener('click',()=>switchView('folders'));
 
-  const STORAGE_KEY =
-    'mailbox-selected-folder';
-
-
-  function saveFolder(folder) {
-
-    try {
-      sessionStorage.setItem(
-        STORAGE_KEY,
-        folder
-      );
-    } catch (_) {}
-
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if($('confirmOverlay').classList.contains('show')) { closeConfirm(false); return; }
+    if($('successModal').classList.contains('show')) $('successModal').classList.remove('show');
+    else if(activeView==='compose') { const activeId = ComposerManager.getActiveId(); if (activeId) ComposerManager.requestCloseComposer ? ComposerManager.requestCloseComposer(activeId) : ComposerManager.closeComposer(activeId); }
+    else if($('readPane').classList.contains('mobile-show')) closeRead();
   }
-
-
-  function getSavedFolder() {
-
-    try {
-
-      const folder =
-        sessionStorage.getItem(STORAGE_KEY);
-
-      if (folder && folders[folder]) {
-        return folder;
-      }
-
-    } catch (_) {}
-
-    return 'INBOX';
-
-  }
-
-
-  /* =========================================================
-     ESCAPE HTML
-     ========================================================= */
-
-  function esc(value) {
-
-    return String(value ?? '')
-      .replace(
-        /[&<>"']/g,
-        character => ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#039;'
-        }[character])
-      );
-
-  }
-
-
-  /* =========================================================
-     DATE
-     ========================================================= */
-
-  function dateLabel(value) {
-
-    const text =
-      String(value || '');
-
-    return (
-      text.split(' ')[0] ||
-      text
-    );
-
-  }
-
-
-  /* =========================================================
-     BODY PREVIEW
-     ========================================================= */
-
-  function bodyPreview(value) {
-
-    return String(value || '')
-      .replace(/<[^>]*>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 110);
-
-  }
-
-
-  /* =========================================================
-     LOADING STATE
-     ========================================================= */
-
-  function showLoading() {
-
-    isLoading = true;
-
-    messageList.innerHTML = `
-
-      <li class="list-group-item p-0">
-
-        <div class="mail-loading">
-
-          <div
-            class="spinner-border text-primary"
-            role="status"
-            aria-hidden="true"
-          ></div>
-
-          <div class="text-secondary">
-            Loading ${esc(
-              folders[currentFolder]?.label || 'messages'
-            )}…
-          </div>
-
-        </div>
-
-      </li>
-
-    `;
-
-    messageRange.textContent =
-      'Loading…';
-
-    selectAll.checked = false;
-    selectAll.disabled = true;
-    updateToolbarState();
-    if (previousPageButton) previousPageButton.disabled = true;
-    if (nextPageButton) nextPageButton.disabled = true;
-
-  }
-
-
-  /* =========================================================
-     EMPTY STATE
-     ========================================================= */
-
-  function showEmpty(message = 'No messages found.') {
-
-    messageList.innerHTML = `
-
-      <li class="list-group-item p-0">
-
-        <div class="mail-empty">
-
-          <i
-            class="bi bi-envelope-open text-secondary"
-            aria-hidden="true"
-          ></i>
-
-          <div class="text-secondary">
-            ${esc(message)}
-          </div>
-
-        </div>
-
-      </li>
-
-    `;
-
-    messageRange.textContent =
-      '0 of 0';
-
-    selectAll.checked = false;
-    selectAll.disabled = true;
-
-  }
-
-
-  /* =========================================================
-     ERROR STATE
-     ========================================================= */
-
-  function showError(error) {
-
-    const message =
-      error?.message ||
-      'Unable to load messages.';
-
-    messageList.innerHTML = `
-
-      <li class="list-group-item p-0">
-
-        <div class="mail-error">
-
-          <i
-            class="bi bi-exclamation-triangle text-danger"
-            style="font-size:2rem;"
-            aria-hidden="true"
-          ></i>
-
-          <div class="fw-semibold">
-            Unable to load messages
-          </div>
-
-          <div class="text-secondary small">
-            ${esc(message)}
-          </div>
-
-          <button
-            type="button"
-            class="btn btn-sm btn-primary"
-            id="retry-load-button"
-          >
-            <i class="bi bi-arrow-clockwise me-1"></i>
-            Retry
-          </button>
-
-        </div>
-
-      </li>
-
-    `;
-
-    messageRange.textContent =
-      'Error';
-
-    selectAll.checked = false;
-    selectAll.disabled = true;
-
-    document
-      .getElementById('retry-load-button')
-      ?.addEventListener(
-        'click',
-        load
-      );
-
-  }
-
-
-  /* =========================================================
-     UPDATE FOLDER HEADER
-     ========================================================= */
-
-  function updateFolderHeader() {
-
-    const folder =
-      folders[currentFolder] ||
-      folders.INBOX;
-
-    pageHeading.textContent =
-      folder.label;
-
-    breadcrumbFolder.textContent =
-      folder.label;
-
-    folderTitle.querySelector('span')?.remove();
-
-    const titleText =
-      document.createElement('span');
-
-    titleText.textContent =
-      folder.label;
-
-    folderTitle.appendChild(titleText);
-
-
-    folderTitleIcon.className =
-      `bi ${folder.icon} folder-title-icon`;
-
-  }
-
-
-  /* =========================================================
-     SELECTED FOLDER
-     ========================================================= */
-
-  function updateFolderSelection() {
-
-    document
-      .querySelectorAll('.mail-folder-link')
-      .forEach(link => {
-
-        const isSelected =
-          link.dataset.folder === currentFolder;
-
-        link.classList.toggle(
-          'active',
-          isSelected
-        );
-
-        link.setAttribute(
-          'aria-current',
-          isSelected
-            ? 'page'
-            : 'false'
-        );
-
-      });
-
-  }
-
-
-  /* =========================================================
-     LABEL EXTRACTION
-     ========================================================= */
-
-  function getLabels(messages) {
-
-    const labels =
-      new Map();
-
-    messages.forEach(message => {
-
-      const value =
-        String(message?.label || '')
-          .trim();
-
-      if (!value) {
-        return;
-      }
-
-      value
-        .split(',')
-        .map(x => x.trim())
-        .filter(Boolean)
-        .forEach(label => {
-
-          if (!labels.has(label)) {
-            labels.set(
-              label,
-              labels.size
-            );
-          }
-
-        });
-
-    });
-
-    return [...labels.keys()];
-
-  }
-
-
-  /* =========================================================
-     RENDER LABELS
-     ========================================================= */
-
-  function renderLabels(messages) {
-
-    const labels =
-      getLabels(messages);
-
-    labelList.innerHTML = '';
-
-
-    /* All messages */
-
-    const allItem =
-      document.createElement('li');
-
-    allItem.className =
-      'nav-item';
-
-    allItem.innerHTML = `
-
-      <a
-        href="#"
-        class="nav-link mail-label-link ${currentLabel === '' ? 'active' : ''}"
-        data-label=""
-      >
-
-        <i
-          class="bi bi-tags me-2"
-          aria-hidden="true"
-        ></i>
-
-        All labels
-
-      </a>
-
-    `;
-
-    labelList.appendChild(
-      allItem
-    );
-
-
-    if (!labels.length) {
-
-      const empty =
-        document.createElement('li');
-
-      empty.className =
-        'label-empty';
-
-      empty.textContent =
-        'No labels found';
-
-      labelList.appendChild(
-        empty
-      );
-
-    } else {
-
-      labels.forEach(label => {
-
-        const item =
-          document.createElement('li');
-
-        item.className =
-          'nav-item';
-
-        item.innerHTML = `
-
-          <a
-            href="#"
-            class="nav-link mail-label-link ${currentLabel === label ? 'active' : ''}"
-            data-label="${esc(label)}"
-          >
-
-            <i
-              class="bi bi-circle-fill text-primary me-2"
-              style="font-size:.6rem"
-              aria-hidden="true"
-            ></i>
-
-            ${esc(label)}
-
-          </a>
-
-        `;
-
-        labelList.appendChild(
-          item
-        );
-
-      });
-
-    }
-
-
-    labelList
-      .querySelectorAll('.mail-label-link')
-      .forEach(link => {
-
-        link.addEventListener(
-          'click',
-          event => {
-
-            event.preventDefault();
-
-            currentLabel =
-              link.dataset.label || '';
-
-            renderMessages(
-              currentMessages
-            );
-
-            renderLabels(
-              currentMessages
-            );
-
-          }
-        );
-
-      });
-
-  }
-
-
-  /* =========================================================
-     FILTER BY LABEL
-     ========================================================= */
-
-  function filteredMessages(messages) {
-
-    if (!currentLabel) {
-      return messages;
-    }
-
-    return messages.filter(message => {
-
-      const labels =
-        String(message?.label || '')
-          .split(',')
-          .map(x => x.trim())
-          .filter(Boolean);
-
-      return labels.some(
-        label =>
-          label.toLowerCase() ===
-          currentLabel.toLowerCase()
-      );
-
-    });
-
-  }
-
-
-  /* =========================================================
-     SELECTED MESSAGE IDS
-     ========================================================= */
-
-  function selectedMessageIds() {
-
-    return Array.from(
-      messageList.querySelectorAll('.msg-check:checked')
-    )
-      .map(checkbox => checkbox.dataset.id)
-      .filter(Boolean);
-
-  }
-
-
-  function updateToolbarState() {
-
-    const hasSelection =
-      selectedMessageIds().length > 0;
-
-    [
-      toolbarArchive,
-      toolbarSpam,
-      toolbarDelete,
-      toolbarRead,
-      toolbarUnread
-    ].forEach(button => {
-      if (button) button.disabled = !hasSelection;
-    });
-
-  }
-
-
-  async function applyToSelected(changes) {
-
-    const ids = selectedMessageIds();
-
-    if (!ids.length) return;
-
-    const buttons = [
-      toolbarArchive,
-      toolbarSpam,
-      toolbarDelete,
-      toolbarRead,
-      toolbarUnread
-    ].filter(Boolean);
-
-    buttons.forEach(button => button.disabled = true);
-
-    try {
-
-      await Promise.all(
-        ids.map(mailId =>
-          MailboxAPI.update(
-            Object.assign({ mailId }, changes)
-          )
-        )
-      );
-
-      await load(currentPage);
-
-    } catch (error) {
-
-      if (/session/i.test(error?.message || '')) {
-        MailboxAPI.clearSession();
-        window.location.href = 'login.html';
-        return;
-      }
-
-      showError(error);
-
-    } finally {
-
-      updateToolbarState();
-
-    }
-
-  }
-
-
-  /* =========================================================
-     RENDER MESSAGES
-     ========================================================= */
-
-  function renderMessages(messages) {
-
-    const filtered =
-      filteredMessages(messages);
-
-    messageList.innerHTML = '';
-
-    isLoading = false;
-
-
-    if (!filtered.length) {
-
-      if (currentLabel) {
-
-        showEmpty(
-          `No messages with label "${currentLabel}".`
-        );
-
-      } else {
-
-        showEmpty(
-          'No messages found.'
-        );
-
-      }
-
-      return;
-
-    }
-
-
-    filtered.forEach(
-      (message, index) => {
-
-        const li =
-          document.createElement('li');
-
-        li.className =
-          'list-group-item d-flex align-items-center gap-2 message-row' +
-          (
-            message.isRead
-              ? ''
-              : ' unread'
-          );
-
-
-        const mailId =
-          message.mailId || '';
-
-
-        const subject =
-          message.subject ||
-          '(No subject)';
-
-
-        const sender =
-          message.senderName ||
-          message.senderEmail ||
-          '(Unknown sender)';
-
-
-        const preview =
-          bodyPreview(
-            message.body
-          );
-
-
-        const date =
-          dateLabel(
-            message.date
-          );
-
-
-        const isStarred =
-          message.isStarred === true ||
-          String(message.isStarred || '')
-            .toUpperCase() === 'YES';
-
-
-        const label =
-          String(
-            message.label || ''
-          ).trim();
-
-
-        li.innerHTML = `
-
-          <div class="form-check mb-0">
-
-            <input
-              class="form-check-input msg-check"
-              type="checkbox"
-              data-id="${esc(mailId)}"
-              id="msg-${index}"
-            >
-
-            <label
-              class="form-check-label visually-hidden"
-              for="msg-${index}"
-            >
-              Select ${esc(subject)}
-            </label>
-
-          </div>
-
-
-          <button
-            class="btn btn-link p-0 lh-1 star-btn ${
-              isStarred
-                ? 'text-warning'
-                : 'text-secondary'
-            }"
-            type="button"
-            title="${
-              isStarred
-                ? 'Unstar'
-                : 'Star'
-            }"
-            aria-label="${
-              isStarred
-                ? 'Unstar'
-                : 'Star'
-            }"
-            data-id="${esc(mailId)}"
-          >
-
-            <i
-              class="bi ${
-                isStarred
-                  ? 'bi-star-fill'
-                  : 'bi-star'
-              }"
-              aria-hidden="true"
-            ></i>
-
-          </button>
-
-
-          <a
-            href="read.html?id=${encodeURIComponent(mailId)}"
-            class="flex-grow-1 d-flex flex-column flex-md-row gap-md-3 text-decoration-none text-body"
-            style="min-width:0"
-          >
-
-            <span
-              class="text-truncate"
-              style="min-width:9rem"
-              title="${esc(sender)}"
-            >
-              ${esc(sender)}
-            </span>
-
-
-            <span
-              class="flex-grow-1 text-truncate"
-              style="min-width:0"
-            >
-
-              ${
-                label
-                  ? `
-                    <span
-                      class="badge text-bg-primary me-2"
-                    >
-                      ${esc(label)}
-                    </span>
-                  `
-                  : ''
-              }
-
-              ${esc(subject)}
-
-              ${
-                preview
-                  ? `
-                    <span
-                      class="fw-normal text-secondary"
-                    >
-                      &nbsp;&mdash;
-                      ${esc(preview)}
-                    </span>
-                  `
-                  : ''
-              }
-
-            </span>
-
-
-            <span
-              class="text-secondary small text-md-end"
-              style="min-width:5rem"
-            >
-              ${esc(date)}
-            </span>
-
-          </a>
-
-        `;
-
-
-        messageList.appendChild(
-          li
-        );
-
-      }
-    );
-
-
-    messageRange.textContent =
-      `1–${filtered.length} of ${filtered.length}`;
-
-
-    selectAll.disabled = false;
-    selectAll.checked = false;
-    updateToolbarState();
-
-    messageList
-      .querySelectorAll('.msg-check')
-      .forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
-          const boxes = Array.from(
-            messageList.querySelectorAll('.msg-check')
-          );
-          selectAll.checked =
-            boxes.length > 0 &&
-            boxes.every(box => box.checked);
-          updateToolbarState();
-        });
-      });
-
-
-    /* =======================================================
-       STAR BUTTONS
-       ======================================================= */
-
-    messageList
-      .querySelectorAll('.star-btn')
-      .forEach(button => {
-
-        button.addEventListener(
-          'click',
-          async event => {
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            const icon =
-              button.querySelector('i');
-
-            const currentlyStarred =
-              icon.classList.contains(
-                'bi-star-fill'
-              );
-
-
-            button.disabled = true;
-
-            try {
-
-              await MailboxAPI.update({
-
-                mailId:
-                  button.dataset.id,
-
-                Is_Starred:
-                  currentlyStarred
-                    ? 'NO'
-                    : 'YES'
-
-              });
-
-              await load();
-
-            } catch (error) {
-
-              showError(
-                error
-              );
-
-            } finally {
-
-              button.disabled = false;
-
-            }
-
-          }
-        );
-
-      });
-
-  }
-
-
-  /* =========================================================
-     PAGINATION
-     ========================================================= */
-
-  function updatePagination(data) {
-
-    const page = Number(data?.page || 1);
-    const pageSize = Number(data?.pageSize || currentPageSize || 25);
-    const total = Number(data?.total || 0);
-    const pages = Math.max(Number(data?.totalPages || 1), 1);
-
-    currentPage = page;
-    currentPageSize = pageSize === 50 ? 50 : 25;
-    totalPages = pages;
-    totalMessages = total;
-
-    if (pageSizeSelect) {
-      pageSizeSelect.value = String(currentPageSize);
-    }
-
-    if (pageNumber) {
-      pageNumber.textContent = `${currentPage} / ${totalPages}`;
-    }
-
-    if (messageRange) {
-      if (!total) {
-        messageRange.textContent = '0 of 0';
-      } else {
-        const start = ((currentPage - 1) * currentPageSize) + 1;
-        const end = Math.min(currentPage * currentPageSize, total);
-        messageRange.textContent = `${start}–${end} of ${total}`;
-      }
-    }
-
-    if (previousPageButton) {
-      previousPageButton.disabled = currentPage <= 1 || isLoading || total === 0;
-    }
-
-    if (nextPageButton) {
-      nextPageButton.disabled = currentPage >= totalPages || isLoading || total === 0;
-    }
-  }
-
-
-  /* =========================================================
-     LOAD MESSAGES
-     ========================================================= */
-
-  async function load(page = currentPage) {
-
-    if (isLoading) return;
-
-    showLoading();
-
-    try {
-
-      const searchValue =
-        searchInput ? searchInput.value || '' : '';
-
-      const data =
-        await MailboxAPI.list(
-          currentFolder,
-          searchValue,
-          page,
-          currentPageSize
-        );
-
-      currentMessages =
-        Array.isArray(data?.messages)
-          ? data.messages
-          : [];
-
-      renderMessages(currentMessages);
-      renderLabels(currentMessages);
-      updatePagination(data);
-
-      updateSilentSignature(currentMessages);
-
-    } catch (error) {
-
-      isLoading = false;
-
-      if (/session/i.test(error?.message || '')) {
-        MailboxAPI.clearSession();
-        window.location.href = 'login.html';
-        return;
-      }
-
-      showError(error);
-
-    } finally {
-
-      isLoading = false;
-
-      if (previousPageButton) {
-        previousPageButton.disabled = currentPage <= 1 || totalMessages === 0;
-      }
-
-      if (nextPageButton) {
-        nextPageButton.disabled = currentPage >= totalPages || totalMessages === 0;
-      }
-
-    }
-  }
-
-
-  /* =========================================================
-     FOLDER CLICK
-     ========================================================= */
-
-  document
-    .querySelectorAll('.mail-folder-link')
-    .forEach(link => {
-
-      link.addEventListener(
-        'click',
-        async event => {
-
-          event.preventDefault();
-
-
-          const folder =
-            link.dataset.folder;
-
-
-          if (!folders[folder]) {
-            return;
-          }
-
-
-          if (
-            folder === currentFolder &&
-            !isLoading
-          ) {
-
-            return;
-
-          }
-
-
-          currentFolder =
-            folder;
-
-          currentPage = 1;
-
-
-          currentLabel =
-            '';
-
-
-          saveFolder(
-            currentFolder
-          );
-
-
-          updateFolderSelection();
-
-          updateFolderHeader();
-
-          renderLabels([]);
-
-
-          await load();
-
+});
+
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)load(currentPage,{silent:true})});
+
+/* =========================================================
+   SILENT REFRESH — every 30 seconds
+   ========================================================= */
+async function silentRefresh(){
+  if(document.hidden){silentTimer=setTimeout(silentRefresh,30000);return}
+  try{
+    const key=cacheKey(currentFolder,currentPage);
+    const data=await MailboxAPI.list(currentFolder,$('searchInput').value.trim(),currentPage,pageSize);
+    folderCache.set(key,{data,time:Date.now()});
+    const sig=signature(data.messages||[]);
+    if(sig!==signature(currentMessages)){
+      currentMessages=sortMessages(data.messages);
+      currentPage=data.page||currentPage;
+      totalPages=data.totalPages||1;
+      renderList();
+      updatePager(data);
+      if(currentFolder==='INBOX'){
+        const unread = currentMessages.filter(m=>!m.isRead).length;
+        showInboxCount(unread);
+        const currentIds = new Set(currentMessages.map(m => m.mailId));
+        let hasNew = false;
+        if (lastMailIds.size > 0) {
+          for (const id of currentIds) { if (!lastMailIds.has(id)) { hasNew = true; break; } }
         }
-      );
-
-    });
-
-
-  /* =========================================================
-     SEARCH
-     ========================================================= */
-
-  let searchTimer;
-
-  function runSearch() {
-
-    clearTimeout(searchTimer);
-
-    searchTimer = setTimeout(async () => {
-
-      currentPage = 1;
-      currentLabel = '';
-      updateToolbarState();
-
-      try {
-        await load(1);
-      } catch (error) {
-        showError(error);
-      }
-
-    }, 300);
-
-  }
-
-
-  searchInput?.addEventListener('input', () => {
-
-    if (searchClearButton) {
-      searchClearButton.style.display =
-        searchInput.value.trim() ? '' : 'none';
-    }
-
-    runSearch();
-
-  });
-
-
-  searchInput?.addEventListener('keydown', event => {
-
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      searchInput.value = '';
-      if (searchClearButton) searchClearButton.style.display = 'none';
-      runSearch();
-    }
-
-  });
-
-
-  searchClearButton?.addEventListener('click', () => {
-
-    searchInput.value = '';
-    searchClearButton.style.display = 'none';
-    searchInput.focus();
-    runSearch();
-
-  });
-
-
-  document.addEventListener('keydown', event => {
-
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
-      event.preventDefault();
-      searchInput?.focus();
-    }
-
-  });
-
-
-  /* =========================================================
-     PAGINATION CONTROLS
-     ========================================================= */
-
-  previousPageButton?.addEventListener('click', async () => {
-    if (currentPage <= 1 || isLoading) return;
-    await load(currentPage - 1);
-  });
-
-  nextPageButton?.addEventListener('click', async () => {
-    if (currentPage >= totalPages || isLoading) return;
-    await load(currentPage + 1);
-  });
-
-  pageSizeSelect?.addEventListener('change', async () => {
-    currentPageSize = Number(pageSizeSelect.value) === 50 ? 50 : 25;
-    currentPage = 1;
-    await load(1);
-  });
-
-
-  /* =========================================================
-     TOOLBAR ACTIONS
-     ========================================================= */
-
-  toolbarArchive?.addEventListener('click', () =>
-    applyToSelected({
-      Folder: 'ARCHIVE',
-      Is_Archived: 'YES',
-      Is_Spam: 'NO',
-      Is_Deleted: 'NO'
-    })
-  );
-
-
-  toolbarSpam?.addEventListener('click', () => {
-    if (!window.confirm('Move the selected message(s) to Spam?')) return;
-    applyToSelected({
-      Folder: 'SPAM',
-      Is_Spam: 'YES',
-      Is_Archived: 'NO',
-      Is_Deleted: 'NO'
-    });
-  });
-
-
-  toolbarDelete?.addEventListener('click', () => {
-    if (!window.confirm('Move the selected message(s) to Trash?')) return;
-    applyToSelected({
-      Folder: 'TRASH',
-      Is_Deleted: 'YES'
-    });
-  });
-
-
-  toolbarRead?.addEventListener('click', () =>
-    applyToSelected({ Is_Read: 'YES' })
-  );
-
-
-  toolbarUnread?.addEventListener('click', () =>
-    applyToSelected({ Is_Read: 'NO' })
-  );
-
-
-  /* =========================================================
-     REFRESH
-     ========================================================= */
-
-  refreshButton?.addEventListener(
-    'click',
-    async () => {
-
-      refreshButton.disabled =
-        true;
-
-      try {
-
-        await load();
-
-      } finally {
-
-        refreshButton.disabled =
-          false;
-
-      }
-
-    }
-  );
-
-
-  /* =========================================================
-     SELECT ALL
-     ========================================================= */
-
-  selectAll?.addEventListener(
-    'change',
-    () => {
-
-      messageList
-        .querySelectorAll(
-          '.msg-check'
-        )
-        .forEach(
-          checkbox => {
-            checkbox.checked =
-              selectAll.checked;
-          }
-        );
-
-      updateToolbarState();
-
-    }
-  );
-
-
-  /* =========================================================
-     LOGOUT
-     Same implementation used in read.html
-     ========================================================= */
-
-  logoutButton?.addEventListener(
-    'click',
-    async () => {
-
-      const button =
-        document.getElementById(
-          'logout-button'
-        );
-
-
-      if (button) {
-        button.disabled = true;
-      }
-
-
-      try {
-
-        await MailboxAPI.logout();
-
-      } catch (_) {}
-
-
-      MailboxAPI.clearSession();
-
-
-      window.location.href =
-        'login.html';
-
-    }
-  );
-
-
-  /* =========================================================
-     USER INFORMATION
-     ========================================================= */
-
-  const user =
-    MailboxAPI.user();
-
-
-  if (user) {
-
-    document
-      .querySelectorAll(
-        '[data-mailbox-user-name]'
-      )
-      .forEach(
-        element => {
-          element.textContent =
-            user.name;
+        if (hasNew) {
+          playNotificationTune();
+          showAlert('New mail received!', 'info', 4000);
         }
-      );
+        lastMailIds = currentIds;
+        lastInboxCount = unread;
+      }
+    }
+  }catch(_){}
+  finally{silentTimer=setTimeout(silentRefresh,30000)}
+}
+function startSilent(){clearTimeout(silentTimer);silentTimer=setTimeout(silentRefresh,30000)}
 
-  }
+function initSplitter(){
+ const handle=$('paneSplitter'),main=document.querySelector('.main'),mailArea=document.querySelector('.mail-area');
+ if(!handle||!main||!mailArea)return;
+ const saved=parseInt(localStorage.getItem('mailbox_list_width')||'',10);
+ const applyWidth=w=>{const min=320,max=Math.min(main.getBoundingClientRect().width*.75,900);const width=Math.max(min,Math.min(max,w));mailArea.style.width=width+'px';mailArea.style.flexBasis=width+'px';};
+ if(saved>=320)applyWidth(saved);
+ const move=e=>{if(!splitterDragging)return;const rect=main.getBoundingClientRect();const side=document.querySelector('.sidebar').getBoundingClientRect();applyWidth(e.clientX-side.right);e.preventDefault()};
+ const stop=()=>{if(!splitterDragging)return;splitterDragging=false;handle.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';localStorage.setItem('mailbox_list_width',Math.round(mailArea.getBoundingClientRect().width));window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',stop);};
+ handle.addEventListener('pointerdown',e=>{if(window.matchMedia('(max-width:760px)').matches)return;splitterDragging=true;handle.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',stop,{once:false});e.preventDefault();});
+}
+window.addEventListener('resize',()=>{if(window.matchMedia('(max-width:760px)').matches){document.querySelector('.mail-area').style.width=''}else{const w=parseInt(localStorage.getItem('mailbox_list_width')||'',10);if(w)document.querySelector('.mail-area').style.width=w+'px';document.querySelector('.mail-area').style.flexBasis=w+'px'}});
 
-
-  /* =========================================================
-     INITIALISE
-     ========================================================= */
-
-  currentFolder =
-    getSavedFolder();
-
-
-  updateFolderSelection();
-
-  updateFolderHeader();
-
-  renderLabels([]);
-
-  updateToolbarState();
-
-
-  load().finally(() => {
-    startSilentRefresh();
-  });
-
-
+initNotificationAudio();
+initSplitter();
+updateFolderUI();
+switchView('folders');
+load(1).finally(()=>startSilent());
 })();
 </script>
-
-
-<!-- ===========================================================
-     COLOR MODE / APEX SUPPORT
-     =========================================================== -->
 <script>
-(() => {
-
-  'use strict';
-
-
-  const mode = () =>
-    document.documentElement
-      .getAttribute('data-bs-theme') === 'dark'
-      ? 'dark'
-      : 'light';
-
-
-  globalThis.Apex ||= {};
-
-  const apex =
-    globalThis.Apex;
-
-
-  apex.theme = {
-    mode: mode()
-  };
-
-
-  apex.chart =
-    Object.assign(
-      apex.chart || {},
-      {
-        background: 'transparent'
-      }
-    );
-
-
-  new MutationObserver(
-    () => {
-
-      const next =
-        mode();
-
-
-      apex.theme = {
-        mode: next
-      };
-
-
-      const instances =
-        apex._chartInstances || [];
-
-
-      for (
-        const { chart } of instances
-      ) {
-
-        try {
-
-          chart.updateOptions(
-            {
-              theme: {
-                mode: next
-              }
-            },
-            false,
-            false
-          );
-
-        } catch (_) {}
-
-      }
-
-    }
-  ).observe(
-    document.documentElement,
-    {
-      attributes: true,
-      attributeFilter: [
-        'data-bs-theme'
-      ]
-    }
-  );
-
+/* Profile drawer, theme, editor tools */
+(()=>{
+ const $=id=>document.getElementById(id);
+ const user=(()=>{try{return JSON.parse(sessionStorage.getItem('mailbox_user')||'{}')}catch(e){return {}}})();
+ const av=$('avatar');if(!av)return;
+ const name=user.name||user.fullName||user.email||'User';
+ $('drawerName').textContent=name;
+ $('drawerEmail').textContent=user.email||user.emailAddress||'';
+ $('drawerRole').textContent=user.designation||user.role||'Mailbox User';
+ $('drawerAvatar').textContent=av.textContent;
+ const drawer=$('profileDrawer');
+ av.addEventListener('click',()=>{drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');av.setAttribute('aria-expanded','true')});
+ $('closeProfile').addEventListener('click',()=>{drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');av.setAttribute('aria-expanded','false')});
+ document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.theme;document.documentElement.style.setProperty('--mailbox-accent',c);document.documentElement.style.setProperty('--primary',c);localStorage.setItem('mailbox_theme_color',c)}));
 })();
 </script>
-
 </body>
 </html>
