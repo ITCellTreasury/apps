@@ -1288,8 +1288,17 @@ let templateNSW = null;
 let templatePPPOE = null;
 let templateRootPasswordEncoded = "";
 let templateLoaded = false;
+let templateSource = "";
 
 const TEMPLATE_URL = "wizard_configuration.txt";
+
+/*
+ * Embedded master configuration.
+ * This is the exact TXT content supplied for the wizard.
+ * It is used when the external TXT file cannot be fetched.
+ */
+const EMBEDDED_CONFIGURATION = String.raw`{\"nsw\":\"{\\\"chassis\\\":[{\\\"serialNo\\\":\\\"CD3315AK2020\\\",\\\"model\\\":\\\"SRX210HE2\\\"}],\\\"license\\\":[],\\\"interfaces\\\":{\\\"ge-0/0/0\\\":{\\\"logicalInterfaces\\\":[]},\\\"ge-0/0/1\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/2\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/3\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/4\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/5\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/6\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/7\\\":{\\\"logicalInterfaces\\\":[]},\\\"pp0\\\":{\\\"logicalInterfaces\\\":[]}},\\\"time\\\":\\\"2026-10-05 12:43:59\\\",\\\"timeout\\\":\\\"3540000\\\",\\\"previousState\\\":\\\"\\\",\\\"mplsFlow\\\":\\\"flow-based\\\",\\\"system\\\":{\\\"ntp_server\\\":[\\\"\\\"],\\\"timeserverhost\\\":true,\\\"user\\\":[],\\\"hostname\\\":\\\"BR0102\\\",\\\"rootpassword\\\":\\\"5QPt+hL0xGq5gA==\\\",\\\"timezone\\\":\\\"Asia/Calcutta\\\"},\\\"policies\\\":{\\\"internalInternal\\\":{},\\\"internetInternal\\\":{\\\"All:inbound/Internet\\\":{\\\"name\\\":\\\"All:inbound/Internet\\\",\\\"action\\\":\\\"Allow\\\",\\\"isBiDirection\\\":\\\"left\\\",\\\"fromZone\\\":\\\"inbound\\\",\\\"toZone\\\":\\\"Internet\\\",\\\"secSvcs\\\":\\\"\\\",\\\"zoneSvcs\\\":\\\"any\\\",\\\"recommended\\\":true}},\\\"internetDmz\\\":{},\\\"internalDmz\\\":{}},\\\"autolicense\\\":{},\\\"zones\\\":{\\\"internetZone\\\":{\\\"ppoe\\\":{},\\\"dynamic\\\":false,\\\"pingable\\\":true,\\\"configured\\\":true,\\\"selinterface\\\":\\\"ge-0/0/0\\\",\\\"address\\\":[{\\\"ip\\\":\\\"172.16.232.205\\\",\\\"mask\\\":\\\"CIDR\\\",\\\"netmask\\\":\\\"255.255.255.252\\\",\\\"cidr\\\":30,\\\"gateway\\\":\\\"172.16.232.206\\\",\\\"zonedns\\\":\\\"Manual\\\",\\\"prefdns\\\":\\\"10.5.141.72\\\",\\\"altdns\\\":\\\"10.5.141.73\\\"}]},\\\"dmzZone\\\":{\\\"Mask\\\":\\\"NetMask\\\",\\\"pingable\\\":false,\\\"servc\\\":true,\\\"configured\\\":false},\\\"mgmtZones\\\":{\\\"mgmt\\\":{\\\"name\\\":\\\"mgmt\\\",\\\"svcs\\\":\\\"http,https,ssh,telnet\\\"},\\\"inbound\\\":{\\\"name\\\":\\\"inbound\\\",\\\"svcs\\\":\\\"http,https,ssh,telnet\\\"}},\\\"internalZones\\\":{\\\"mgmt\\\":{\\\"pingable\\\":true,\\\"ipAddress\\\":\\\"192.168.1.1\\\",\\\"mask\\\":\\\"CIDR\\\",\\\"cidr\\\":24,\\\"netmask\\\":\\\"255.255.255.0\\\",\\\"interfaces\\\":\\\"fe-0/0/7\\\"},\\\"inbound\\\":{\\\"pingable\\\":true,\\\"ipAddress\\\":\\\"10.165.5.225\\\",\\\"mask\\\":\\\"CIDR\\\",\\\"cidr\\\":27,\\\"netmask\\\":\\\"255.255.255.224\\\",\\\"interfaces\\\":\\\"fe-0/0/6\\\"}}},\\\"selectedSrcNAT\\\":[],\\\"destNATRules\\\":[],\\\"intlNATRules\\\":[],\\\"state\\\":{\\\"currentPage\\\":\\\"Confirm_Apply\\\",\\\"setupMode\\\":\\\"Basic_Setup\\\",\\\"zoneMode\\\":\\\"Internet_Setup\\\",\\\"internalZoneMode\\\":\\\"Two_Zone\\\",\\\"pppoeMode\\\":\\\"Not_Applicable\\\",\\\"timeMode\\\":\\\"ManualTime\\\"},\\\"savedType\\\":\\\"ClientTopSave\\\",\\\"savedModel\\\":\\\"SRX210\\\",\\\"savedVersion\\\":\\\"12.1\\\",\\\"savedDevMemType\\\":\\\"HM\\\"}\",\"pppoe\":\"[{\\\"connection-name\\\":\\\"Startup_Connection\\\",\\\"service-provider\\\":\\\"\\\",\\\"acc-conc-name\\\":[],\\\"service-name\\\":[],\\\"interval\\\":\\\"\\\",\\\"up-count\\\":\\\"\\\",\\\"down-count\\\":\\\"\\\",\\\"mtu-size\\\":\\\"\\\",\\\"mss-size\\\":\\\"\\\",\\\"auto-reconnect\\\":\\\"\\\",\\\"idle-timeout\\\":\\\"\\\",\\\"lcp-max-conf-req\\\":\\\"\\\",\\\"lcp-restart-timer\\\":\\\"\\\",\\\"ncp-max-conf-req\\\":\\\"\\\",\\\"ncp-restart-timer\\\":\\\"\\\",\\\"adv-option\\\":\\\"\\\",\\\"auth-type\\\":\\\"Auto Negotiate\\\",\\\"user-name\\\":\\\"\\\",\\\"password\\\":\\\"\\\",\\\"passive\\\":true,\\\"rfc\\\":false,\\\"def-password\\\":\\\"\\\",\\\"peerUsr\\\":\\\"\\\",\\\"peerPwd\\\":\\\"\\\",\\\"underlying-intf\\\":\\\"ge-0/0/0\\\",\\\"unit\\\":\\\"0\\\",\\\"metric\\\":\\\"\\\",\\\"metricv6\\\":\\\"\\\",\\\"inet-address\\\":\\\"Static\\\",\\\"ipv4Add\\\":\\\"172.16.232.205/30\\\",\\\"def_gateway\\\":\\\"172.16.232.206\\\",\\\"inet-dns\\\":\\\"Manual\\\",\\\"inet-prefDNS\\\":\\\"10.5.141.72\\\",\\\"inet-altDNS\\\":\\\"10.5.141.73\\\",\\\"inet6-address\\\":\\\"\\\",\\\"ipv6Add\\\":\\\"\\\",\\\"def_gateway_v6\\\":\\\"\\\",\\\"flow-enable\\\":\\\"\\\",\\\"inet6-prefDNS\\\":\\\"\\\",\\\"inet6-altDNS\\\":\\\"\\\",\\\"inet6-dns\\\":\\\"\\\",\\\"zone_assigned\\\":\\\"Internet\\\",\\\"zone_assign_type\\\":\\\"Existing\\\",\\\"dns_array\\\":\\\"\\\",\\\"dns6_array\\\":\\\"\\\"}]\"}`;
+
 
 
 /*
@@ -1450,57 +1459,61 @@ async function apiRequest(action, hostname = "") {
  */
 
 async function loadConfigurationTemplate() {
+  let raw = "";
+  let source = "embedded";
+
   try {
     setStatus("Loading wizard_configuration.txt...");
 
     const response = await fetch(
       TEMPLATE_URL + "?t=" + Date.now(),
-      {
-        method: "GET",
-        cache: "no-store"
-      }
+      { method: "GET", cache: "no-store" }
     );
 
     if (!response.ok) {
-      throw new Error(
-        "Unable to load " + TEMPLATE_URL +
-        " (HTTP " + response.status + ")."
-      );
+      throw new Error("HTTP " + response.status);
     }
 
-    const raw = await response.text();
+    raw = await response.text();
+    if (!raw.trim()) throw new Error("Empty configuration file");
+    source = "external";
 
+  } catch (error) {
+    raw = EMBEDDED_CONFIGURATION;
+    source = "embedded";
+  }
+
+  try {
     /*
-     * The supplied file is a JSON document whose complete
-     * content has one additional escaping layer.
+     * Parse only for populating the HTML controls.
+     * The Preview/master text is NEVER regenerated by JSON.stringify().
      */
     const decoded = JSON.parse('"' + raw + '"');
-
     templateWrapper = JSON.parse(decoded);
     templateNSW = JSON.parse(templateWrapper.nsw);
     templatePPPOE = JSON.parse(templateWrapper.pppoe);
     templateRootPasswordEncoded =
       (templateNSW.system && templateNSW.system.rootpassword) || "";
 
-    templateText = decoded;
+    templateText = raw;
+    templateSource = source;
     templateLoaded = true;
+    generatedText = raw;
 
     applyTemplateToForm();
 
-    /*
-     * Show the ORIGINAL downloaded file immediately.
-     * Do not regenerate it here.
-     */
-    generatedText = raw;
-    document.getElementById("preview").value = raw;
+    /* Preview MUST initially contain the exact TXT text. */
+    document.getElementById("preview").value = generatedText;
 
     setStatus(
-      "wizard_configuration.txt loaded successfully."
+      source === "external"
+        ? "wizard_configuration.txt loaded."
+        : "External TXT unavailable. Embedded configuration loaded."
     );
 
   } catch (error) {
     templateLoaded = false;
-    setStatus(error.message, true);
+    setStatus("Configuration template is invalid: " + error.message, true);
   }
 }
 
@@ -1763,55 +1776,35 @@ async function loadHostnames() {
 async function loadHost(hostname) {
   try {
     document.body.classList.add("loading");
+    setStatus("Loading " + hostname + " ...");
 
-    setStatus(
-      "Loading " + hostname + " ..."
-    );
-
-    const data =
-      await apiRequest("host", hostname);
+    const data = await apiRequest("host", hostname);
 
     if (!data.data) {
-      throw new Error(
-        "No data returned for " + hostname
-      );
+      throw new Error("No data returned for " + hostname);
     }
 
+    /* Only branch-dependent fields are changed by hostname selection. */
     document.getElementById("hostname").value =
       data.data.hostname || hostname;
 
     if (data.data.inboundIp) {
-      document.getElementById("inboundIp").value =
-        data.data.inboundIp;
+      document.getElementById("inboundIp").value = data.data.inboundIp;
     }
-
     if (data.data.wanIp) {
-      document.getElementById("wanIp").value =
-        data.data.wanIp;
+      document.getElementById("wanIp").value = data.data.wanIp;
     }
-
     if (data.data.wanGateway) {
-      document.getElementById("wanGw").value =
-        data.data.wanGateway;
+      document.getElementById("wanGw").value = data.data.wanGateway;
     }
 
     /*
-     * Prefixes are calculated from the template/current
-     * subnet information, rather than hard-coded.
+     * Commit ONLY the changed branch values into the raw TXT string.
+     * All braces, commas, colons and escape sequences remain untouched.
      */
-    calculatePrefixes();
+    commitFormToRawText(["hostname", "inboundIp", "wanIp", "wanGw"]);
 
-    /*
-     * Patch the loaded template only after branch values
-     * have been applied.  No unrelated template fields
-     * are reconstructed from defaults.
-     */
-    generate();
-
-    setStatus(
-      hostname +
-      " loaded successfully."
-    );
+    setStatus(hostname + " loaded successfully. TXT updated without rebuilding it.");
 
   } catch (error) {
     setStatus(error.message, true);
@@ -1980,356 +1973,190 @@ function currentTimestamp() {
  * ======================================================
  */
 
+/*
+ * ======================================================
+ * RAW TXT PATCHING
+ *
+ * IMPORTANT:
+ * The configuration is edited as TEXT, not reconstructed
+ * with JSON.stringify(). Therefore existing \"\\\" , : { }
+ * formatting/escaping and all unrelated values remain exact.
+ * ======================================================
+ */
+
+function replaceEscapedValue(text, key, newValue, occurrence) {
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(
+    '(\\\\{3}"' + escapedKey + '\\\\{3}":\\\\{3}")([^"\\\\]*)(\\\\{3}")',
+    "g"
+  );
+
+  let count = 0;
+  return text.replace(re, function(_, prefix, oldValue, suffix) {
+    count++;
+    if (occurrence && count !== occurrence) {
+      return _;
+    }
+    return prefix + String(newValue) + suffix;
+  });
+}
+
+function currentTimestamp() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, "0");
+  return now.getFullYear() + "-" +
+    pad(now.getMonth() + 1) + "-" +
+    pad(now.getDate()) + " " +
+    pad(now.getHours()) + ":" +
+    pad(now.getMinutes()) + ":" +
+    pad(now.getSeconds());
+}
+
+function setPreviewText() {
+  document.getElementById("preview").value = generatedText;
+}
+
+function patchAllOccurrences(text, key, newValue) {
+  return replaceEscapedValue(text, key, newValue);
+}
+
+function patchWanIpv4Add(text, ip, prefix) {
+  return replaceEscapedValue(text, "ipv4Add", ip + "/" + prefix);
+}
+
+function commitFormToRawText(changedIds) {
+  if (!templateLoaded || !generatedText) return;
+
+  const changed = new Set(changedIds || []);
+  let text = generatedText;
+
+  /* Timestamp is changed whenever a committed form change occurs. */
+  text = replaceEscapedValue(text, "time", currentTimestamp());
+
+  if (changed.has("hostname")) {
+    text = replaceEscapedValue(text, "hostname", value("hostname"));
+  }
+  if (changed.has("model")) {
+    text = replaceEscapedValue(text, "model", value("model"));
+  }
+  if (changed.has("savedModel")) {
+    text = replaceEscapedValue(text, "savedModel", value("savedModel"));
+  }
+  if (changed.has("version")) {
+    text = replaceEscapedValue(text, "savedVersion", value("version"));
+  }
+  if (changed.has("timezone")) {
+    text = replaceEscapedValue(text, "timezone", value("timezone"));
+  }
+  if (changed.has("wanIf")) {
+    text = replaceEscapedValue(text, "selinterface", value("wanIf"));
+    text = replaceEscapedValue(text, "underlying-intf", value("wanIf"));
+  }
+  if (changed.has("wanIp")) {
+    text = replaceEscapedValue(text, "ip", value("wanIp"));
+    text = patchWanIpv4Add(text, value("wanIp"), value("wanPrefix"));
+  }
+  if (changed.has("wanPrefix")) {
+    text = replaceEscapedValue(text, "cidr", value("wanPrefix"), 1);
+    text = replaceEscapedValue(text, "netmask", prefixToMask(Number(value("wanPrefix"))), 1);
+    text = patchWanIpv4Add(text, value("wanIp"), value("wanPrefix"));
+  }
+  if (changed.has("wanGw")) {
+    text = replaceEscapedValue(text, "gateway", value("wanGw"));
+    text = replaceEscapedValue(text, "def_gateway", value("wanGw"));
+  }
+  if (changed.has("dns1")) {
+    text = replaceEscapedValue(text, "prefdns", value("dns1"));
+    text = replaceEscapedValue(text, "inet-prefDNS", value("dns1"));
+  }
+  if (changed.has("dns2")) {
+    text = replaceEscapedValue(text, "altdns", value("dns2"));
+    text = replaceEscapedValue(text, "inet-altDNS", value("dns2"));
+  }
+  if (changed.has("internetZone")) {
+    text = replaceEscapedValue(text, "zone_assigned", value("internetZone"));
+    text = replaceEscapedValue(text, "toZone", value("internetZone"));
+  }
+  if (changed.has("addressMode")) {
+    text = replaceEscapedValue(text, "inet-address", value("addressMode"));
+  }
+  if (changed.has("mgmtIf")) {
+    text = replaceEscapedValue(text, "interfaces", value("mgmtIf"), 1);
+  }
+  if (changed.has("mgmtIp")) {
+    text = replaceEscapedValue(text, "ipAddress", value("mgmtIp"));
+  }
+  if (changed.has("mgmtPrefix")) {
+    text = replaceEscapedValue(text, "cidr", value("mgmtPrefix"), 2);
+    text = replaceEscapedValue(text, "netmask", prefixToMask(Number(value("mgmtPrefix"))), 2);
+  }
+  if (changed.has("mgmtZone")) {
+    text = replaceEscapedValue(text, "name", value("mgmtZone"), 2);
+  }
+  if (changed.has("inboundIf")) {
+    text = replaceEscapedValue(text, "interfaces", value("inboundIf"), 2);
+  }
+  if (changed.has("inboundIp")) {
+    text = replaceEscapedValue(text, "ipAddress", value("inboundIp"));
+  }
+  if (changed.has("inboundPrefix")) {
+    text = replaceEscapedValue(text, "cidr", value("inboundPrefix"), 3);
+    text = replaceEscapedValue(text, "netmask", prefixToMask(Number(value("inboundPrefix"))), 3);
+  }
+  if (changed.has("inboundZone")) {
+    text = replaceEscapedValue(text, "name", value("inboundZone"), 3);
+    text = replaceEscapedValue(text, "fromZone", value("inboundZone"));
+  }
+  if (changed.has("policyName")) {
+    text = replaceEscapedValue(text, "name", value("policyName"), 1);
+  }
+  if (changed.has("policyAction")) {
+    text = replaceEscapedValue(text, "action", value("policyAction"));
+  }
+  if (changed.has("setupMode")) {
+    text = replaceEscapedValue(text, "setupMode", value("setupMode"));
+  }
+  if (changed.has("zoneMode")) {
+    text = replaceEscapedValue(text, "zoneMode", value("zoneMode"));
+  }
+  if (changed.has("internalZoneMode")) {
+    text = replaceEscapedValue(text, "internalZoneMode", value("internalZoneMode"));
+  }
+  if (changed.has("pppoeMode")) {
+    text = replaceEscapedValue(text, "pppoeMode", value("pppoeMode"));
+  }
+  if (changed.has("timeMode")) {
+    text = replaceEscapedValue(text, "timeMode", value("timeMode"));
+  }
+  if (changed.has("pingable")) {
+    text = replaceEscapedValue(text, "pingable", value("pingable") === "true");
+  }
+  if (changed.has("nat")) {
+    /* NAT has an array structure, so leave it untouched unless explicitly edited. */
+  }
+
+  generatedText = text;
+  setPreviewText();
+}
+
 function generate() {
-  if (!templateLoaded || !templateNSW || !templatePPPOE) {
-    setStatus(
-      "Please wait for wizard_configuration.txt to load.",
-      true
-    );
+  if (!templateLoaded) {
+    setStatus("Configuration template is not loaded.", true);
     return;
   }
 
-  const rootPassword =
-    value("rootpassword");
-
-  const confirmPassword =
-    value("rootpassword2");
-
-  if (rootPassword !== confirmPassword) {
-    setStatus(
-      "Root passwords do not match.",
-      true
-    );
-    return;
-  }
-
-  const ipFields = [
-    ["WAN IP", value("wanIp")],
-    ["WAN Gateway", value("wanGw")],
-    ["DNS 1", value("dns1")],
-    ["DNS 2", value("dns2")],
-    ["Management IP", value("mgmtIp")],
-    ["Inbound IP", value("inboundIp")]
+  /* Generate means commit the current form, but never rebuild the TXT. */
+  const ids = [
+    "model", "savedModel", "hostname", "version", "timezone",
+    "wanIf", "wanIp", "wanPrefix", "wanGw", "dns1", "dns2",
+    "internetZone", "addressMode", "mgmtIf", "mgmtIp", "mgmtPrefix",
+    "mgmtZone", "inboundIf", "inboundIp", "inboundPrefix", "inboundZone",
+    "policyName", "policyAction", "setupMode", "zoneMode",
+    "internalZoneMode", "pppoeMode", "timeMode", "pingable"
   ];
 
-  for (const field of ipFields) {
-    if (
-      field[1] &&
-      !isValidIPv4(field[1])
-    ) {
-      setStatus(
-        field[0] +
-        " is not a valid IPv4 address.",
-        true
-      );
-      return;
-    }
-  }
-
-  const wanPrefix = Number(value("wanPrefix"));
-  const mgmtPrefix = Number(value("mgmtPrefix"));
-  const inboundPrefix = Number(value("inboundPrefix"));
-
-  const wanMask = prefixToMask(wanPrefix);
-  const mgmtMask = prefixToMask(mgmtPrefix);
-  const inboundMask = prefixToMask(inboundPrefix);
-
-  if (!wanMask || !mgmtMask || !inboundMask) {
-    setStatus(
-      "One or more prefix values are invalid.",
-      true
-    );
-    return;
-  }
-
-  /*
-   * Deep clone the ORIGINAL template.
-   * Every property not explicitly changed below remains
-   * untouched.
-   */
-  const nsw =
-    JSON.parse(JSON.stringify(templateNSW));
-
-  const pppoe =
-    JSON.parse(JSON.stringify(templatePPPOE));
-
-  /*
-   * Device/system values.
-   */
-  if (nsw.chassis && nsw.chassis[0]) {
-    nsw.chassis[0].model = value("model");
-  }
-
-  nsw.savedModel = value("savedModel");
-  nsw.savedVersion = value("version");
-
-  nsw.system =
-    nsw.system || {};
-
-  nsw.system.hostname =
-    value("hostname");
-
-  nsw.system.timezone =
-    value("timezone");
-
-  /*
-   * Preserve the template password when the user has not
-   * actually changed the existing form password.
-   * If the user changes it, encode the new password.
-   */
-  if (
-    templateRootPasswordEncoded &&
-    rootPassword === "Admin@123" &&
-    confirmPassword === "Admin@123"
-  ) {
-    nsw.system.rootpassword =
-      templateRootPasswordEncoded;
-  } else {
-    nsw.system.rootpassword =
-      btoa(
-        unescape(
-          encodeURIComponent(rootPassword)
-        )
-      );
-  }
-
-  /*
-   * Update generated timestamp as requested.
-   */
-  nsw.time = currentTimestamp();
-
-  /*
-   * WAN / Internet zone.
-   */
-  nsw.zones =
-    nsw.zones || {};
-
-  nsw.zones.internetZone =
-    nsw.zones.internetZone || {};
-
-  const internet =
-    nsw.zones.internetZone;
-
-  internet.pingable =
-    value("pingable") === "true";
-
-  internet.configured = true;
-  internet.selinterface = value("wanIf");
-
-  if (!Array.isArray(internet.address)) {
-    internet.address = [{}];
-  }
-
-  if (!internet.address[0]) {
-    internet.address[0] = {};
-  }
-
-  const wanAddress =
-    internet.address[0];
-
-  wanAddress.ip = value("wanIp");
-  wanAddress.mask = "CIDR";
-  wanAddress.netmask = wanMask;
-  wanAddress.cidr = wanPrefix;
-  wanAddress.gateway = value("wanGw");
-  wanAddress.zonedns = "Manual";
-  wanAddress.prefdns = value("dns1");
-  wanAddress.altdns = value("dns2");
-
-  /*
-   * Management / inbound zones.
-   */
-  nsw.zones.internalZones =
-    nsw.zones.internalZones || {};
-
-  nsw.zones.internalZones.mgmt =
-    nsw.zones.internalZones.mgmt || {};
-
-  nsw.zones.internalZones.inbound =
-    nsw.zones.internalZones.inbound || {};
-
-  const mgmt =
-    nsw.zones.internalZones.mgmt;
-
-  mgmt.pingable = true;
-  mgmt.ipAddress = value("mgmtIp");
-  mgmt.mask = "CIDR";
-  mgmt.cidr = mgmtPrefix;
-  mgmt.netmask = mgmtMask;
-  mgmt.interfaces = value("mgmtIf");
-
-  const inbound =
-    nsw.zones.internalZones.inbound;
-
-  inbound.pingable = true;
-  inbound.ipAddress = value("inboundIp");
-  inbound.mask = "CIDR";
-  inbound.cidr = inboundPrefix;
-  inbound.netmask = inboundMask;
-  inbound.interfaces = value("inboundIf");
-
-  /*
-   * Zone service names.
-   */
-  nsw.zones.mgmtZones =
-    nsw.zones.mgmtZones || {};
-
-  nsw.zones.mgmtZones.mgmt =
-    nsw.zones.mgmtZones.mgmt || {};
-
-  nsw.zones.mgmtZones.inbound =
-    nsw.zones.mgmtZones.inbound || {};
-
-  nsw.zones.mgmtZones.mgmt.name =
-    value("mgmtZone");
-
-  nsw.zones.mgmtZones.mgmt.svcs =
-    checked("mgmtSvc");
-
-  nsw.zones.mgmtZones.inbound.name =
-    value("inboundZone");
-
-  nsw.zones.mgmtZones.inbound.svcs =
-    checked("inboundSvc");
-
-  /*
-   * Policy.
-   */
-  nsw.policies =
-    nsw.policies || {};
-
-  nsw.policies.internetInternal =
-    nsw.policies.internetInternal || {};
-
-  const policyName =
-    value("policyName");
-
-  const existingPolicyKeys =
-    Object.keys(
-      nsw.policies.internetInternal
-    );
-
-  const originalPolicyKey =
-    existingPolicyKeys.length
-      ? existingPolicyKeys[0]
-      : policyName;
-
-  let policy =
-    nsw.policies.internetInternal[
-      originalPolicyKey
-    ] || {};
-
-  /*
-   * If the policy name itself is changed, preserve the
-   * policy object but move it to the new key.
-   */
-  if (originalPolicyKey !== policyName) {
-    delete nsw.policies.internetInternal[
-      originalPolicyKey
-    ];
-
-    nsw.policies.internetInternal[
-      policyName
-    ] = policy;
-  }
-
-  policy.name = policyName;
-  policy.action = value("policyAction");
-  policy.fromZone = value("inboundZone");
-  policy.toZone = value("internetZone");
-
-  /*
-   * Wizard state.
-   */
-  nsw.state =
-    nsw.state || {};
-
-  nsw.state.currentPage =
-    nsw.state.currentPage || "Confirm_Apply";
-
-  nsw.state.setupMode =
-    value("setupMode");
-
-  nsw.state.zoneMode =
-    value("zoneMode");
-
-  nsw.state.internalZoneMode =
-    value("internalZoneMode");
-
-  nsw.state.pppoeMode =
-    value("pppoeMode");
-
-  nsw.state.timeMode =
-    value("timeMode");
-
-  /*
-   * NAT is changed only according to the form.
-   * All other NAT structures remain untouched.
-   */
-  if (value("nat") === "true") {
-    nsw.selectedSrcNAT = [
-      {
-        fromZone: value("inboundZone"),
-        toZone: value("internetZone")
-      }
-    ];
-  } else {
-    nsw.selectedSrcNAT = [];
-  }
-
-  /*
-   * PPPoE object(s):
-   * preserve every original property, changing only
-   * the fields controlled by the form.
-   */
-  if (!Array.isArray(pppoe)) {
-    throw new Error(
-      "Invalid pppoe structure in template."
-    );
-  }
-
-  pppoe.forEach(function(connection) {
-    connection["underlying-intf"] =
-      value("wanIf");
-
-    connection["inet-address"] =
-      value("addressMode");
-
-    connection["ipv4Add"] =
-      value("wanIp") +
-      "/" +
-      wanPrefix;
-
-    connection["def_gateway"] =
-      value("wanGw");
-
-    connection["inet-prefDNS"] =
-      value("dns1");
-
-    connection["inet-altDNS"] =
-      value("dns2");
-
-    connection["zone_assigned"] =
-      value("internetZone");
-  });
-
-  /*
-   * Final wrapper preserves the original wizard format.
-   */
-  const wrapper = {
-    nsw: JSON.stringify(nsw),
-    pppoe: JSON.stringify(pppoe)
-  };
-
-  generatedText =
-    JSON.stringify(wrapper);
-
-  document.getElementById("preview").value =
-    generatedText;
-
-  setStatus(
-    "Configuration updated. Unchanged template values were preserved."
-  );
+  commitFormToRawText(ids);
+  setStatus("Configuration updated. Only mapped values were changed; the original TXT structure was preserved.");
 }
 
 
@@ -2422,27 +2249,62 @@ function resetForm() {
 
 document.addEventListener(
   "DOMContentLoaded",
-  function() {
-
+  async function() {
     initialiseInterfaces();
-
     initialiseHostnameSelect();
 
     /*
-     * First load the GitHub-hosted configuration
-     * template.  The template is the authoritative
-     * baseline for all configuration values.
+     * The TXT is loaded FIRST. It becomes the master source,
+     * and only then are the HTML controls populated.
      */
+    await loadConfigurationTemplate();
 
-    loadConfigurationTemplate()
-      .then(function() {
-        /*
-         * Load the branch list after the template has
-         * populated the form.
-         */
-        return loadHostnames();
+    if (templateLoaded) {
+      /* Reflect the template hostname in the branch selector when possible. */
+      const hostname = value("hostname");
+      if (hostname) {
+        const select = $("#hostnameSelect");
+        if (!select.find('option[value="' + hostname.replace(/"/g, '\\"') + '"]').length) {
+          select.append(new Option(hostname, hostname));
+        }
+        select.val(hostname).trigger("change.select2");
+      }
+
+      /* Every editable field updates the raw TXT immediately. */
+      const editableIds = [
+        "model", "savedModel", "version", "timezone",
+        "wanIf", "wanIp", "wanPrefix", "wanGw", "dns1", "dns2",
+        "internetZone", "addressMode", "mgmtIf", "mgmtIp", "mgmtPrefix",
+        "mgmtZone", "inboundIf", "inboundIp", "inboundPrefix", "inboundZone",
+        "policyName", "policyAction", "setupMode", "zoneMode",
+        "internalZoneMode", "pppoeMode", "timeMode", "pingable"
+      ];
+
+      editableIds.forEach(function(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("change", function() {
+          commitFormToRawText([id]);
+        });
+        el.addEventListener("input", function() {
+          if (el.tagName === "INPUT" && el.type !== "number") {
+            commitFormToRawText([id]);
+          }
+        });
       });
 
+      ["mgmtSvc", "inboundSvc"].forEach(function(cls) {
+        document.querySelectorAll("." + cls).forEach(function(cb) {
+          cb.addEventListener("change", function() {
+            /* Service strings are intentionally not globally rebuilt here. */
+            commitFormToRawText([]);
+          });
+        });
+      });
+    }
+
+    /* Host list is optional; the embedded/template values remain usable without it. */
+    await loadHostnames();
   }
 );
 
