@@ -1,0 +1,4 @@
+cli
+configure
+load factory-default
+set system root-authentication plain-text-password
