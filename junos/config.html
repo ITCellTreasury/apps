@@ -1,1636 +1,773 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juniper SRX210 Wizard Configuration Generator</title>
-    <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <style>
-        :root {
-            color-scheme: light dark;
-            font-family: Arial, "Segoe UI", sans-serif;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            background: #f4f6f8;
-            color: #1f2937;
-            transition: background 0.2s;
-        }
-
-        .wrap {
-            max-width: 1100px;
-            margin: 28px auto;
-            padding: 0 18px;
-        }
-
-        .card {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 22px;
-            margin-bottom: 18px;
-            box-shadow: 0 8px 28px #0001;
-        }
-
-        h1 {
-            margin: 0 0 6px;
-            font-size: 25px;
-        }
-
-        h2 {
-            font-size: 17px;
-            margin: 0 0 15px;
-        }
-
-        .note {
-            color: #64748b;
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
-        }
-
-        .field label {
-            display: block;
-            font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 10px 11px;
-            border: 1px solid #cbd5e1;
-            border-radius: 9px;
-            background: #fff;
-            color: #111827;
-        }
-
-        .full {
-            grid-column: 1 / -1;
-        }
-
-        .checks {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 14px;
-        }
-
-        .checks label {
-            font-weight: 500;
-            font-size: 13px;
-        }
-
-        .checks input {
-            width: auto;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            border: 0;
-            border-radius: 9px;
-            padding: 11px 16px;
-            cursor: pointer;
-            font-weight: 700;
-            transition: background 0.15s, opacity 0.15s;
-        }
-
-        .primary {
-            background: #2563eb;
-            color: #fff;
-        }
-
-        .primary:hover {
-            background: #1d4ed8;
-        }
-
-        .secondary {
-            background: #64748b;
-            color: #fff;
-        }
-
-        .secondary:hover {
-            background: #475569;
-        }
-
-        .danger {
-            background: #dc2626;
-            color: #fff;
-        }
-
-        .danger:hover {
-            background: #b91c1c;
-        }
-
-        .success {
-            background: #16a34a;
-            color: #fff;
-        }
-
-        .success:hover {
-            background: #15803d;
-        }
-
-        textarea {
-            width: 100%;
-            height: 330px;
-            font-family: Consolas, monospace;
-            font-size: 12px;
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 9px;
-            resize: vertical;
-        }
-
-        .status {
-            font-size: 13px;
-            margin-top: 10px;
-            min-height: 18px;
-        }
-
-        .api-url {
-            font-family: Consolas, monospace;
-            font-size: 12px;
-        }
-
-        .loading {
-            opacity: .65;
-            pointer-events: none;
-        }
-
-        /* Wizard Modal */
-        .wizard-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-            backdrop-filter: blur(2px);
-            transition: opacity 0.3s;
-        }
-
-        .wizard-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .wizard-modal {
-            background: #ffffff;
-            border-radius: 20px;
-            max-width: 820px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px #0003;
-            padding: 28px 32px;
-            position: relative;
-            animation: modalSlide 0.25s ease-out;
-        }
-
-        @keyframes modalSlide {
-            from {
-                transform: translateY(16px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .wizard-modal h2 {
-            font-size: 22px;
-            margin: 0 0 8px;
-        }
-
-        .wizard-modal .subtitle {
-            color: #64748b;
-            font-size: 14px;
-            margin-bottom: 22px;
-        }
-
-        .wizard-step {
-            display: block;
-        }
-
-        .wizard-step.hidden {
-            display: none;
-        }
-
-        .instruction-list {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 22px;
-            counter-reset: step-counter;
-        }
-
-        .instruction-list li {
-            counter-increment: step-counter;
-            padding: 10px 0 10px 42px;
-            position: relative;
-            font-size: 14px;
-            line-height: 1.5;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .instruction-list li:last-child {
-            border-bottom: none;
-        }
-
-        .instruction-list li::before {
-            content: counter(step-counter);
-            position: absolute;
-            left: 0;
-            top: 10px;
-            width: 28px;
-            height: 28px;
-            background: #e2e8f0;
-            color: #1e293b;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 13px;
-        }
-
-        .instruction-list li .sub {
-            display: block;
-            margin-top: 4px;
-            padding-left: 0;
-            color: #475569;
-            font-size: 13px;
-        }
-
-        .instruction-list li .sub strong {
-            color: #0f172a;
-        }
-
-        .download-buttons {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 8px;
-        }
-
-        .download-buttons a {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 18px;
-            border-radius: 9px;
-            background: #2563eb;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 14px;
-            transition: background 0.15s;
-            border: none;
-            cursor: pointer;
-        }
-
-        .download-buttons a:hover {
-            background: #1d4ed8;
-        }
-
-        .download-buttons a.github-btn {
-            background: #24292e;
-        }
-
-        .download-buttons a.github-btn:hover {
-            background: #1b1f23;
-        }
-
-        .wizard-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 26px;
-            padding-top: 18px;
-            border-top: 1px solid #e2e8f0;
-            align-items: center;
-        }
-
-        .wizard-actions .spacer {
-            flex: 1;
-        }
-
-        .host-select-wrap {
-            margin-bottom: 16px;
-        }
-
-        .host-select-wrap label {
-            display: block;
-            font-weight: 700;
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
-
-        .wizard-footer-note {
-            font-size: 12px;
-            color: #94a3b8;
-            margin-top: 16px;
-            text-align: center;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: #1e293b;
-            color: #f8fafc;
-            padding: 14px 22px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 8px 30px #0004;
-            z-index: 2000;
-            opacity: 0;
-            transform: translateY(12px);
-            transition: opacity 0.25s, transform 0.25s;
-            pointer-events: none;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .toast.error {
-            background: #dc2626;
-        }
-
-        .toast.success {
-            background: #16a34a;
-        }
-
-        /* Select2 */
-        .select2-container {
-            width: 100% !important;
-        }
-
-        .select2-container .select2-selection--single {
-            height: 40px !important;
-            border: 1px solid #cbd5e1 !important;
-            border-radius: 9px !important;
-        }
-
-        .select2-container .select2-selection--single .select2-selection__rendered {
-            line-height: 38px !important;
-        }
-
-        .select2-container .select2-selection--single .select2-selection__arrow {
-            height: 38px !important;
-        }
-
-        @media(max-width:700px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-
-            .wizard-modal {
-                padding: 20px 16px;
-                max-height: 95vh;
-            }
-
-            .instruction-list li {
-                padding-left: 36px;
-                font-size: 13px;
-            }
-
-            .instruction-list li::before {
-                width: 24px;
-                height: 24px;
-                font-size: 12px;
-            }
-
-            .download-buttons a {
-                font-size: 13px;
-                padding: 8px 14px;
-            }
-        }
-
-        @media(prefers-color-scheme:dark) {
-            body {
-                background: #111827;
-                color: #e5e7eb;
-            }
-
-            .card {
-                background: #1f2937;
-            }
-
-            input,
-            select,
-            textarea {
-                background: #111827;
-                color: #e5e7eb;
-                border-color: #475569;
-            }
-
-            .note {
-                color: #94a3b8;
-            }
-
-            .select2-container .select2-selection--single {
-                background: #111827 !important;
-                border-color: #475569 !important;
-            }
-
-            .select2-container .select2-selection--single .select2-selection__rendered {
-                color: #e5e7eb !important;
-            }
-
-            .select2-dropdown {
-                background: #1f2937;
-                color: #e5e7eb;
-                border-color: #475569;
-            }
-
-            .wizard-modal {
-                background: #1f2937;
-                color: #e5e7eb;
-            }
-
-            .wizard-modal .subtitle {
-                color: #94a3b8;
-            }
-
-            .instruction-list li {
-                border-bottom-color: #334155;
-            }
-
-            .instruction-list li::before {
-                background: #334155;
-                color: #e5e7eb;
-            }
-
-            .instruction-list li .sub {
-                color: #94a3b8;
-            }
-
-            .instruction-list li .sub strong {
-                color: #f1f5f9;
-            }
-
-            .wizard-actions {
-                border-top-color: #334155;
-            }
-
-            .download-buttons a {
-                background: #2563eb;
-            }
-
-            .download-buttons a:hover {
-                background: #1d4ed8;
-            }
-
-            .download-buttons a.github-btn {
-                background: #24292e;
-            }
-
-            .download-buttons a.github-btn:hover {
-                background: #1b1f23;
-            }
-
-            .toast {
-                background: #334155;
-                color: #f1f5f9;
-            }
-
-            .toast.error {
-                background: #b91c1c;
-            }
-
-            .toast.success {
-                background: #15803d;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SRX210 Configuration Generator </title>
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#f3f6fb; --surface:#ffffff; --surface2:#f8fafc; --text:#172033;
+  --muted:#64748b; --line:#e2e8f0; --accent:#2563eb; --accent2:#1d4ed8;
+  --success:#16a34a; --danger:#dc2626; --shadow:0 20px 55px rgba(15,23,42,.10);
+  --radius:22px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; min-height:100vh; font-family:Inter,ui-sans-serif,system-ui,-apple-system,
+  BlinkMacSystemFont,"Segoe UI",sans-serif; color:var(--text);
+  background:
+    radial-gradient(circle at 10% 0%,rgba(37,99,235,.10),transparent 30%),
+    radial-gradient(circle at 90% 10%,rgba(14,165,233,.08),transparent 28%),var(--bg);
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:98%;margin:auto;padding:28px 18px 60px}
+
+/* topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{
+  width:46px;height:46px;border-radius:15px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent),#0ea5e9);color:white;
+  font-size:22px;box-shadow:0 10px 25px rgba(37,99,235,.25)
+}
+.brand h1{font-size:19px;margin:0;font-weight:800;letter-spacing:-.3px}
+.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.status-pill{
+  display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--line);font-size:12px;color:var(--muted)
+}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--success)}
+
+/* cards and layout */
+.card{
+  background:rgba(255,255,255,.78);border:1px solid rgba(226,232,240,.9);
+  border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(14px);
+  padding:24px;margin-bottom:18px
+}
+.hero{padding:30px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:7px;color:var(--accent);font-size:11px;
+  font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:9px
+}
+.hero h2{font-size:30px;line-height:1.1;margin:0 0 9px;letter-spacing:-1px}
+.hero p{margin:0;color:var(--muted);max-width:780px;line-height:1.6}
+
+/* stepper */
+.stepper{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+.step{
+  display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;
+  background:var(--surface2);color:var(--muted);font-size:12px;font-weight:700
+}
+.step.active{background:#eff6ff;color:var(--accent)}
+.step.done{background:#f0fdf4;color:var(--success)}
+.step-num{
+  width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  background:#e2e8f0;color:#475569;font-size:11px
+}
+.active .step-num{background:var(--accent);color:white}.done .step-num{background:var(--success);color:white}
+
+/* page layout: left = form pages, right = preview panel */
+.page-layout{
+  display:grid;grid-template-columns:1fr 800px;gap:24px;align-items:start;
+  margin-top:10px
+}
+.form-column{min-width:0}
+.preview-column{min-width:0}
+
+/* form internals */
+.section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:18px}
+.section-head h3{margin:0;font-size:16px}.section-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.field.full{grid-column:1/-1}
+label{display:block;font-size:11px;font-weight:800;color:var(--muted);margin:0 0 7px;text-transform:uppercase;letter-spacing:.04em}
+input,select,textarea{
+  width:100%;border:1px solid var(--line);border-radius:12px;background:var(--surface);
+  color:var(--text);outline:none;transition:.18s;border-color:var(--line)
+}
+input,select{height:43px;padding:0 12px}
+input:focus,select:focus,textarea:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.08)}
+input[readonly]{background:var(--surface2)}
+.checks{display:flex;flex-wrap:wrap;gap:9px}
+.check{
+  display:flex;align-items:center;gap:7px;padding:9px 11px;border:1px solid var(--line);
+  border-radius:11px;background:var(--surface2);font-size:12px;color:var(--text)
+}
+.check input{width:auto;height:auto}
+
+/* buttons / actions */
+.actions{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.btn{
+  border:0;border-radius:12px;padding:11px 15px;font-weight:800;font-size:13px;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.18s
+}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:var(--accent);color:white;box-shadow:0 8px 20px rgba(37,99,235,.20)}
+.btn.primary:hover{background:var(--accent2)}
+.btn.secondary{background:#e2e8f0;color:#334155}
+.btn.success{background:var(--success);color:white}
+.btn.danger{background:#fee2e2;color:#b91c1c}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+/* branch selector */
+.branch-box{
+  display:flex;align-items:center;gap:10px;padding:14px 15px;border-radius:14px;
+  background:linear-gradient(135deg,#eff6ff,#f0f9ff);border:1px solid #dbeafe;margin-bottom:18px
+}
+.branch-icon{font-size:20px}.branch-box strong{display:block;font-size:15px}.branch-box span{font-size:11px;color:#64748b}
+.search-wrap{position:relative}.search-wrap input{padding-left:39px}.search-icon{position:absolute;left:13px;top:12px;color:#94a3b8}
+.host-list{
+  max-height:310px;overflow:auto;border:1px solid var(--line);border-radius:14px;
+  margin-top:10px;background:var(--surface)
+}
+.host-option{
+  width:100%;border:0;background:transparent;text-align:left;padding:12px 14px;
+  border-bottom:1px solid var(--line);color:var(--text);display:flex;justify-content:space-between
+}
+.host-option:last-child{border-bottom:0}.host-option:hover{background:#eff6ff}
+.host-option small{color:var(--muted)}
+.hidden{display:none!important}
+
+/* preview panel – sticky */
+.preview-panel{position:sticky;top:24px}
+.preview-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.preview-head h3{margin:0;font-size:16px}.preview-meta{font-size:11px;color:var(--muted)}
+textarea#preview{
+  min-height:520px;resize:vertical;padding:15px;font:12px/1.55 "Cascadia Code",Consolas,monospace;
+  background:#0f172a;color:#dbeafe;border-color:#1e293b; border-radius:14px
+}
+.notice{
+  padding:12px 14px;border-radius:12px;background:#f8fafc;border:1px solid var(--line);
+  color:var(--muted);font-size:12px;line-height:1.55
+}
+.notice strong{color:var(--text)}
+.loading-bar{height:3px;border-radius:10px;background:var(--line);overflow:hidden;margin-top:12px}
+.loading-bar span{display:block;height:100%;width:35%;background:var(--accent);animation:load 1s infinite ease-in-out}
+@keyframes load{0%{transform:translateX(-120%)}100%{transform:translateX(350%)}}
+.toast{
+  position:fixed;right:20px;bottom:20px;z-index:50;max-width:380px;padding:13px 16px;
+  border-radius:13px;background:#0f172a;color:white;box-shadow:0 15px 40px rgba(15,23,42,.25);
+  opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s;font-size:13px
+}
+.toast.show{opacity:1;transform:none}.toast.error{background:#b91c1c}.toast.success{background:#15803d}
+.footer{text-align:center;color:#94a3b8;font-size:11px;padding-top:4px}
+
+/* card page toggling */
+.page-card{display:none}
+.page-card.active-page{display:block}
+
+/* responsive */
+@media(max-width:1060px){
+  .page-layout{grid-template-columns:1fr}
+  .preview-panel{position:static}
+}
+@media(max-width:760px){
+  .app{padding:16px 12px 40px}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}
+  .topbar{align-items:flex-start}.status-pill{display:none}.hero{padding:22px}.hero h2{font-size:25px}
+  .stepper{overflow:auto}.step{white-space:nowrap}.actions .btn{flex:1}
+  .preview-panel{position:static}
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0b1120;--surface:#111827;--surface2:#0f172a;--text:#e5e7eb;
+    --muted:#94a3b8;--line:#263244;--shadow:0 20px 55px rgba(0,0,0,.30)
+  }
+  body{background:radial-gradient(circle at 10% 0%,rgba(37,99,235,.15),transparent 30%),#0b1120}
+  .card{background:rgba(17,24,39,.82);border-color:#263244}
+  .step.active{background:#172554}.step.done{background:#052e16}
+  .branch-box{background:linear-gradient(135deg,#172554,#0c2535);border-color:#1e3a5f}
+  .host-option:hover{background:#172554}.btn.secondary{background:#263244;color:#e5e7eb}
+  .btn.danger{background:#3b1d24;color:#fecaca}.notice{background:#0f172a}
+}
+</style>
 </head>
-
 <body>
-
-    <!-- =====================================================
-         WIZARD MODAL (Step 1)
-    ====================================================== -->
-    <div id="wizardOverlay" class="wizard-overlay">
-        <div class="wizard-modal" id="wizardModal">
-
-            <!-- STEP 1: Hostname + Instructions + Downloads -->
-            <div id="wizardStep1" class="wizard-step">
-                <h2>🔧 SRX210 Reset &amp; Configuration Wizard</h2>
-                <div class="subtitle">
-                    Follow the steps below to reset your SRX210 device and generate the configuration file.
-                </div>
-
-                <!-- Hostname selector -->
-                <div class="host-select-wrap">
-                    <label for="wizardHostnameSelect">Hostname / Branch</label>
-                    <select id="wizardHostnameSelect" style="width:100%"></select>
-                </div>
-
-                <!-- Instructions -->
-                <ol class="instruction-list">
-                    <li>
-                        Ensure that you are currently open this in a <strong>Windows PC</strong>.
-                    </li>
-                    <li>
-                        Download the Reset Bat file and its command files.
-                        <span class="sub">
-                            <a href="https://itcelltreasury.github.io/apps/junos/SRX210_Reset.bat"
-                               target="_blank" rel="noopener noreferrer"
-                               style="color:#2563eb;font-weight:700;text-decoration:underline;">
-                                SRX210_Reset.bat
-                            </a>
-                            &nbsp;•&nbsp;
-                            <a href="https://itcelltreasury.github.io/apps/junos/reset_commands.txt"
-                               target="_blank" rel="noopener noreferrer"
-                               style="color:#2563eb;font-weight:700;text-decoration:underline;">
-                                reset_commands.txt
-                            </a>
-                        </span>
-                    </li>
-                    <li>
-                        Click the bat file and give <strong>current IP</strong> and <strong>Password</strong>.
-                    </li>
-                    <li>
-                        After entering the current root password:
-                        <span class="sub">
-                            <strong>1.</strong> You will see <code>root@%</code><br>
-                            <strong>2.</strong> Paste the commands from the clipboard using <strong>CTRL+SHIFT+V</strong> then <strong>Enter</strong> then<br>
-                            <strong>3.</strong> Wait for: <code>New password:</code><br>
-                            <strong>4.</strong> Enter your <strong>NEW root password</strong> manually<br>
-                            <strong>5.</strong> Retype the <strong>NEW root password</strong><br>
-                            <strong>6.</strong> Then enter <code>"Commit"</code> and wait for confirmation.
-                        </span>
-                    </li>
-                </ol>
-
-                <!-- Download buttons -->
-                <div class="download-buttons">
-                    <a href="https://itcelltreasury.github.io/apps/junos/SRX210_Reset.bat"
-                       target="_blank" rel="noopener noreferrer" class="github-btn">
-                        ⬇ Download SRX210_Reset.bat
-                    </a>
-                    <a href="https://itcelltreasury.github.io/apps/junos/reset_commands.txt"
-                       target="_blank" rel="noopener noreferrer" class="github-btn">
-                        ⬇ Download reset_commands.txt
-                    </a>
-                </div>
-
-                <div class="wizard-actions">
-                    <button class="primary" id="goToConfigBtn" disabled>
-                        ⚙️ Proceed to Configuration →
-                    </button>
-                    <div class="spacer"></div>
-                    <button class="secondary" id="closeWizardBtn">
-                        Cancel
-                    </button>
-                </div>
-
-                <div class="wizard-footer-note">
-                    Select a hostname to enable configuration.
-                </div>
-            </div>
-
-        </div>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">⌁</div>
+      <div><h1>SRX210 Configuration Generator</h1><p>Branch configuration · live preview</p></div>
     </div>
+    <div class="status-pill"><span class="dot"></span><span id="connectionText">Ready</span></div>
+  </div>
 
-    <!-- =====================================================
-         MAIN CONFIGURATION PAGE (Step 2)
-    ====================================================== -->
-    <div class="wrap" id="configPage" style="display:none;">
-
-        <!-- HEADER / HOSTNAME -->
-        <div class="card">
-            <h1>Juniper SRX210 Wizard Configuration Generator</h1>
-            <div class="note">
-                Select the branch hostname. The base configuration is loaded from
-                <strong>wizard_configuration.txt</strong>. Branch-specific WAN and
-                Inbound values are retrieved from the Google Sheet.
-            </div>
-
-            <div class="grid">
-                <div class="field">
-                    <label>Hostname / Branch</label>
-                    <select id="hostnameSelect" style="width:100%"></select>
-                </div>
-                <div class="field" style="display:none;">
-                    <label>Apps Script API URL</label>
-                    <input id="apiUrl" class="api-url" value="PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE">
-                </div>
-            </div>
-
-            <div id="status" class="status">Loading hostnames...</div>
-        </div>
-
-        <!-- DEVICE -->
-        <div class="card">
-            <h2>Device Information</h2>
-            <div class="grid">
-                <div class="field">
-                    <label>Model</label>
-                    <input id="model" value="SRX210HE2">
-                </div>
-                <div class="field">
-                    <label>Saved Model</label>
-                    <input id="savedModel" value="SRX210">
-                </div>
-                <div class="field">
-                    <label>Hostname</label>
-                    <input id="hostname" value="" readonly>
-                </div>
-                <div class="field">
-                    <label>Junos Version</label>
-                    <input id="version" value="12.1">
-                </div>
-                <div class="field">
-                    <label>Time Zone</label>
-                    <input id="timezone" value="Asia/Calcutta">
-                </div>
-                <div class="field">
-                    <label>Time Mode</label>
-                    <select id="timeMode">
-                        <option value="ManualTime">ManualTime</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label>Root Password</label>
-                    <input id="rootpassword" type="password" value="Admin@123">
-                </div>
-                <div class="field">
-                    <label>Confirm Root Password</label>
-                    <input id="rootpassword2" type="password" value="Admin@123">
-                </div>
-            </div>
-        </div>
-
-        <!-- WAN -->
-        <div class="card">
-            <h2>Internet / WAN</h2>
-            <div class="grid">
-                <div class="field">
-                    <label>WAN Interface</label>
-                    <select id="wanIf"></select>
-                </div>
-                <div class="field">
-                    <label>WAN IP</label>
-                    <input id="wanIp" value="">
-                </div>
-                <div class="field">
-                    <label>WAN Prefix</label>
-                    <input id="wanPrefix" type="number" min="0" max="32" value="30">
-                </div>
-                <div class="field">
-                    <label>WAN Gateway</label>
-                    <input id="wanGw" value="">
-                </div>
-                <div class="field">
-                    <label>DNS 1</label>
-                    <input id="dns1" value="10.5.141.72">
-                </div>
-                <div class="field">
-                    <label>DNS 2</label>
-                    <input id="dns2" value="10.5.141.73">
-                </div>
-                <div class="field">
-                    <label>Internet Zone</label>
-                    <input id="internetZone" value="Internet">
-                </div>
-                <div class="field">
-                    <label>Address Mode</label>
-                    <select id="addressMode">
-                        <option>Static</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- MANAGEMENT -->
-        <div class="card">
-            <h2>Management Zone</h2>
-            <div class="grid">
-                <div class="field">
-                    <label>Management Interface</label>
-                    <select id="mgmtIf"></select>
-                </div>
-                <div class="field">
-                    <label>Management IP</label>
-                    <input id="mgmtIp" value="192.168.1.1">
-                </div>
-                <div class="field">
-                    <label>Management Prefix</label>
-                    <input id="mgmtPrefix" type="number" min="0" max="32" value="24">
-                </div>
-                <div class="field">
-                    <label>Management Zone</label>
-                    <input id="mgmtZone" value="mgmt">
-                </div>
-                <div class="field full">
-                    <label>Allowed Services</label>
-                    <div class="checks">
-                        <label><input type="checkbox" class="mgmtSvc" value="http" checked> HTTP</label>
-                        <label><input type="checkbox" class="mgmtSvc" value="https" checked> HTTPS</label>
-                        <label><input type="checkbox" class="mgmtSvc" value="ssh" checked> SSH</label>
-                        <label><input type="checkbox" class="mgmtSvc" value="telnet" checked> Telnet</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- INBOUND -->
-        <div class="card">
-            <h2>Inbound / LAN Zone</h2>
-            <div class="grid">
-                <div class="field">
-                    <label>Inbound Interface</label>
-                    <select id="inboundIf"></select>
-                </div>
-                <div class="field">
-                    <label>Inbound IP</label>
-                    <input id="inboundIp" value="10.165.5.225">
-                </div>
-                <div class="field">
-                    <label>Inbound Prefix</label>
-                    <input id="inboundPrefix" type="number" min="0" max="32" value="27">
-                </div>
-                <div class="field">
-                    <label>Inbound Zone</label>
-                    <input id="inboundZone" value="inbound">
-                </div>
-                <div class="field full">
-                    <label>Allowed Services</label>
-                    <div class="checks">
-                        <label><input type="checkbox" class="inboundSvc" value="http" checked> HTTP</label>
-                        <label><input type="checkbox" class="inboundSvc" value="https" checked> HTTPS</label>
-                        <label><input type="checkbox" class="inboundSvc" value="ssh" checked> SSH</label>
-                        <label><input type="checkbox" class="inboundSvc" value="telnet" checked> Telnet</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SECURITY -->
-        <div class="card">
-            <h2>Security / Wizard Options</h2>
-            <div class="grid">
-                <div class="field">
-                    <label>Policy Name</label>
-                    <input id="policyName" value="All:inbound/Internet">
-                </div>
-                <div class="field">
-                    <label>Policy Action</label>
-                    <select id="policyAction">
-                        <option>Allow</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label>Internal Zone Mode</label>
-                    <select id="internalZoneMode">
-                        <option>Two_Zone</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label>Zone Mode</label>
-                    <select id="zoneMode">
-                        <option>Internet_Setup</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label>Setup Mode</label>
-                    <select id="setupMode">
-                        <option>Basic_Setup</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label>PPPoE Mode</label>
-                    <select id="pppoeMode">
-                        <option>Not_Applicable</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label>Pingable Internet</label>
-                    <select id="pingable">
-                        <option value="true">Yes</option>
-                        <option value="false">No</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label>Enable NAT rule generation</label>
-                    <select id="nat">
-                        <option value="false">No (match supplied wizard)</option>
-                        <option value="true">Yes</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- ACTIONS -->
-        <div class="card">
-            <div class="actions">
-                <button class="primary" onclick="generate()">Generate wizard_configuration.txt</button>
-                <button class="secondary" onclick="downloadFile()">Download File</button>
-                <button class="danger" onclick="resetForm()">Reset</button>
-                <button class="secondary" id="backToWizardBtn" style="margin-left:auto;">← Back to Wizard</button>
-            </div>
-        </div>
-
-        <!-- PREVIEW -->
-        <div class="card">
-            <h2>Generated File Preview</h2>
-            <textarea id="preview" spellcheck="false" readonly></textarea>
-        </div>
-
+  <section class="card hero">
+    <div class="eyebrow">Juniper SRX210 · Configuration Wizard</div>
+    <h2></h2>
+    <p>Before configuring the SRX device, ensure that it has been properly reset.</p>
+    <div class="stepper">
+      <div class="step active" id="step1"><span class="step-num">1</span> Select Branch</div>
+      <div class="step" id="step2"><span class="step-num">2</span> Configure</div>
+      <div class="step" id="step3"><span class="step-num">3</span> Preview & Download</div>
     </div>
-
-    <!-- Toast notification -->
-    <div id="toast" class="toast"></div>
-
-    <!-- LIBRARIES -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-    <script>
-        "use strict";
-
-        /* ======================================================
-           CONFIGURATION
-        ====================================================== */
-
-        const API_URL =
-            "https://script.google.com/macros/s/AKfycbyU2fcGWpmg5vYEPqsBQT6dOalgsOmcvst4ACwTbApujrX8RqPo1Ue12TPCZmayWi-H/exec";
-
-        const INTERFACES = [
-            "ge-0/0/0", "ge-0/0/1", "fe-0/0/2", "fe-0/0/3",
-            "fe-0/0/4", "fe-0/0/5", "fe-0/0/6", "fe-0/0/7"
-        ];
-
-        let generatedText = "";
-        let templateText = "";
-        let templateWrapper = null;
-        let templateNSW = null;
-        let templatePPPOE = null;
-        let templateRootPasswordEncoded = "";
-        let templateLoaded = false;
-        let templateSource = "";
-
-        const TEMPLATE_URL = "wizard_configuration.txt";
-
-        const EMBEDDED_CONFIGURATION = String.raw`{\"nsw\":\"{\\\"chassis\\\":[{\\\"serialNo\\\":\\\"CD3315AK2020\\\",\\\"model\\\":\\\"SRX210HE2\\\"}],\\\"license\\\":[],\\\"interfaces\\\":{\\\"ge-0/0/0\\\":{\\\"logicalInterfaces\\\":[]},\\\"ge-0/0/1\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/2\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/3\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/4\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/5\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/6\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/7\\\":{\\\"logicalInterfaces\\\":[]},\\\"pp0\\\":{\\\"logicalInterfaces\\\":[]}},\\\"time\\\":\\\"2026-10-05 12:43:59\\\",\\\"timeout\\\":\\\"3540000\\\",\\\"previousState\\\":\\\"\\\",\\\"mplsFlow\\\":\\\"flow-based\\\",\\\"system\\\":{\\\"ntp_server\\\":[\\\"\\\"],\\\"timeserverhost\\\":true,\\\"user\\\":[],\\\"hostname\\\":\\\"BR0102\\\",\\\"rootpassword\\\":\\\"5QPt+hL0xGq5gA==\\\",\\\"timezone\\\":\\\"Asia/Calcutta\\\"},\\\"policies\\\":{\\\"internalInternal\\\":{},\\\"internetInternal\\\":{\\\"All:inbound/Internet\\\":{\\\"name\\\":\\\"All:inbound/Internet\\\",\\\"action\\\":\\\"Allow\\\",\\\"isBiDirection\\\":\\\"left\\\",\\\"fromZone\\\":\\\"inbound\\\",\\\"toZone\\\":\\\"Internet\\\",\\\"secSvcs\\\":\\\"\\\",\\\"zoneSvcs\\\":\\\"any\\\",\\\"recommended\\\":true}},\\\"internetDmz\\\":{},\\\"internalDmz\\\":{}},\\\"autolicense\\\":{},\\\"zones\\\":{\\\"internetZone\\\":{\\\"ppoe\\\":{},\\\"dynamic\\\":false,\\\"pingable\\\":true,\\\"configured\\\":true,\\\"selinterface\\\":\\\"ge-0/0/0\\\",\\\"address\\\":[{\\\"ip\\\":\\\"172.16.232.205\\\",\\\"mask\\\":\\\"CIDR\\\",\\\"netmask\\\":\\\"255.255.255.252\\\",\\\"cidr\\\":30,\\\"gateway\\\":\\\"172.16.232.206\\\",\\\"zonedns\\\":\\\"Manual\\\",\\\"prefdns\\\":\\\"10.5.141.72\\\",\\\"altdns\\\":\\\"10.5.141.73\\\"}]},\\\"dmzZone\\\":{\\\"Mask\\\":\\\"NetMask\\\",\\\"pingable\\\":false,\\\"servc\\\":true,\\\"configured\\\":false},\\\"mgmtZones\\\":{\\\"mgmt\\\":{\\\"name\\\":\\\"mgmt\\\",\\\"svcs\\\":\\\"http,https,ssh,telnet\\\"},\\\"inbound\\\":{\\\"name\\\":\\\"inbound\\\",\\\"svcs\\\":\\\"http,https,ssh,telnet\\\"}},\\\"internalZones\\\":{\\\"mgmt\\\":{\\\"pingable\\\":true,\\\"ipAddress\\\":\\\"192.168.1.1\\\",\\\"mask\\\":\\\"CIDR\\\",\\\"cidr\\\":24,\\\"netmask\\\":\\\"255.255.255.0\\\",\\\"interfaces\\\":\\\"fe-0/0/7\\\"},\\\"inbound\\\":{\\\"pingable\\\":true,\\\"ipAddress\\\":\\\"10.165.5.225\\\",\\\"mask\\\":\\\"CIDR\\\",\\\"cidr\\\":27,\\\"netmask\\\":\\\"255.255.255.224\\\",\\\"interfaces\\\":\\\"fe-0/0/6\\\"}}},\\\"selectedSrcNAT\\\":[],\\\"destNATRules\\\":[],\\\"intlNATRules\\\":[],\\\"state\\\":{\\\"currentPage\\\":\\\"Confirm_Apply\\\",\\\"setupMode\\\":\\\"Basic_Setup\\\",\\\"zoneMode\\\":\\\"Internet_Setup\\\",\\\"internalZoneMode\\\":\\\"Two_Zone\\\",\\\"pppoeMode\\\":\\\"Not_Applicable\\\",\\\"timeMode\\\":\\\"ManualTime\\\"},\\\"savedType\\\":\\\"ClientTopSave\\\",\\\"savedModel\\\":\\\"SRX210\\\",\\\"savedVersion\\\":\\\"12.1\\\",\\\"savedDevMemType\\\":\\\"HM\\\"}\",\"pppoe\":\"[{\\\"connection-name\\\":\\\"Startup_Connection\\\",\\\"service-provider\\\":\\\"\\\",\\\"acc-conc-name\\\":[],\\\"service-name\\\":[],\\\"interval\\\":\\\"\\\",\\\"up-count\\\":\\\"\\\",\\\"down-count\\\":\\\"\\\",\\\"mtu-size\\\":\\\"\\\",\\\"mss-size\\\":\\\"\\\",\\\"auto-reconnect\\\":\\\"\\\",\\\"idle-timeout\\\":\\\"\\\",\\\"lcp-max-conf-req\\\":\\\"\\\",\\\"lcp-restart-timer\\\":\\\"\\\",\\\"ncp-max-conf-req\\\":\\\"\\\",\\\"ncp-restart-timer\\\":\\\"\\\",\\\"adv-option\\\":\\\"\\\",\\\"auth-type\\\":\\\"Auto Negotiate\\\",\\\"user-name\\\":\\\"\\\",\\\"password\\\":\\\"\\\",\\\"passive\\\":true,\\\"rfc\\\":false,\\\"def-password\\\":\\\"\\\",\\\"peerUsr\\\":\\\"\\\",\\\"peerPwd\\\":\\\"\\\",\\\"underlying-intf\\\":\\\"ge-0/0/0\\\",\\\"unit\\\":\\\"0\\\",\\\"metric\\\":\\\"\\\",\\\"metricv6\\\":\\\"\\\",\\\"inet-address\\\":\\\"Static\\\",\\\"ipv4Add\\\":\\\"172.16.232.205/30\\\",\\\"def_gateway\\\":\\\"172.16.232.206\\\",\\\"inet-dns\\\":\\\"Manual\\\",\\\"inet-prefDNS\\\":\\\"10.5.141.72\\\",\\\"inet-altDNS\\\":\\\"10.5.141.73\\\",\\\"inet6-address\\\":\\\"\\\",\\\"ipv6Add\\\":\\\"\\\",\\\"def_gateway_v6\\\":\\\"\\\",\\\"flow-enable\\\":\\\"\\\",\\\"inet6-prefDNS\\\":\\\"\\\",\\\"inet6-altDNS\\\":\\\"\\\",\\\"inet6-dns\\\":\\\"\\\",\\\"zone_assigned\\\":\\\"Internet\\\",\\\"zone_assign_type\\\":\\\"Existing\\\",\\\"dns_array\\\":\\\"\\\",\\\"dns6_array\\\":\\\"\\\"}]\"}`;
-
-        /* ======================================================
-           DOM HELPERS
-        ====================================================== */
-
-        function value(id) {
-            return document.getElementById(id).value.trim();
-        }
-
-        function setStatus(message, error = false) {
-            const element = document.getElementById("status");
-            element.textContent = message;
-            element.style.color = error ? "#dc2626" : "#16a34a";
-        }
-
-        function showToast(message, type = "success") {
-            const toast = document.getElementById("toast");
-            toast.textContent = message;
-            toast.className = "toast " + type + " show";
-            clearTimeout(toast._timeout);
-            toast._timeout = setTimeout(function() {
-                toast.classList.remove("show");
-            }, 3000);
-        }
-
-        /* ======================================================
-           SELECT2 INTERFACES
-        ====================================================== */
-
-        function initialiseInterfaces() {
-            const interfaceFields = ["wanIf", "mgmtIf", "inboundIf"];
-            interfaceFields.forEach(function(id) {
-                const element = $("#" + id);
-                element.empty();
-                INTERFACES.forEach(function(interfaceName) {
-                    element.append(new Option(interfaceName, interfaceName));
-                });
-                element.select2({
-                    minimumResultsForSearch: 0,
-                    width: "100%"
-                });
-            });
-        }
-
-        /* ======================================================
-           HOSTNAME SELECT2 (MAIN)
-        ====================================================== */
-
-        function initialiseHostnameSelect() {
-            $("#hostnameSelect").select2({
-                placeholder: "Select hostname / branch",
-                allowClear: true,
-                width: "100%",
-                minimumResultsForSearch: 0
-            });
-
-            $("#hostnameSelect").on("change", function() {
-                const hostname = this.value;
-                if (!hostname) return;
-                loadHost(hostname);
-            });
-        }
-
-        /* ======================================================
-           HOSTNAME SELECT2 (WIZARD)
-        ====================================================== */
-
-        function initialiseWizardHostnameSelect() {
-            const select = $("#wizardHostnameSelect");
-            select.select2({
-                placeholder: "Select hostname / branch",
-                allowClear: true,
-                width: "100%",
-                minimumResultsForSearch: 0
-            });
-
-            select.on("change", function() {
-                const hostname = this.value;
-                const goBtn = document.getElementById("goToConfigBtn");
-                if (hostname) {
-                    goBtn.disabled = false;
-                    // Silently sync to main page
-                    const mainSelect = $("#hostnameSelect");
-                    mainSelect.val(hostname).trigger("change");
-                    // Also update the hostname field directly
-                    document.getElementById("hostname").value = hostname;
-                } else {
-                    goBtn.disabled = true;
-                }
-            });
-        }
-
-        /* ======================================================
-           API
-        ====================================================== */
-
-        function getApiUrl() {
-            const configured = API_URL.trim();
-            const entered = document.getElementById("apiUrl").value.trim();
-            if (entered && !entered.includes("PASTE_YOUR_APPS_SCRIPT")) {
-                return entered;
-            }
-            return configured;
-        }
-
-        async function apiRequest(action, hostname = "") {
-            const base = getApiUrl();
-            if (!base || base.includes("PASTE_YOUR_APPS_SCRIPT")) {
-                throw new Error("Please enter the Apps Script Web App API URL.");
-            }
-
-            let url = base + (base.includes("?") ? "&" : "?") + "action=" + encodeURIComponent(action);
-            if (hostname) {
-                url += "&hostname=" + encodeURIComponent(hostname);
-            }
-
-            const response = await fetch(url, {
-                method: "GET",
-                cache: "no-store"
-            });
-
-            if (!response.ok) {
-                throw new Error("API HTTP error: " + response.status);
-            }
-
-            const data = await response.json();
-            if (data.success === false) {
-                throw new Error(data.error || "API returned an error.");
-            }
-            return data;
-        }
-
-        /* ======================================================
-           TEMPLATE LOADER
-        ====================================================== */
-
-        async function loadConfigurationTemplate() {
-            let raw = "";
-            let source = "embedded";
-
-            try {
-                setStatus("Loading wizard_configuration.txt...");
-                const response = await fetch(TEMPLATE_URL + "?t=" + Date.now(), {
-                    method: "GET",
-                    cache: "no-store"
-                });
-                if (!response.ok) {
-                    throw new Error("HTTP " + response.status);
-                }
-                raw = await response.text();
-                if (!raw.trim()) throw new Error("Empty configuration file");
-                source = "external";
-            } catch (error) {
-                raw = EMBEDDED_CONFIGURATION;
-                source = "embedded";
-            }
-
-            try {
-                const decoded = JSON.parse('"' + raw + '"');
-                templateWrapper = JSON.parse(decoded);
-                templateNSW = JSON.parse(templateWrapper.nsw);
-                templatePPPOE = JSON.parse(templateWrapper.pppoe);
-                templateRootPasswordEncoded =
-                    (templateNSW.system && templateNSW.system.rootpassword) || "";
-
-                templateText = raw;
-                templateSource = source;
-                templateLoaded = true;
-                generatedText = raw;
-
-                applyTemplateToForm();
-                document.getElementById("preview").value = generatedText;
-
-                setStatus(
-                    source === "external" ?
-                    "wizard_configuration.txt loaded." :
-                    "External TXT unavailable. Embedded configuration loaded."
-                );
-            } catch (error) {
-                templateLoaded = false;
-                setStatus("Configuration template is invalid: " + error.message, true);
-            }
-        }
-
-        /* ======================================================
-           APPLY TEMPLATE TO FORM
-        ====================================================== */
-
-        function applyTemplateToForm() {
-            if (!templateNSW || !templatePPPOE) return;
-
-            const nsw = templateNSW;
-            const ppp = Array.isArray(templatePPPOE) ? templatePPPOE[0] : null;
-            const system = nsw.system || {};
-
-            const internet =
-                nsw.zones &&
-                nsw.zones.internetZone &&
-                nsw.zones.internetZone.address &&
-                nsw.zones.internetZone.address[0] ?
-                nsw.zones.internetZone.address[0] :
-                {};
-
-            const internal = nsw.zones && nsw.zones.internalZones ? nsw.zones.internalZones : {};
-            const mgmt = internal.mgmt || {};
-            const inbound = internal.inbound || {};
-
-            const policy =
-                nsw.policies &&
-                nsw.policies.internetInternal ?
-                nsw.policies.internetInternal[
-                    Object.keys(nsw.policies.internetInternal)[0]
-                ] :
-                {};
-
-            if (ppp) {
-                $("#wanIf").val(ppp["underlying-intf"] || "").trigger("change");
-                document.getElementById("wanIp").value =
-                    (ppp["ipv4Add"] || "").split("/")[0] || internet.ip || "";
-                document.getElementById("wanPrefix").value =
-                    (ppp["ipv4Add"] || "").includes("/") ?
-                    Number(ppp["ipv4Add"].split("/")[1]) :
-                    Number(internet.cidr || 0);
-                document.getElementById("wanGw").value =
-                    ppp.def_gateway || internet.gateway || "";
-                document.getElementById("dns1").value =
-                    ppp["inet-prefDNS"] || internet.prefdns || "";
-                document.getElementById("dns2").value =
-                    ppp["inet-altDNS"] || internet.altdns || "";
-                document.getElementById("addressMode").value =
-                    ppp["inet-address"] || "Static";
-                document.getElementById("internetZone").value =
-                    ppp.zone_assigned || "Internet";
-            }
-
-            document.getElementById("model").value =
-                nsw.chassis && nsw.chassis[0] ? (nsw.chassis[0].model || "") : "";
-            document.getElementById("savedModel").value = nsw.savedModel || "";
-            document.getElementById("hostname").value = system.hostname || "";
-            document.getElementById("version").value = nsw.savedVersion || "";
-            document.getElementById("timezone").value = system.timezone || "";
-
-            document.getElementById("mgmtIp").value = mgmt.ipAddress || "";
-            document.getElementById("mgmtPrefix").value = Number(mgmt.cidr || 0);
-            document.getElementById("mgmtZone").value = mgmt.name || "mgmt";
-            $("#mgmtIf").val(mgmt.interfaces || "").trigger("change");
-
-            document.getElementById("inboundIp").value = inbound.ipAddress || "";
-            document.getElementById("inboundPrefix").value = Number(inbound.cidr || 0);
-            document.getElementById("inboundZone").value = inbound.name || "inbound";
-            $("#inboundIf").val(inbound.interfaces || "").trigger("change");
-
-            document.getElementById("policyName").value = policy.name || "All:inbound/Internet";
-            document.getElementById("policyAction").value = policy.action || "Allow";
-
-            const state = nsw.state || {};
-            document.getElementById("internalZoneMode").value = state.internalZoneMode || "Two_Zone";
-            document.getElementById("zoneMode").value = state.zoneMode || "Internet_Setup";
-            document.getElementById("setupMode").value = state.setupMode || "Basic_Setup";
-            document.getElementById("pppoeMode").value = state.pppoeMode || "Not_Applicable";
-            document.getElementById("timeMode").value = state.timeMode || "ManualTime";
-            document.getElementById("pingable").value = internet.pingable === false ? "false" : "true";
-
-            document.getElementById("rootpassword").value = "Admin@123";
-            document.getElementById("rootpassword2").value = "Admin@123";
-
-            setServices(
-                "mgmtSvc",
-                nsw.zones && nsw.zones.mgmtZones && nsw.zones.mgmtZones.mgmt ?
-                nsw.zones.mgmtZones.mgmt.svcs :
-                ""
-            );
-
-            setServices(
-                "inboundSvc",
-                nsw.zones && nsw.zones.mgmtZones && nsw.zones.mgmtZones.inbound ?
-                nsw.zones.mgmtZones.inbound.svcs :
-                ""
-            );
-
-            document.getElementById("nat").value =
-                Array.isArray(nsw.selectedSrcNAT) && nsw.selectedSrcNAT.length ? "true" : "false";
-        }
-
-        function setServices(className, services) {
-            const list = String(services || "")
-                .split(",")
-                .map(x => x.trim())
-                .filter(Boolean);
-            document.querySelectorAll("." + className).forEach(function(cb) {
-                cb.checked = list.includes(cb.value);
-            });
-        }
-
-        /* ======================================================
-           LOAD HOSTNAMES
-        ====================================================== */
-
-        async function loadHostnames() {
-            try {
-                setStatus("Loading hostnames...");
-                const data = await apiRequest("hostnames");
-                const hostnames = Array.isArray(data.hostnames) ? data.hostnames : [];
-
-                // Main select
-                const select = $("#hostnameSelect");
-                select.empty();
-                select.append(new Option("", "", false, false));
-                hostnames.forEach(function(hostname) {
-                    select.append(new Option(hostname, hostname));
-                });
-                select.trigger("change");
-
-                // Wizard select
-                const wSelect = $("#wizardHostnameSelect");
-                wSelect.empty();
-                wSelect.append(new Option("", "", false, false));
-                hostnames.forEach(function(hostname) {
-                    wSelect.append(new Option(hostname, hostname));
-                });
-                wSelect.trigger("change");
-
-                setStatus(hostnames.length + " hostname(s) loaded.");
-            } catch (error) {
-                setStatus(error.message, true);
-            }
-        }
-
-        /* ======================================================
-           LOAD HOST
-        ====================================================== */
-
-        async function loadHost(hostname) {
-            try {
-                document.body.classList.add("loading");
-                setStatus("Loading " + hostname + " ...");
-
-                const data = await apiRequest("host", hostname);
-                if (!data.data) {
-                    throw new Error("No data returned for " + hostname);
-                }
-
-                document.getElementById("hostname").value =
-                    data.data.hostname || hostname;
-
-                if (data.data.inboundIp) {
-                    document.getElementById("inboundIp").value = data.data.inboundIp;
-                }
-                if (data.data.wanIp) {
-                    document.getElementById("wanIp").value = data.data.wanIp;
-                }
-                if (data.data.wanGateway) {
-                    document.getElementById("wanGw").value = data.data.wanGateway;
-                }
-
-                commitFormToRawText(["hostname", "inboundIp", "wanIp", "wanGw"]);
-                setStatus(hostname + " loaded successfully. TXT updated without rebuilding it.");
-            } catch (error) {
-                setStatus(error.message, true);
-            } finally {
-                document.body.classList.remove("loading");
-            }
-        }
-
-        /* ======================================================
-           UTILITIES
-        ====================================================== */
-
-        function isValidIPv4(ip) {
-            const parts = ip.trim().split(".");
-            if (parts.length !== 4) return false;
-            return parts.every(function(part) {
-                return /^\d+$/.test(part) && Number(part) >= 0 && Number(part) <= 255;
-            });
-        }
-
-        function prefixToMask(prefix) {
-            prefix = Number(prefix);
-            if (prefix < 0 || prefix > 32) return "";
-            if (prefix === 0) return "0.0.0.0";
-            const mask = (0xffffffff << (32 - prefix)) >>> 0;
-            return [
-                (mask >>> 24) & 255,
-                (mask >>> 16) & 255,
-                (mask >>> 8) & 255,
-                mask & 255
-            ].join(".");
-        }
-
-        function calculatePrefixes() {
-            if (!templateNSW) return;
-            const internet =
-                templateNSW.zones &&
-                templateNSW.zones.internetZone &&
-                templateNSW.zones.internetZone.address &&
-                templateNSW.zones.internetZone.address[0] ?
-                templateNSW.zones.internetZone.address[0] :
-                {};
-            const internal =
-                templateNSW.zones && templateNSW.zones.internalZones ?
-                templateNSW.zones.internalZones :
-                {};
-
-            if (!value("wanPrefix") && internet.cidr !== undefined) {
-                document.getElementById("wanPrefix").value = Number(internet.cidr);
-            }
-            if (!value("mgmtPrefix") && internal.mgmt && internal.mgmt.cidr !== undefined) {
-                document.getElementById("mgmtPrefix").value = Number(internal.mgmt.cidr);
-            }
-            if (!value("inboundPrefix") && internal.inbound && internal.inbound.cidr !== undefined) {
-                document.getElementById("inboundPrefix").value = Number(internal.inbound.cidr);
-            }
-        }
-
-        function checked(className) {
-            return [...document.querySelectorAll("." + className + ":checked")]
-                .map(function(element) { return element.value; }).join(",");
-        }
-
-        function currentTimestamp() {
-            const now = new Date();
-            const pad = n => String(n).padStart(2, "0");
-            return now.getFullYear() + "-" +
-                pad(now.getMonth() + 1) + "-" +
-                pad(now.getDate()) + " " +
-                pad(now.getHours()) + ":" +
-                pad(now.getMinutes()) + ":" +
-                pad(now.getSeconds());
-        }
-
-        function setPreviewText() {
-            document.getElementById("preview").value = generatedText;
-        }
-
-        /* ======================================================
-           RAW TXT PATCHING
-        ====================================================== */
-
-        function replaceEscapedValue(text, key, newValue, occurrence) {
-            const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-            const re = new RegExp(
-                '(\\\\{3}"' + escapedKey + '\\\\{3}":\\\\{3}")([^"\\\\]*)(\\\\{3}")',
-                "g"
-            );
-            let count = 0;
-            return text.replace(re, function(_, prefix, oldValue, suffix) {
-                count++;
-                if (occurrence && count !== occurrence) {
-                    return _;
-                }
-                return prefix + String(newValue) + suffix;
-            });
-        }
-
-        function patchWanIpv4Add(text, ip, prefix) {
-            return replaceEscapedValue(text, "ipv4Add", ip + "/" + prefix);
-        }
-
-        function commitFormToRawText(changedIds) {
-            if (!templateLoaded || !generatedText) return;
-
-            const changed = new Set(changedIds || []);
-            let text = generatedText;
-
-            text = replaceEscapedValue(text, "time", currentTimestamp());
-
-            if (changed.has("hostname")) {
-                text = replaceEscapedValue(text, "hostname", value("hostname"));
-            }
-            if (changed.has("model")) {
-                text = replaceEscapedValue(text, "model", value("model"));
-            }
-            if (changed.has("savedModel")) {
-                text = replaceEscapedValue(text, "savedModel", value("savedModel"));
-            }
-            if (changed.has("version")) {
-                text = replaceEscapedValue(text, "savedVersion", value("version"));
-            }
-            if (changed.has("timezone")) {
-                text = replaceEscapedValue(text, "timezone", value("timezone"));
-            }
-            if (changed.has("wanIf")) {
-                text = replaceEscapedValue(text, "selinterface", value("wanIf"));
-                text = replaceEscapedValue(text, "underlying-intf", value("wanIf"));
-            }
-            if (changed.has("wanIp")) {
-                text = replaceEscapedValue(text, "ip", value("wanIp"));
-                text = patchWanIpv4Add(text, value("wanIp"), value("wanPrefix"));
-            }
-            if (changed.has("wanPrefix")) {
-                text = replaceEscapedValue(text, "cidr", value("wanPrefix"), 1);
-                text = replaceEscapedValue(text, "netmask", prefixToMask(Number(value("wanPrefix"))), 1);
-                text = patchWanIpv4Add(text, value("wanIp"), value("wanPrefix"));
-            }
-            if (changed.has("wanGw")) {
-                text = replaceEscapedValue(text, "gateway", value("wanGw"));
-                text = replaceEscapedValue(text, "def_gateway", value("wanGw"));
-            }
-            if (changed.has("dns1")) {
-                text = replaceEscapedValue(text, "prefdns", value("dns1"));
-                text = replaceEscapedValue(text, "inet-prefDNS", value("dns1"));
-            }
-            if (changed.has("dns2")) {
-                text = replaceEscapedValue(text, "altdns", value("dns2"));
-                text = replaceEscapedValue(text, "inet-altDNS", value("dns2"));
-            }
-            if (changed.has("internetZone")) {
-                text = replaceEscapedValue(text, "zone_assigned", value("internetZone"));
-                text = replaceEscapedValue(text, "toZone", value("internetZone"));
-            }
-            if (changed.has("addressMode")) {
-                text = replaceEscapedValue(text, "inet-address", value("addressMode"));
-            }
-            if (changed.has("mgmtIf")) {
-                text = replaceEscapedValue(text, "interfaces", value("mgmtIf"), 1);
-            }
-            if (changed.has("mgmtIp")) {
-                text = replaceEscapedValue(text, "ipAddress", value("mgmtIp"), 1);
-            }
-            if (changed.has("mgmtPrefix")) {
-                text = replaceEscapedValue(text, "cidr", value("mgmtPrefix"), 2);
-                text = replaceEscapedValue(text, "netmask", prefixToMask(Number(value("mgmtPrefix"))), 2);
-            }
-            if (changed.has("mgmtZone")) {
-                text = replaceEscapedValue(text, "name", value("mgmtZone"), 2);
-            }
-            if (changed.has("inboundIf")) {
-                text = replaceEscapedValue(text, "interfaces", value("inboundIf"), 2);
-            }
-            if (changed.has("inboundIp")) {
-                text = replaceEscapedValue(text, "ipAddress", value("inboundIp"), 2);
-            }
-            if (changed.has("inboundPrefix")) {
-                text = replaceEscapedValue(text, "cidr", value("inboundPrefix"), 3);
-                text = replaceEscapedValue(text, "netmask", prefixToMask(Number(value("inboundPrefix"))), 3);
-            }
-            if (changed.has("inboundZone")) {
-                text = replaceEscapedValue(text, "name", value("inboundZone"), 3);
-                text = replaceEscapedValue(text, "fromZone", value("inboundZone"));
-            }
-            if (changed.has("policyName")) {
-                text = replaceEscapedValue(text, "name", value("policyName"), 1);
-            }
-            if (changed.has("policyAction")) {
-                text = replaceEscapedValue(text, "action", value("policyAction"));
-            }
-            if (changed.has("setupMode")) {
-                text = replaceEscapedValue(text, "setupMode", value("setupMode"));
-            }
-            if (changed.has("zoneMode")) {
-                text = replaceEscapedValue(text, "zoneMode", value("zoneMode"));
-            }
-            if (changed.has("internalZoneMode")) {
-                text = replaceEscapedValue(text, "internalZoneMode", value("internalZoneMode"));
-            }
-            if (changed.has("pppoeMode")) {
-                text = replaceEscapedValue(text, "pppoeMode", value("pppoeMode"));
-            }
-            if (changed.has("timeMode")) {
-                text = replaceEscapedValue(text, "timeMode", value("timeMode"));
-            }
-            if (changed.has("pingable")) {
-                text = replaceEscapedValue(text, "pingable", value("pingable") === "true");
-            }
-            if (changed.has("nat")) {
-                // NAT structure untouched
-            }
-
-            generatedText = text;
-            setPreviewText();
-        }
-
-        function generate() {
-            if (!templateLoaded) {
-                setStatus("Configuration template is not loaded.", true);
-                return;
-            }
-
-            const ids = [
-                "model", "savedModel", "hostname", "version", "timezone",
-                "wanIf", "wanIp", "wanPrefix", "wanGw", "dns1", "dns2",
-                "internetZone", "addressMode", "mgmtIf", "mgmtIp", "mgmtPrefix",
-                "mgmtZone", "inboundIf", "inboundIp", "inboundPrefix", "inboundZone",
-                "policyName", "policyAction", "setupMode", "zoneMode",
-                "internalZoneMode", "pppoeMode", "timeMode", "pingable"
-            ];
-
-            commitFormToRawText(ids);
-            setStatus("Configuration updated. Only mapped values were changed; the original TXT structure was preserved.");
-            showToast("Configuration generated successfully.", "success");
-        }
-
-        /* ======================================================
-           DOWNLOAD
-        ====================================================== */
-
-        function downloadFile() {
-            if (!generatedText) {
-                generate();
-            }
-            if (!generatedText) return;
-
-            const blob = new Blob([generatedText], {
-                type: "text/plain;charset=utf-8"
-            });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "wizard_configuration.txt";
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            setStatus("wizard_configuration.txt downloaded.");
-            showToast("File downloaded.", "success");
-        }
-
-        function resetForm() {
-            location.reload();
-        }
-
-        /* ======================================================
-           WIZARD PAGE LOGIC
-        ====================================================== */
-
-        function showWizard() {
-            document.getElementById("wizardOverlay").classList.remove("hidden");
-            document.getElementById("configPage").style.display = "none";
-        }
-
-        function showConfigPage() {
-            document.getElementById("wizardOverlay").classList.add("hidden");
-            document.getElementById("configPage").style.display = "block";
-        }
-
-        /* ======================================================
-           START
-        ====================================================== */
-
-        document.addEventListener("DOMContentLoaded", async function() {
-            // Initialise interfaces
-            initialiseInterfaces();
-
-            // Initialise main hostname select
-            initialiseHostnameSelect();
-
-            // Initialise wizard hostname select
-            initialiseWizardHostnameSelect();
-
-            // Wizard buttons
-            document.getElementById("goToConfigBtn").addEventListener("click", function() {
-                const hostname = $("#wizardHostnameSelect").val();
-                if (!hostname) {
-                    showToast("Please select a hostname first.", "error");
-                    return;
-                }
-                // Ensure main select is synced
-                $("#hostnameSelect").val(hostname).trigger("change");
-                document.getElementById("hostname").value = hostname;
-                showConfigPage();
-                // Load host data silently
-                loadHost(hostname);
-            });
-
-            document.getElementById("closeWizardBtn").addEventListener("click", function() {
-                // Allow closing the wizard, but show a toast
-                showToast("Wizard closed. You can still configure manually.", "error");
-                showConfigPage();
-            });
-
-            document.getElementById("backToWizardBtn").addEventListener("click", function() {
-                showWizard();
-            });
-
-            // Load template FIRST (so everything is ready)
-            await loadConfigurationTemplate();
-
-            if (templateLoaded) {
-                // Reflect template hostname
-                const hostname = value("hostname");
-                if (hostname) {
-                    const select = $("#hostnameSelect");
-                    if (!select.find('option[value="' + hostname.replace(/"/g, '\\"') + '"]').length) {
-                        select.append(new Option(hostname, hostname));
-                    }
-                    select.val(hostname).trigger("change.select2");
-
-                    // Also add to wizard select
-                    const wSelect = $("#wizardHostnameSelect");
-                    if (!wSelect.find('option[value="' + hostname.replace(/"/g, '\\"') + '"]').length) {
-                        wSelect.append(new Option(hostname, hostname));
-                    }
-                    wSelect.val(hostname).trigger("change.select2");
-                }
-
-                // Attach change listeners to editable fields
-                const editableIds = [
-                    "model", "savedModel", "version", "timezone",
-                    "wanIf", "wanIp", "wanPrefix", "wanGw", "dns1", "dns2",
-                    "internetZone", "addressMode", "mgmtIf", "mgmtIp", "mgmtPrefix",
-                    "mgmtZone", "inboundIf", "inboundIp", "inboundPrefix", "inboundZone",
-                    "policyName", "policyAction", "setupMode", "zoneMode",
-                    "internalZoneMode", "pppoeMode", "timeMode", "pingable"
-                ];
-
-                editableIds.forEach(function(id) {
-                    const el = document.getElementById(id);
-                    if (!el) return;
-                    el.addEventListener("change", function() {
-                        commitFormToRawText([id]);
-                    });
-                    el.addEventListener("input", function() {
-                        if (el.tagName === "INPUT" && el.type !== "number") {
-                            commitFormToRawText([id]);
-                        }
-                    });
-                });
-
-                ["mgmtSvc", "inboundSvc"].forEach(function(cls) {
-                    document.querySelectorAll("." + cls).forEach(function(cb) {
-                        cb.addEventListener("change", function() {
-                            commitFormToRawText([]);
-                        });
-                    });
-                });
-            }
-
-            // Load hostnames (populates both selects)
-            await loadHostnames();
-
-            // Show wizard initially
-            showWizard();
-        });
-    </script>
-
+  </section>
+
+  <!-- STEP 1 : Select Branch -->
+  <section class="card" id="selectionPage">
+    <div class="section-head">
+      <div><h3>Select Branch / Hostname</h3><p>The selected hostname is carried automatically to the configuration page.</p></div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input id="hostSearch" autocomplete="off" placeholder="Search hostname or branch code…">
+    </div>
+    <div id="hostList" class="host-list">
+      <div class="notice">Loading branch list…</div>
+    </div>
+    <div class="loading-bar" id="hostLoading"><span></span></div>
+    <div class="actions" style="margin-top:16px">
+      <button class="btn primary" id="continueBtn" disabled>Continue to Configuration →</button>
+    </div>
+  </section>
+
+  <!-- STEP 2+3 : Configuration pages with live preview right -->
+  <main id="configPage" class="hidden">
+    <div class="page-layout">
+      <!-- LEFT column: page cards -->
+      <div class="form-column">
+        <!-- branch pill + navigation -->
+        <div class="branch-box">
+          <div class="branch-icon">◉</div>
+          <div><span>Selected branch</span><strong id="selectedBranch">—</strong></div>
+          <button class="btn secondary" id="changeBranchBtn" style="margin-left:auto">Change</button>
+        </div>
+
+        <!-- page 1: Device Information -->
+        <div class="card page-card active-page" id="page-device">
+          <div class="section-head">
+            <div><h3>Device Information</h3><p>Template values are preloaded; branch-specific network values come from the sheet.</p></div>
+          </div>
+          <div class="grid">
+            <div class="field"><label>Model</label><input id="model" value="SRX210HE2"></div>
+            <div class="field"><label>Saved Model</label><input id="savedModel" value="SRX210"></div>
+            <div class="field"><label>Hostname</label><input id="hostname" readonly></div>
+            <div class="field"><label>Junos Version</label><input id="version" value="12.1"></div>
+            <div class="field"><label>Time Zone</label><input id="timezone" value="Asia/Calcutta"></div>
+            <div class="field"><label>Time Mode</label><select id="timeMode"><option>ManualTime</option></select></div>
+            <div class="field"><label>Root Password</label><input id="rootpassword" type="password" value="Admin@123"></div>
+            <div class="field"><label>Confirm Root Password</label><input id="rootpassword2" type="password" value="Admin@123"></div>
+          </div>
+        </div>
+
+        <!-- page 2: Internet / WAN -->
+        <div class="card page-card" id="page-wan">
+          <div class="section-head"><div><h3>Internet / WAN</h3><p>Values below are populated from the selected branch row.</p></div></div>
+          <div class="grid">
+            <div class="field"><label>WAN Interface</label><select id="wanIf"></select></div>
+            <div class="field"><label>WAN IP</label><input id="wanIp"></div>
+            <div class="field"><label>WAN Prefix</label><input id="wanPrefix" type="number" min="0" max="32" value="30"></div>
+            <div class="field"><label>WAN Gateway</label><input id="wanGw"></div>
+            <div class="field"><label>DNS 1</label><input id="dns1" value="10.5.141.72"></div>
+            <div class="field"><label>DNS 2</label><input id="dns2" value="10.5.141.73"></div>
+            <div class="field"><label>Internet Zone</label><input id="internetZone" value="Internet"></div>
+            <div class="field"><label>Address Mode</label><select id="addressMode"><option>Static</option></select></div>
+          </div>
+        </div>
+
+        <!-- page 3: Management Zone -->
+        <div class="card page-card" id="page-mgmt">
+          <div class="section-head"><div><h3>Management Zone</h3><p>Management defaults remain from the existing wizard template.</p></div></div>
+          <div class="grid">
+            <div class="field"><label>Management Interface</label><select id="mgmtIf"></select></div>
+            <div class="field"><label>Management IP</label><input id="mgmtIp" value="192.168.1.1"></div>
+            <div class="field"><label>Management Prefix</label><input id="mgmtPrefix" type="number" value="24"></div>
+            <div class="field"><label>Management Zone</label><input id="mgmtZone" value="mgmt"></div>
+            <div class="field full"><label>Allowed Services</label><div class="checks">
+              <label class="check"><input type="checkbox" class="mgmtSvc" value="http" checked> HTTP</label>
+              <label class="check"><input type="checkbox" class="mgmtSvc" value="https" checked> HTTPS</label>
+              <label class="check"><input type="checkbox" class="mgmtSvc" value="ssh" checked> SSH</label>
+              <label class="check"><input type="checkbox" class="mgmtSvc" value="telnet" checked> Telnet</label>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- page 4: Inbound / LAN Zone -->
+        <div class="card page-card" id="page-inbound">
+          <div class="section-head"><div><h3>Inbound / LAN Zone</h3><p>Branch-specific inbound IP is read from the selected row.</p></div></div>
+          <div class="grid">
+            <div class="field"><label>Inbound Interface</label><select id="inboundIf"></select></div>
+            <div class="field"><label>Inbound IP</label><input id="inboundIp"></div>
+            <div class="field"><label>Inbound Prefix</label><input id="inboundPrefix" type="number" value="27"></div>
+            <div class="field"><label>Inbound Zone</label><input id="inboundZone" value="inbound"></div>
+            <div class="field full"><label>Allowed Services</label><div class="checks">
+              <label class="check"><input type="checkbox" class="inboundSvc" value="http" checked> HTTP</label>
+              <label class="check"><input type="checkbox" class="inboundSvc" value="https" checked> HTTPS</label>
+              <label class="check"><input type="checkbox" class="inboundSvc" value="ssh" checked> SSH</label>
+              <label class="check"><input type="checkbox" class="inboundSvc" value="telnet" checked> Telnet</label>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- page 5: Security / Wizard Options -->
+        <div class="card page-card" id="page-security">
+          <div class="section-head"><div><h3>Security / Wizard Options</h3><p>These values remain aligned with the original wizard.</p></div></div>
+          <div class="grid">
+            <div class="field"><label>Policy Name</label><input id="policyName" value="All:inbound/Internet"></div>
+            <div class="field"><label>Policy Action</label><select id="policyAction"><option>Allow</option></select></div>
+            <div class="field"><label>Internal Zone Mode</label><select id="internalZoneMode"><option>Two_Zone</option></select></div>
+            <div class="field"><label>Zone Mode</label><select id="zoneMode"><option>Internet_Setup</option></select></div>
+            <div class="field"><label>Setup Mode</label><select id="setupMode"><option>Basic_Setup</option></select></div>
+            <div class="field"><label>PPPoE Mode</label><select id="pppoeMode"><option>Not_Applicable</option></select></div>
+            <div class="field"><label>Pingable Internet</label><select id="pingable"><option value="true">Yes</option><option value="false">No</option></select></div>
+            <div class="field"><label>Enable NAT rule generation</label><select id="nat"><option value="false">No</option><option value="true">Yes</option></select></div>
+          </div>
+        </div>
+
+        <!-- page navigation (tabs) -->
+        <div class="card" style="padding:14px 18px">
+          <div class="actions" style="justify-content:space-between">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn secondary page-tab active-tab" data-page="page-device">📋 Device</button>
+              <button class="btn secondary page-tab" data-page="page-wan">🌐 WAN</button>
+              <button class="btn secondary page-tab" data-page="page-mgmt">🛡️ Mgmt</button>
+              <button class="btn secondary page-tab" data-page="page-inbound">📥 Inbound</button>
+              <button class="btn secondary page-tab" data-page="page-security">⚙️ Security</button>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn secondary" id="prevPageBtn">← Prev</button>
+              <button class="btn secondary" id="nextPageBtn">Next →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions card (below form pages, above preview in original layout, but requested "below or top of preview" - we place it in left column bottom, and also accessible from preview) -->
+        <div class="card" id="actionsCard">
+          <div class="actions">
+            <button class="btn primary" id="generateBtn">⚙ Generate Configuration</button>
+            <button class="btn success" id="downloadBtn">↓ Download TXT</button>
+            <button class="btn danger" id="resetBtn">Reset</button>
+            <span style="flex:1"></span>
+            <button class="btn secondary" id="backBtn">← Change Branch</button>
+          </div>
+          <div class="notice" id="status" style="margin-top:14px">Ready.</div>
+        </div>
+      </div>
+
+      <!-- RIGHT column: sticky live preview panel -->
+      <div class="preview-column">
+        <div class="card preview-panel">
+          <div class="preview-head">
+            <div><h3>Generated File Preview</h3><div class="preview-meta" id="previewMeta">wizard_configuration.txt</div></div>
+            <button class="btn secondary" id="copyBtn">Copy</button>
+          </div>
+          <textarea id="preview" spellcheck="false" readonly placeholder="The generated configuration will appear here…"></textarea>
+          <div class="notice" style="margin-top:12px;font-size:11px">
+            ⚡ Live preview updates as you edit fields. Use tabs to switch between configuration sections.
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="footer">SRX210 Configuration Generator</div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   GOOGLE SHEETS DIRECT ACCESS
+   ============================================================ */
+const SHEET_CONFIG = {
+  apiKey: "AIzaSyCBIfPFEMia7uaYKW40QPQFDUb1fGdaTbo",
+  spreadsheetId: "1AXVMlG6E5z5VpZ_Q42_R8wEa2f-gd3jS5vnOm4nEq1g",
+  sheetName: "SRX210_Wizard_Data",
+  range: "A:D"
+};
+
+const SHEET_COLUMNS = {
+  hostname: ["Hostname", "Host Name", "HOSTNAME", "Branch Code", "Branch", "Host"],
+  inboundIp: ["Inbound IP", "INBOUND IP", "Inbound_IP", "INBOUND_IP", "inboundIp"],
+  wanIp: ["WAN IP", "WAN_IP", "WANIP", "wanIp"],
+  wanGateway: ["WAN Gateway", "WAN_Gateway", "Gateway", "WAN GW", "WAN_GW", "wanGateway"]
+};
+
+const INTERFACES = [
+  "ge-0/0/0","ge-0/0/1","fe-0/0/2","fe-0/0/3",
+  "fe-0/0/4","fe-0/0/5","fe-0/0/6","fe-0/0/7"
+];
+
+const TEMPLATE_URL = "wizard_configuration.txt";
+
+const EMBEDDED_CONFIGURATION = String.raw`{\"nsw\":\"{\\\"chassis\\\":[{\\\"serialNo\\\":\\\"CD3315AK2020\\\",\\\"model\\\":\\\"SRX210HE2\\\"}],\\\"license\\\":[],\\\"interfaces\\\":{\\\"ge-0/0/0\\\":{\\\"logicalInterfaces\\\":[]},\\\"ge-0/0/1\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/2\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/3\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/4\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/5\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/6\\\":{\\\"logicalInterfaces\\\":[]},\\\"fe-0/0/7\\\":{\\\"logicalInterfaces\\\":[]},\\\"pp0\\\":{\\\"logicalInterfaces\\\":[]}},\\\"time\\\":\\\"2026-10-05 12:43:59\\\",\\\"timeout\\\":\\\"3540000\\\",\\\"previousState\\\":\\\"\\\",\\\"mplsFlow\\\":\\\"flow-based\\\",\\\"system\\\":{\\\"ntp_server\\\":[\\\"\\\"],\\\"timeserverhost\\\":true,\\\"user\\\":[],\\\"hostname\\\":\\\"BR0102\\\",\\\"rootpassword\\\":\\\"5QPt+hL0xGq5gA==\\\",\\\"timezone\\\":\\\"Asia/Calcutta\\\"},\\\"policies\\\":{\\\"internalInternal\\\":{},\\\"internetInternal\\\":{\\\"All:inbound/Internet\\\":{\\\"name\\\":\\\"All:inbound/Internet\\\",\\\"action\\\":\\\"Allow\\\",\\\"isBiDirection\\\":\\\"left\\\",\\\"fromZone\\\":\\\"inbound\\\",\\\"toZone\\\":\\\"Internet\\\",\\\"secSvcs\\\":\\\"\\\",\\\"zoneSvcs\\\":\\\"any\\\",\\\"recommended\\\":true}},\\\"internetDmz\\\":{},\\\"internalDmz\\\":{}},\\\"autolicense\\\":{},\\\"zones\\\":{\\\"internetZone\\\":{\\\"ppoe\\\":{},\\\"dynamic\\\":false,\\\"pingable\\\":true,\\\"configured\\\":true,\\\"selinterface\\\":\\\"ge-0/0/0\\\",\\\"address\\\":[{\\\"ip\\\":\\\"172.16.232.205\\\",\\\"mask\\\":\\\"CIDR\\\",\\\"netmask\\\":\\\"255.255.255.252\\\",\\\"cidr\\\":30,\\\"gateway\\\":\\\"172.16.232.206\\\",\\\"zonedns\\\":\\\"Manual\\\",\\\"prefdns\\\":\\\"10.5.141.72\\\",\\\"altdns\\\":\\\"10.5.141.73\\\"}]},\\\"dmzZone\\\":{\\\"Mask\\\":\\\"NetMask\\\",\\\"pingable\\\":false,\\\"servc\\\":true,\\\"configured\\\":false},\\\"mgmtZones\\\":{\\\"mgmt\\\":{\\\"name\\\":\\\"mgmt\\\",\\\"svcs\\\":\\\"http,https,ssh,telnet\\\"},\\\"inbound\\\":{\\\"name\\\":\\\"inbound\\\",\\\"svcs\\\":\\\"http,https,ssh,telnet\\\"}},\\\"internalZones\\\":{\\\"mgmt\\\":{\\\"pingable\\\":true,\\\"ipAddress\\\":\\\"192.168.1.1\\\",\\\"mask\\\":\\\"CIDR\\\",\\\"cidr\\\":24,\\\"netmask\\\":\\\"255.255.255.0\\\",\\\"interfaces\\\":\\\"fe-0/0/7\\\"},\\\"inbound\\\":{\\\"pingable\\\":true,\\\"ipAddress\\\":\\\"10.165.5.225\\\",\\\"mask\\\":\\\"CIDR\\\",\\\"cidr\\\":27,\\\"netmask\\\":\\\"255.255.255.224\\\",\\\"interfaces\\\":\\\"fe-0/0/6\\\"}}},\\\"selectedSrcNAT\\\":[],\\\"destNATRules\\\":[],\\\"intlNATRules\\\":[],\\\"state\\\":{\\\"currentPage\\\":\\\"Confirm_Apply\\\",\\\"setupMode\\\":\\\"Basic_Setup\\\",\\\"zoneMode\\\":\\\"Internet_Setup\\\",\\\"internalZoneMode\\\":\\\"Two_Zone\\\",\\\"pppoeMode\\\":\\\"Not_Applicable\\\",\\\"timeMode\\\":\\\"ManualTime\\\"},\\\"savedType\\\":\\\"ClientTopSave\\\",\\\"savedModel\\\":\\\"SRX210\\\",\\\"savedVersion\\\":\\\"12.1\\\",\\\"savedDevMemType\\\":\\\"HM\\\"}\",\"pppoe\":\"[{\\\"connection-name\\\":\\\"Startup_Connection\\\",\\\"service-provider\\\":\\\"\\\",\\\"acc-conc-name\\\":[],\\\"service-name\\\":[],\\\"interval\\\":\\\"\\\",\\\"up-count\\\":\\\"\\\",\\\"down-count\\\":\\\"\\\",\\\"mtu-size\\\":\\\"\\\",\\\"mss-size\\\":\\\"\\\",\\\"auto-reconnect\\\":\\\"\\\",\\\"idle-timeout\\\":\\\"\\\",\\\"lcp-max-conf-req\\\":\\\"\\\",\\\"lcp-restart-timer\\\":\\\"\\\",\\\"ncp-max-conf-req\\\":\\\"\\\",\\\"ncp-restart-timer\\\":\\\"\\\",\\\"adv-option\\\":\\\"\\\",\\\"auth-type\\\":\\\"Auto Negotiate\\\",\\\"user-name\\\":\\\"\\\",\\\"password\\\":\\\"\\\",\\\"passive\\\":true,\\\"rfc\\\":false,\\\"def-password\\\":\\\"\\\",\\\"peerUsr\\\":\\\"\\\",\\\"peerPwd\\\":\\\"\\\",\\\"underlying-intf\\\":\\\"ge-0/0/0\\\",\\\"unit\\\":\\\"0\\\",\\\"metric\\\":\\\"\\\",\\\"metricv6\\\":\\\"\\\",\\\"inet-address\\\":\\\"Static\\\",\\\"ipv4Add\\\":\\\"172.16.232.205/30\\\",\\\"def_gateway\\\":\\\"172.16.232.206\\\",\\\"inet-dns\\\":\\\"Manual\\\",\\\"inet-prefDNS\\\":\\\"10.5.141.72\\\",\\\"inet-altDNS\\\":\\\"10.5.141.73\\\",\\\"inet6-address\\\":\\\"\\\",\\\"ipv6Add\\\":\\\"\\\",\\\"def_gateway_v6\\\":\\\"\\\",\\\"flow-enable\\\":\\\"\\\",\\\"inet6-prefDNS\\\":\\\"\\\",\\\"inet6-altDNS\\\":\\\"\\\",\\\"inet6-dns\\\":\\\"\\\",\\\"zone_assigned\\\":\\\"Internet\\\",\\\"zone_assign_type\\\":\\\"Existing\\\",\\\"dns_array\\\":\\\"\\\",\\\"dns6_array\\\":\\\"\\\"}]\"}`;
+
+let sheetRows = [];
+let selectedRow = null;
+let generatedText = "";
+let templateNSW = null;
+let templatePPPOE = null;
+let templateLoaded = false;
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const val = id => ($(id)?.value ?? "").trim();
+
+function toast(message,type="success"){
+  const t=$("toast"); t.textContent=message; t.className="toast "+type+" show";
+  clearTimeout(t._timer); t._timer=setTimeout(()=>t.classList.remove("show"),3200);
+}
+function status(message,error=false){
+  $("status").textContent=message;
+  $("status").style.borderColor=error?"#fecaca":"var(--line)";
+  $("status").style.color=error?"#b91c1c":"var(--muted)";
+}
+function setConnection(message,error=false){
+  $("connectionText").textContent=message;
+  document.querySelector(".dot").style.background=error?"var(--danger)":"var(--success)";
+}
+function setStep(n){
+  [1,2,3].forEach(i=>{
+    const e=$("step"+i); e.classList.remove("active","done");
+    if(i<n)e.classList.add("done"); if(i===n)e.classList.add("active");
+  });
+}
+function prefixToMask(prefix){
+  prefix=Number(prefix); if(prefix<0||prefix>32)return "";
+  if(prefix===0)return "0.0.0.0";
+  const mask=(0xffffffff<<(32-prefix))>>>0;
+  return [(mask>>>24)&255,(mask>>>16)&255,(mask>>>8)&255,mask&255].join(".");
+}
+function timestamp(){
+  const d=new Date(), p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
+/* ---------- template ---------- */
+async function loadTemplate(){
+  let raw="";
+  try{
+    const r=await fetch(TEMPLATE_URL+"?v="+Date.now(),{cache:"no-store"});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    raw=await r.text();
+    if(!raw.trim())throw new Error("Empty template");
+  }catch(e){
+    raw=EMBEDDED_CONFIGURATION;
+  }
+  try{
+    const decoded=JSON.parse('"'+raw+'"');
+    const wrapper=JSON.parse(decoded);
+    templateNSW=JSON.parse(wrapper.nsw);
+    templatePPPOE=JSON.parse(wrapper.pppoe);
+    generatedText=raw;
+    templateLoaded=true;
+    applyTemplateToForm();
+    $("preview").value=generatedText;
+    $("previewMeta").textContent="wizard_configuration.txt • template ready";
+  }catch(e){
+    try{
+      const wrapper=JSON.parse(raw);
+      templateNSW=JSON.parse(wrapper.nsw);
+      templatePPPOE=JSON.parse(wrapper.pppoe);
+      generatedText=raw;
+      templateLoaded=true;
+      applyTemplateToForm();
+      $("preview").value=generatedText;
+      $("previewMeta").textContent="wizard_configuration.txt • template ready";
+    }catch(e2){
+      templateLoaded=false;
+      $("preview").value="";
+      $("previewMeta").textContent="Template error";
+      status("Configuration template could not be loaded: "+e2.message,true);
+    }
+  }
+}
+
+function applyTemplateToForm(){
+  if(!templateNSW)return;
+  const n=templateNSW, p=Array.isArray(templatePPPOE)?templatePPPOE[0]:null;
+  const sys=n.system||{};
+  const internet=n.zones?.internetZone?.address?.[0]||{};
+  const internal=n.zones?.internalZones||{};
+  const mgmt=internal.mgmt||{}, inbound=internal.inbound||{};
+  const policy=n.policies?.internetInternal ?
+    n.policies.internetInternal[Object.keys(n.policies.internetInternal)[0]]||{}:{};
+  if(p){
+    setVal("wanIf",p["underlying-intf"]||"");
+    $("wanIp").value=(p["ipv4Add"]||"").split("/")[0]||internet.ip||"";
+    $("wanPrefix").value=(p["ipv4Add"]||"").includes("/")?Number(p["ipv4Add"].split("/")[1]):Number(internet.cidr||30);
+    $("wanGw").value=p.def_gateway||internet.gateway||"";
+    $("dns1").value=p["inet-prefDNS"]||internet.prefdns||"10.5.141.72";
+    $("dns2").value=p["inet-altDNS"]||internet.altdns||"10.5.141.73";
+    $("addressMode").value=p["inet-address"]||"Static";
+    $("internetZone").value=p.zone_assigned||"Internet";
+  }
+  $("model").value=n.chassis?.[0]?.model||"SRX210HE2";
+  $("savedModel").value=n.savedModel||"SRX210";
+  $("hostname").value=sys.hostname||"";
+  $("version").value=n.savedVersion||"12.1";
+  $("timezone").value=sys.timezone||"Asia/Calcutta";
+  $("mgmtIp").value=mgmt.ipAddress||"192.168.1.1";
+  $("mgmtPrefix").value=Number(mgmt.cidr||24);
+  $("mgmtZone").value=mgmt.name||"mgmt";
+  setVal("mgmtIf",mgmt.interfaces||"fe-0/0/7");
+  $("inboundIp").value=inbound.ipAddress||"";
+  $("inboundPrefix").value=Number(inbound.cidr||27);
+  $("inboundZone").value=inbound.name||"inbound";
+  setVal("inboundIf",inbound.interfaces||"fe-0/0/6");
+  $("policyName").value=policy.name||"All:inbound/Internet";
+  $("policyAction").value=policy.action||"Allow";
+  const s=n.state||{};
+  $("internalZoneMode").value=s.internalZoneMode||"Two_Zone";
+  $("zoneMode").value=s.zoneMode||"Internet_Setup";
+  $("setupMode").value=s.setupMode||"Basic_Setup";
+  $("pppoeMode").value=s.pppoeMode||"Not_Applicable";
+  $("timeMode").value=s.timeMode||"ManualTime";
+  $("pingable").value=internet.pingable===false?"false":"true";
+  $("rootpassword").value="Admin@123"; $("rootpassword2").value="Admin@123";
+  setServices("mgmtSvc",n.zones?.mgmtZones?.mgmt?.svcs||"");
+  setServices("inboundSvc",n.zones?.mgmtZones?.inbound?.svcs||"");
+  $("nat").value=Array.isArray(n.selectedSrcNAT)&&n.selectedSrcNAT.length?"true":"false";
+}
+function setVal(id,v){ if($(id))$(id).value=v||""; }
+function setServices(cls,s){
+  const list=String(s||"").split(",").map(x=>x.trim()).filter(Boolean);
+  document.querySelectorAll("."+cls).forEach(x=>x.checked=list.includes(x.value));
+}
+
+/* ---------- Google Sheets ---------- */
+function findHeader(headers,aliases){
+  const normalized=headers.map(x=>String(x||"").trim().toLowerCase());
+  for(const a of aliases){
+    const i=normalized.indexOf(String(a).trim().toLowerCase());
+    if(i>=0)return i;
+  }
+  return -1;
+}
+async function loadSheet(){
+  if(SHEET_CONFIG.apiKey.includes("PASTE_YOUR") || SHEET_CONFIG.spreadsheetId.includes("PASTE_YOUR")){
+    throw new Error("Configure the Google Sheets API key and Spreadsheet ID in SHEET_CONFIG first.");
+  }
+  const range=`${SHEET_CONFIG.sheetName}!${SHEET_CONFIG.range}`;
+  const url="https://sheets.googleapis.com/v4/spreadsheets/"+
+    encodeURIComponent(SHEET_CONFIG.spreadsheetId)+"/values/"+
+    encodeURIComponent(range)+"?key="+encodeURIComponent(SHEET_CONFIG.apiKey);
+  const r=await fetch(url,{cache:"no-store"});
+  if(!r.ok){
+    let detail="";
+    try{detail=(await r.json()).error?.message||""}catch(_){}
+    throw new Error("Google Sheets API "+r.status+(detail?": "+detail:""));
+  }
+  const data=await r.json();
+  const values=Array.isArray(data.values)?data.values:[];
+  if(values.length<2)throw new Error("No branch data found in the selected range.");
+  const headers=values[0].map(x=>String(x||"").trim());
+  const idx={
+    hostname:findHeader(headers,SHEET_COLUMNS.hostname),
+    wanIp:findHeader(headers,SHEET_COLUMNS.wanIp),
+    wanGateway:findHeader(headers,SHEET_COLUMNS.wanGateway),
+    inboundIp:findHeader(headers,SHEET_COLUMNS.inboundIp)
+  };
+  if(idx.hostname<0)throw new Error("Hostname column was not found. Check SHEET_COLUMNS.hostname.");
+  sheetRows=values.slice(1).map(row=>({
+    hostname:String(row[idx.hostname]??"").trim(),
+    wanIp:idx.wanIp>=0?String(row[idx.wanIp]??"").trim():"",
+    wanGateway:idx.wanGateway>=0?String(row[idx.wanGateway]??"").trim():"",
+    inboundIp:idx.inboundIp>=0?String(row[idx.inboundIp]??"").trim():""
+  })).filter(x=>x.hostname);
+  renderHosts();
+  setConnection(sheetRows.length+" branches loaded");
+}
+
+/* ---------- host selector ---------- */
+function renderHosts(){
+  const q=$("hostSearch").value.trim().toLowerCase();
+  const list=sheetRows.filter(x=>!q||x.hostname.toLowerCase().includes(q));
+  const box=$("hostList");
+  if(!list.length){box.innerHTML='<div class="notice">No matching hostname found.</div>';return}
+  box.innerHTML="";
+  list.forEach(row=>{
+    const b=document.createElement("button");
+    b.className="host-option";
+    b.innerHTML="<span><strong>"+escapeHtml(row.hostname)+"</strong></span><small>Select</small>";
+    b.onclick=()=>selectHost(row);
+    box.appendChild(b);
+  });
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+function selectHost(row){
+  selectedRow=row;
+  $("selectedBranch").textContent=row.hostname;
+  $("continueBtn").disabled=false;
+  [...document.querySelectorAll(".host-option")].forEach(x=>x.style.outline="");
+  toast("Selected "+row.hostname);
+}
+function applySelectedHost(){
+  if(!selectedRow)return;
+  $("hostname").value=selectedRow.hostname;
+  $("inboundIp").value=selectedRow.inboundIp||$("inboundIp").value;
+  $("wanIp").value=selectedRow.wanIp||$("wanIp").value;
+  $("wanGw").value=selectedRow.wanGateway||$("wanGw").value;
+}
+
+/* ---------- raw template patching ---------- */
+function replaceEscapedValue(text,key,newValue,occurrence){
+  const ek=key.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  const re=new RegExp('(\\\\{3}"'+ek+'\\\\{3}":\\\\{3}")([^"\\\\]*)(\\\\{3}")',"g");
+  let count=0;
+  return text.replace(re,(all,prefix,old,suffix)=>{
+    count++; return occurrence&&count!==occurrence?all:prefix+String(newValue)+suffix;
+  });
+}
+function patchWanIpv4Add(text,ip,prefix){return replaceEscapedValue(text,"ipv4Add",ip+"/"+prefix);}
+function checked(cls){return [...document.querySelectorAll("."+cls+":checked")].map(x=>x.value).join(",");}
+
+function commit(changed){
+  if(!templateLoaded||!generatedText)return;
+  const c=new Set(changed||[]); let t=generatedText;
+  t=replaceEscapedValue(t,"time",timestamp());
+  if(c.has("hostname"))t=replaceEscapedValue(t,"hostname",val("hostname"));
+  if(c.has("model"))t=replaceEscapedValue(t,"model",val("model"));
+  if(c.has("savedModel"))t=replaceEscapedValue(t,"savedModel",val("savedModel"));
+  if(c.has("version"))t=replaceEscapedValue(t,"savedVersion",val("version"));
+  if(c.has("timezone"))t=replaceEscapedValue(t,"timezone",val("timezone"));
+  if(c.has("wanIf")){t=replaceEscapedValue(t,"selinterface",val("wanIf"));t=replaceEscapedValue(t,"underlying-intf",val("wanIf"))}
+  if(c.has("wanIp")){t=replaceEscapedValue(t,"ip",val("wanIp"));t=patchWanIpv4Add(t,val("wanIp"),val("wanPrefix"))}
+  if(c.has("wanPrefix")){t=replaceEscapedValue(t,"cidr",val("wanPrefix"),1);t=replaceEscapedValue(t,"netmask",prefixToMask(val("wanPrefix")),1);t=patchWanIpv4Add(t,val("wanIp"),val("wanPrefix"))}
+  if(c.has("wanGw")){t=replaceEscapedValue(t,"gateway",val("wanGw"));t=replaceEscapedValue(t,"def_gateway",val("wanGw"))}
+  if(c.has("dns1")){t=replaceEscapedValue(t,"prefdns",val("dns1"));t=replaceEscapedValue(t,"inet-prefDNS",val("dns1"))}
+  if(c.has("dns2")){t=replaceEscapedValue(t,"altdns",val("dns2"));t=replaceEscapedValue(t,"inet-altDNS",val("dns2"))}
+  if(c.has("internetZone")){t=replaceEscapedValue(t,"zone_assigned",val("internetZone"));t=replaceEscapedValue(t,"toZone",val("internetZone"))}
+  if(c.has("addressMode"))t=replaceEscapedValue(t,"inet-address",val("addressMode"));
+  if(c.has("mgmtIf"))t=replaceEscapedValue(t,"interfaces",val("mgmtIf"),1);
+  if(c.has("mgmtIp"))t=replaceEscapedValue(t,"ipAddress",val("mgmtIp"),1);
+  if(c.has("mgmtPrefix")){t=replaceEscapedValue(t,"cidr",val("mgmtPrefix"),2);t=replaceEscapedValue(t,"netmask",prefixToMask(val("mgmtPrefix")),2)}
+  if(c.has("mgmtZone"))t=replaceEscapedValue(t,"name",val("mgmtZone"),2);
+  if(c.has("inboundIf"))t=replaceEscapedValue(t,"interfaces",val("inboundIf"),2);
+  if(c.has("inboundIp"))t=replaceEscapedValue(t,"ipAddress",val("inboundIp"),2);
+  if(c.has("inboundPrefix")){t=replaceEscapedValue(t,"cidr",val("inboundPrefix"),3);t=replaceEscapedValue(t,"netmask",prefixToMask(val("inboundPrefix")),3)}
+  if(c.has("inboundZone")){t=replaceEscapedValue(t,"name",val("inboundZone"),3);t=replaceEscapedValue(t,"fromZone",val("inboundZone"))}
+  if(c.has("policyName"))t=replaceEscapedValue(t,"name",val("policyName"),1);
+  if(c.has("policyAction"))t=replaceEscapedValue(t,"action",val("policyAction"));
+  if(c.has("setupMode"))t=replaceEscapedValue(t,"setupMode",val("setupMode"));
+  if(c.has("zoneMode"))t=replaceEscapedValue(t,"zoneMode",val("zoneMode"));
+  if(c.has("internalZoneMode"))t=replaceEscapedValue(t,"internalZoneMode",val("internalZoneMode"));
+  if(c.has("pppoeMode"))t=replaceEscapedValue(t,"pppoeMode",val("pppoeMode"));
+  if(c.has("timeMode"))t=replaceEscapedValue(t,"timeMode",val("timeMode"));
+  if(c.has("pingable"))t=replaceEscapedValue(t,"pingable",val("pingable")==="true");
+  generatedText=t;
+  $("preview").value=generatedText;
+  $("previewMeta").textContent="wizard_configuration.txt • generated "+new Date().toLocaleTimeString();
+}
+function generate(){
+  if(!templateLoaded){status("Configuration template is not available.",true);return}
+  const ids=["model","savedModel","hostname","version","timezone","wanIf","wanIp","wanPrefix","wanGw",
+    "dns1","dns2","internetZone","addressMode","mgmtIf","mgmtIp","mgmtPrefix","mgmtZone",
+    "inboundIf","inboundIp","inboundPrefix","inboundZone","policyName","policyAction","setupMode",
+    "zoneMode","internalZoneMode","pppoeMode","timeMode","pingable"];
+  commit(ids);
+  status("Configuration generated. Review the preview before downloading.");
+  toast("Configuration generated successfully.");
+  setStep(3);
+}
+function downloadFile(){
+  if(!generatedText)generate();
+  if(!generatedText)return;
+  const blob=new Blob([generatedText],{type:"text/plain;charset=utf-8"});
+  const url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url;a.download="wizard_configuration.txt";document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast("wizard_configuration.txt downloaded.");
+}
+async function copyPreview(){
+  if(!generatedText)return toast("Generate the configuration first.","error");
+  try{await navigator.clipboard.writeText(generatedText);toast("Configuration copied to clipboard.");}
+  catch(e){$("preview").select();document.execCommand("copy");toast("Configuration copied.");}
+}
+
+/* ---------- UI: page navigation ---------- */
+const PAGE_ORDER = ['page-device','page-wan','page-mgmt','page-inbound','page-security'];
+let currentPageIndex = 0;
+
+function showConfigPage(index){
+  currentPageIndex = Math.max(0, Math.min(PAGE_ORDER.length-1, index));
+  PAGE_ORDER.forEach((id,i)=>{
+    const el = $(id);
+    if(el) el.classList.toggle('active-page', i === currentPageIndex);
+  });
+  document.querySelectorAll('.page-tab').forEach((tab,i)=>{
+    tab.classList.toggle('active-tab', i === currentPageIndex);
+  });
+  const prevBtn = $('prevPageBtn'), nextBtn = $('nextPageBtn');
+  if(prevBtn) prevBtn.disabled = currentPageIndex === 0;
+  if(nextBtn) nextBtn.disabled = currentPageIndex === PAGE_ORDER.length - 1;
+}
+
+/* ---------- UI: show/hide sections ---------- */
+function showConfig(){
+  $("selectionPage").classList.add("hidden");
+  $("configPage").classList.remove("hidden");
+  applySelectedHost(); setStep(2); 
+  showConfigPage(0); // start at first page
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function showSelection(){
+  $("configPage").classList.add("hidden");
+  $("selectionPage").classList.remove("hidden");
+  setStep(1); window.scrollTo({top:0,behavior:"smooth"});
+}
+function initInterfaces(){
+  ["wanIf","mgmtIf","inboundIf"].forEach(id=>{
+    const s=$(id);s.innerHTML="";
+    INTERFACES.forEach(x=>s.add(new Option(x,x)));
+  });
+}
+function attachFieldEvents(){
+  const ids=["model","savedModel","version","timezone","wanIf","wanIp","wanPrefix","wanGw","dns1","dns2",
+    "internetZone","addressMode","mgmtIf","mgmtIp","mgmtPrefix","mgmtZone","inboundIf","inboundIp",
+    "inboundPrefix","inboundZone","policyName","policyAction","setupMode","zoneMode",
+    "internalZoneMode","pppoeMode","timeMode","pingable"];
+  ids.forEach(id=>{
+    const e=$(id); if(!e)return;
+    e.addEventListener("change",()=>commit([id]));
+    if(e.tagName==="INPUT"&&e.type!=="number")e.addEventListener("input",()=>commit([id]));
+  });
+  ["mgmtSvc","inboundSvc"].forEach(cls=>document.querySelectorAll("."+cls).forEach(cb=>cb.addEventListener("change",()=>commit([]))));
+}
+
+/* ---------- bootstrap ---------- */
+document.addEventListener("DOMContentLoaded",async()=>{
+  initInterfaces();
+  attachFieldEvents();
+
+  // page tab buttons
+  document.querySelectorAll('.page-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      const idx = PAGE_ORDER.indexOf(tab.dataset.page);
+      if(idx >= 0) showConfigPage(idx);
+    });
+  });
+  $('prevPageBtn')?.addEventListener('click',()=>showConfigPage(currentPageIndex-1));
+  $('nextPageBtn')?.addEventListener('click',()=>showConfigPage(currentPageIndex+1));
+
+  // global listeners
+  $("hostSearch").addEventListener("input",renderHosts);
+  $("continueBtn").addEventListener("click",showConfig);
+  $("changeBranchBtn").addEventListener("click",showSelection);
+  $("backBtn").addEventListener("click",showSelection);
+  $("generateBtn").addEventListener("click",generate);
+  $("downloadBtn").addEventListener("click",downloadFile);
+  $("copyBtn").addEventListener("click",copyPreview);
+  $("resetBtn").addEventListener("click",()=>location.reload());
+
+  $("hostLoading").classList.remove("hidden");
+  setConnection("Loading…");
+  try{
+    await Promise.all([loadTemplate(),loadSheet()]);
+    $("hostLoading").classList.add("hidden");
+    if(templateLoaded && sheetRows.length)status("Select a branch to continue.");
+  }catch(e){
+    $("hostLoading").classList.add("hidden");
+    setConnection("Data unavailable",true);
+    $("hostList").innerHTML='<div class="notice"><strong>Unable to load branch data.</strong><br>'+escapeHtml(e.message)+'</div>';
+    status(e.message,true);
+    toast(e.message,"error");
+  }
+});
+</script>
 </body>
 </html>
