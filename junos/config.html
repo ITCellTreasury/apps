@@ -4,417 +4,1350 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Juniper SRX210 Wizard Configuration Generator</title>
 
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>
+Juniper SRX210 Wizard Configuration Generator
+</title>
+
+
+<!-- Select2 CSS -->
+
+<link
+  href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+  rel="stylesheet"
+/>
+
 
 <style>
 
 :root {
+
   color-scheme: light dark;
-  font-family: Arial, "Segoe UI", sans-serif;
+
+  font-family:
+    Arial,
+    "Segoe UI",
+    sans-serif;
 }
 
-* { box-sizing: border-box; }
+
+* {
+  box-sizing: border-box;
+}
+
 
 body {
+
   margin: 0;
+
   background: #f4f6f8;
+
   color: #1f2937;
 }
 
+
 .wrap {
+
   max-width: 1100px;
+
   margin: 28px auto;
+
   padding: 0 18px;
 }
 
+
 .card {
+
   background: #ffffff;
+
   border-radius: 16px;
+
   padding: 22px;
+
   margin-bottom: 18px;
-  box-shadow: 0 8px 28px #0001;
+
+  box-shadow:
+    0 8px 28px #0001;
 }
 
-h1 { margin: 0 0 6px; font-size: 25px; }
-h2 { font-size: 17px; margin: 0 0 15px; }
+
+h1 {
+
+  margin: 0 0 6px;
+
+  font-size: 25px;
+}
+
+
+h2 {
+
+  font-size: 17px;
+
+  margin: 0 0 15px;
+}
+
 
 .note {
+
   color: #64748b;
+
   font-size: 13px;
+
   margin-bottom: 20px;
 }
 
+
 .grid {
+
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
   gap: 14px;
 }
 
+
 .field label {
+
   display: block;
+
   font-size: 12px;
+
   font-weight: 700;
+
   margin-bottom: 6px;
 }
 
-input, select {
+
+input,
+select {
+
   width: 100%;
+
   padding: 10px 11px;
-  border: 1px solid #cbd5e1;
+
+  border:
+    1px solid #cbd5e1;
+
   border-radius: 9px;
+
   background: #fff;
+
   color: #111827;
 }
 
-.full { grid-column: 1 / -1; }
+
+.full {
+
+  grid-column: 1 / -1;
+}
+
+
+.checks {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 14px;
+}
+
+
+.checks label {
+
+  font-weight: 500;
+
+  font-size: 13px;
+}
+
+
+.checks input {
+
+  width: auto;
+}
+
 
 .actions {
+
   display: flex;
+
   gap: 10px;
+
   flex-wrap: wrap;
 }
 
+
 button {
+
   border: 0;
+
   border-radius: 9px;
+
   padding: 11px 16px;
+
   cursor: pointer;
+
   font-weight: 700;
 }
 
-.primary   { background: #2563eb; color: #fff; }
-.secondary { background: #64748b; color: #fff; }
-.danger    { background: #dc2626; color: #fff; }
 
-/* ---------- Preview with highlight ---------- */
+.primary {
 
-.preview-box {
+  background: #2563eb;
+
+  color: #fff;
+}
+
+
+.secondary {
+
+  background: #64748b;
+
+  color: #fff;
+}
+
+
+.danger {
+
+  background: #dc2626;
+
+  color: #fff;
+}
+
+
+textarea {
+
   width: 100%;
-  height: 460px;
-  overflow: auto;
-  font-family: Consolas, "Courier New", monospace;
+
+  height: 330px;
+
+  font-family: Consolas, monospace;
+
   font-size: 12px;
-  line-height: 1.45;
+
   padding: 12px;
-  border: 1px solid #cbd5e1;
+
+  border:
+    1px solid #cbd5e1;
+
   border-radius: 9px;
-  background: #fff;
-  color: #111827;
-  white-space: pre-wrap;
-  word-break: break-all;
+
+  resize: vertical;
 }
 
-.hl-yellow {
-  background: #fef08a;
-  color: #111827;
-  border-radius: 3px;
-  padding: 0 1px;
-}
-
-.hl-green {
-  background: #86efac;
-  color: #052e16;
-  border-radius: 3px;
-  padding: 0 1px;
-  font-weight: 700;
-}
-
-.legend {
-  display: flex;
-  gap: 16px;
-  font-size: 12px;
-  margin-bottom: 10px;
-}
-
-.legend span {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-.legend .sw-yellow { background: #fef08a; color: #111827; }
-.legend .sw-green  { background: #86efac; color: #052e16; }
 
 .status {
+
   font-size: 13px;
+
   margin-top: 10px;
+
   min-height: 18px;
 }
 
+
+.api-url {
+
+  font-family: Consolas, monospace;
+
+  font-size: 12px;
+}
+
+
 .loading {
+
   opacity: .65;
+
   pointer-events: none;
 }
 
-.select2-container { width: 100% !important; }
 
-.select2-container .select2-selection--single {
+/*
+ * Select2
+ */
+
+.select2-container {
+
+  width: 100% !important;
+}
+
+
+.select2-container
+.select2-selection--single {
+
   height: 40px !important;
-  border: 1px solid #cbd5e1 !important;
+
+  border:
+    1px solid #cbd5e1 !important;
+
   border-radius: 9px !important;
 }
 
-.select2-container .select2-selection--single .select2-selection__rendered {
+
+.select2-container
+.select2-selection--single
+.select2-selection__rendered {
+
   line-height: 38px !important;
 }
 
-.select2-container .select2-selection--single .select2-selection__arrow {
+
+.select2-container
+.select2-selection--single
+.select2-selection__arrow {
+
   height: 38px !important;
 }
 
-@media (max-width: 700px) {
-  .grid { grid-template-columns: 1fr; }
+
+@media(max-width:700px) {
+
+  .grid {
+
+    grid-template-columns: 1fr;
+
+  }
+
 }
 
-@media (prefers-color-scheme: dark) {
-  body { background: #111827; color: #e5e7eb; }
-  .card { background: #1f2937; }
-  input, select, .preview-box {
-    background: #111827; color: #e5e7eb; border-color: #475569;
+
+@media(prefers-color-scheme:dark) {
+
+  body {
+
+    background: #111827;
+
+    color: #e5e7eb;
+
   }
-  .note { color: #94a3b8; }
-  .hl-yellow { background: #a16207; color: #fff; }
-  .hl-green  { background: #15803d; color: #fff; }
-  .legend .sw-yellow { background: #a16207; color: #fff; }
-  .legend .sw-green  { background: #15803d; color: #fff; }
-  .select2-container .select2-selection--single {
+
+
+  .card {
+
+    background: #1f2937;
+
+  }
+
+
+  input,
+  select,
+  textarea {
+
+    background: #111827;
+
+    color: #e5e7eb;
+
+    border-color: #475569;
+
+  }
+
+
+  .note {
+
+    color: #94a3b8;
+
+  }
+
+
+  .select2-container
+  .select2-selection--single {
+
     background: #111827 !important;
+
     border-color: #475569 !important;
+
   }
-  .select2-container .select2-selection--single .select2-selection__rendered {
+
+
+  .select2-container
+  .select2-selection--single
+  .select2-selection__rendered {
+
     color: #e5e7eb !important;
+
   }
+
+
   .select2-dropdown {
-    background: #1f2937; color: #e5e7eb; border-color: #475569;
+
+    background: #1f2937;
+
+    color: #e5e7eb;
+
+    border-color: #475569;
+
   }
+
 }
 
 </style>
 
 </head>
 
+
 <body>
+
 
 <div class="wrap">
 
-<!-- ================= HEADER ================= -->
+
+<!-- =====================================================
+     HEADER / HOSTNAME
+====================================================== -->
 
 <div class="card">
 
-  <h1>Juniper SRX210 Wizard Configuration Generator</h1>
+  <h1>
+    Juniper SRX210 Wizard Configuration Generator
+  </h1>
 
   <div class="note">
-    Base template is loaded from <code>wizard_configuration.txt</code>
-    (must be in the same folder). Only <b>Hostname</b>, <b>WAN IP</b>
-    and <b>WAN Gateway</b> are patched — every other byte is preserved.
+
+    Select the branch hostname.
+    The base configuration is loaded from
+    wizard_configuration.txt. Branch-specific WAN and
+    Inbound values are retrieved from the Google Sheet.
+
   </div>
+
 
   <div class="grid">
 
+
     <div class="field">
-      <label>Hostname / Branch</label>
-      <select id="hostnameSelect" style="width:100%"></select>
+
+      <label>
+        Hostname / Branch
+      </label>
+
+      <select
+        id="hostnameSelect"
+        style="width:100%"
+      >
+
+      </select>
+
     </div>
+
 
     <div class="field" style="display:none;">
-      <label>Apps Script API URL</label>
-      <input id="apiUrl" value="PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE">
+
+      <label>
+        Apps Script API URL
+      </label>
+
+      <input
+        id="apiUrl"
+        class="api-url"
+        value="PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE"
+      >
+
     </div>
+
 
   </div>
 
-  <div id="status" class="status">Loading...</div>
+
+  <div
+    id="status"
+    class="status"
+  >
+    Loading hostnames...
+  </div>
+
 
 </div>
 
-<!-- ================= VARIABLE FIELDS ================= -->
+
+<!-- =====================================================
+     DEVICE
+====================================================== -->
 
 <div class="card">
 
-  <h2>Variable Fields (patched into preview)</h2>
+  <h2>
+    Device Information
+  </h2>
+
 
   <div class="grid">
 
+
     <div class="field">
+
+      <label>Model</label>
+
+      <input
+        id="model"
+        value="SRX210HE2"
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>Saved Model</label>
+
+      <input
+        id="savedModel"
+        value="SRX210"
+      >
+
+    </div>
+
+
+    <div class="field">
+
       <label>Hostname</label>
-      <input id="hostname" value="BR0102">
+
+      <input
+        id="hostname"
+        value=""
+        readonly
+      >
+
     </div>
 
+
     <div class="field">
-      <label>WAN Interface</label>
+
+      <label>Junos Version</label>
+
+      <input
+        id="version"
+        value="12.1"
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>Time Zone</label>
+
+      <input
+        id="timezone"
+        value="Asia/Calcutta"
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>Time Mode</label>
+
+      <select id="timeMode">
+
+        <option value="ManualTime">
+          ManualTime
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>Root Password</label>
+
+      <input
+        id="rootpassword"
+        type="password"
+        value="Admin@123"
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Confirm Root Password
+      </label>
+
+      <input
+        id="rootpassword2"
+        type="password"
+        value="Admin@123"
+      >
+
+    </div>
+
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     WAN
+====================================================== -->
+
+<div class="card">
+
+  <h2>
+    Internet / WAN
+  </h2>
+
+
+  <div class="grid">
+
+
+    <div class="field">
+
+      <label>
+        WAN Interface
+      </label>
+
       <select id="wanIf"></select>
+
     </div>
 
-    <div class="field">
-      <label>WAN IP</label>
-      <input id="wanIp" value="172.16.232.205">
-    </div>
 
     <div class="field">
-      <label>WAN Prefix</label>
-      <input id="wanPrefix" type="number" min="0" max="32" value="30">
+
+      <label>
+        WAN IP
+      </label>
+
+      <input
+        id="wanIp"
+        value=""
+      >
+
     </div>
 
-    <div class="field">
-      <label>WAN Gateway</label>
-      <input id="wanGw" value="172.16.232.206">
-    </div>
 
     <div class="field">
-      <label>Inbound IP</label>
-      <input id="inboundIp" value="10.165.5.225">
+
+      <label>
+        WAN Prefix
+      </label>
+
+      <input
+        id="wanPrefix"
+        type="number"
+        min="0"
+        max="32"
+        value="30"
+      >
+
     </div>
+
+
+    <div class="field">
+
+      <label>
+        WAN Gateway
+      </label>
+
+      <input
+        id="wanGw"
+        value=""
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        DNS 1
+      </label>
+
+      <input
+        id="dns1"
+        value="10.5.141.72"
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        DNS 2
+      </label>
+
+      <input
+        id="dns2"
+        value="10.5.141.73"
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Internet Zone
+      </label>
+
+      <input
+        id="internetZone"
+        value="Internet"
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Address Mode
+      </label>
+
+      <select id="addressMode">
+
+        <option>
+          Static
+        </option>
+
+      </select>
+
+    </div>
+
 
   </div>
 
 </div>
 
-<!-- ================= ACTIONS ================= -->
+
+<!-- =====================================================
+     MANAGEMENT
+====================================================== -->
 
 <div class="card">
+
+  <h2>
+    Management Zone
+  </h2>
+
+
+  <div class="grid">
+
+
+    <div class="field">
+
+      <label>
+        Management Interface
+      </label>
+
+      <select id="mgmtIf"></select>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Management IP
+      </label>
+
+      <input
+        id="mgmtIp"
+        value="192.168.1.1"
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Management Prefix
+      </label>
+
+      <input
+        id="mgmtPrefix"
+        type="number"
+        min="0"
+        max="32"
+        value="24"
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Management Zone
+      </label>
+
+      <input
+        id="mgmtZone"
+        value="mgmt"
+      >
+
+    </div>
+
+
+    <div class="field full">
+
+      <label>
+        Allowed Services
+      </label>
+
+
+      <div class="checks">
+
+
+        <label>
+          <input
+            type="checkbox"
+            class="mgmtSvc"
+            value="http"
+            checked
+          >
+          HTTP
+        </label>
+
+
+        <label>
+          <input
+            type="checkbox"
+            class="mgmtSvc"
+            value="https"
+            checked
+          >
+          HTTPS
+        </label>
+
+
+        <label>
+          <input
+            type="checkbox"
+            class="mgmtSvc"
+            value="ssh"
+            checked
+          >
+          SSH
+        </label>
+
+
+        <label>
+          <input
+            type="checkbox"
+            class="mgmtSvc"
+            value="telnet"
+            checked
+          >
+          Telnet
+        </label>
+
+
+      </div>
+
+    </div>
+
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     INBOUND
+====================================================== -->
+
+<div class="card">
+
+  <h2>
+    Inbound / LAN Zone
+  </h2>
+
+
+  <div class="grid">
+
+
+    <div class="field">
+
+      <label>
+        Inbound Interface
+      </label>
+
+      <select id="inboundIf"></select>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Inbound IP
+      </label>
+
+      <input
+        id="inboundIp"
+        value="10.165.5.225"
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Inbound Prefix
+      </label>
+
+      <input
+        id="inboundPrefix"
+        type="number"
+        min="0"
+        max="32"
+        value="27"
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Inbound Zone
+      </label>
+
+      <input
+        id="inboundZone"
+        value="inbound"
+      >
+
+    </div>
+
+
+    <div class="field full">
+
+      <label>
+        Allowed Services
+      </label>
+
+
+      <div class="checks">
+
+
+        <label>
+          <input
+            type="checkbox"
+            class="inboundSvc"
+            value="http"
+            checked
+          >
+          HTTP
+        </label>
+
+
+        <label>
+          <input
+            type="checkbox"
+            class="inboundSvc"
+            value="https"
+            checked
+          >
+          HTTPS
+        </label>
+
+
+        <label>
+          <input
+            type="checkbox"
+            class="inboundSvc"
+            value="ssh"
+            checked
+          >
+          SSH
+        </label>
+
+
+        <label>
+          <input
+            type="checkbox"
+            class="inboundSvc"
+            value="telnet"
+            checked
+          >
+          Telnet
+        </label>
+
+
+      </div>
+
+    </div>
+
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     SECURITY
+====================================================== -->
+
+<div class="card">
+
+  <h2>
+    Security / Wizard Options
+  </h2>
+
+
+  <div class="grid">
+
+
+    <div class="field">
+
+      <label>
+        Policy Name
+      </label>
+
+      <input
+        id="policyName"
+        value="All:inbound/Internet"
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Policy Action
+      </label>
+
+      <select id="policyAction">
+
+        <option>
+          Allow
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Internal Zone Mode
+      </label>
+
+      <select id="internalZoneMode">
+
+        <option>
+          Two_Zone
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Zone Mode
+      </label>
+
+      <select id="zoneMode">
+
+        <option>
+          Internet_Setup
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Setup Mode
+      </label>
+
+      <select id="setupMode">
+
+        <option>
+          Basic_Setup
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        PPPoE Mode
+      </label>
+
+      <select id="pppoeMode">
+
+        <option>
+          Not_Applicable
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Pingable Internet
+      </label>
+
+      <select id="pingable">
+
+        <option value="true">
+          Yes
+        </option>
+
+        <option value="false">
+          No
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Enable NAT rule generation
+      </label>
+
+      <select id="nat">
+
+        <option value="false">
+          No (match supplied wizard)
+        </option>
+
+        <option value="true">
+          Yes
+        </option>
+
+      </select>
+
+    </div>
+
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     ACTIONS
+====================================================== -->
+
+<div class="card">
+
   <div class="actions">
-    <button class="primary"   onclick="generate()">Refresh Preview</button>
-    <button class="secondary" onclick="downloadFile()">Download wizard_configuration.txt</button>
-    <button class="danger"    onclick="resetForm()">Reset</button>
+
+
+    <button
+      class="primary"
+      onclick="generate()"
+    >
+      Generate wizard_configuration.txt
+    </button>
+
+
+    <button
+      class="secondary"
+      onclick="downloadFile()"
+    >
+      Download File
+    </button>
+
+
+    <button
+      class="danger"
+      onclick="resetForm()"
+    >
+      Reset
+    </button>
+
+
   </div>
+
 </div>
 
-<!-- ================= PREVIEW ================= -->
+
+<!-- =====================================================
+     PREVIEW
+====================================================== -->
 
 <div class="card">
 
-  <h2>Preview</h2>
+  <h2>
+    Generated File Preview
+  </h2>
 
-  <div class="legend">
-    <span class="sw-yellow">Original value (from base file)</span>
-    <span class="sw-green">Changed value (your edit)</span>
-  </div>
 
-  <div id="preview" class="preview-box" spellcheck="false"></div>
+  <textarea
+    id="preview"
+    spellcheck="false"
+    readonly
+  ></textarea>
 
 </div>
 
+
 </div>
 
-<!-- ================= LIBRARIES ================= -->
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- =====================================================
+     LIBRARIES
+====================================================== -->
+
+<script
+  src="https://code.jquery.com/jquery-3.7.1.min.js">
+</script>
+
+
+<script
+  src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js">
+</script>
+
 
 <script>
 
 "use strict";
 
-/* ======================================================
- * CONFIG
- * ====================================================== */
+
+/*
+ * ======================================================
+ * CONFIGURATION
+ * ======================================================
+ */
+
+
+/*
+ * Put your Apps Script Web App URL here.
+ *
+ * Example:
+ *
+ * https://script.google.com/macros/s/XXXXXXXX/exec
+ */
 
 const API_URL =
   "https://script.google.com/macros/s/AKfycbyU2fcGWpmg5vYEPqsBQT6dOalgsOmcvst4ACwTbApujrX8RqPo1Ue12TPCZmayWi-H/exec";
 
-const BASE_FILE = "wizard_configuration.txt";
+
+/*
+ * SRX210 interfaces.
+ *
+ * Existing defaults:
+ *
+ * WAN        ge-0/0/0
+ * Management fe-0/0/7
+ * Inbound    fe-0/0/6
+ */
 
 const INTERFACES = [
-  "ge-0/0/0", "ge-0/0/1",
-  "fe-0/0/2", "fe-0/0/3", "fe-0/0/4", "fe-0/0/5",
-  "fe-0/0/6", "fe-0/0/7"
+
+  "ge-0/0/0",
+
+  "ge-0/0/1",
+
+  "fe-0/0/2",
+
+  "fe-0/0/3",
+
+  "fe-0/0/4",
+
+  "fe-0/0/5",
+
+  "fe-0/0/6",
+
+  "fe-0/0/7"
+
 ];
 
 
-/* Runtime state */
-let BASE_TEXT    = "";   // raw base file text
-let BASE_PARSED  = null; // { nsw: "...", pppoe: "..." }
-let BASE_NSW     = null; // parsed nsw object
-let CURRENT_TEXT = "";   // last generated text
+let generatedText = "";
+let templateText = "";
+let templateWrapper = null;
+let templateNSW = null;
+let templatePPPOE = null;
+let templateRootPasswordEncoded = "";
+let templateLoaded = false;
+
+const TEMPLATE_URL = "wizard_configuration.txt";
 
 
-/* ======================================================
- * DOM HELPERS
- * ====================================================== */
+/*
+ * ======================================================
+ * DOM HELPER
+ * ======================================================
+ */
 
 function value(id) {
   return document.getElementById(id).value.trim();
 }
 
-function setStatus(msg, error = false) {
-  const el = document.getElementById("status");
-  el.textContent = msg;
-  el.style.color = error ? "#dc2626" : "#16a34a";
+
+/*
+ * ======================================================
+ * STATUS
+ * ======================================================
+ */
+
+function setStatus(message, error = false) {
+  const element = document.getElementById("status");
+  element.textContent = message;
+  element.style.color = error ? "#dc2626" : "#16a34a";
 }
 
 
-/* ======================================================
- * LOAD BASE FILE
- * ====================================================== */
-
-async function loadBaseFile() {
-
-  try {
-
-    setStatus("Loading " + BASE_FILE + " ...");
-
-    const resp = await fetch(BASE_FILE + "?v=" + Date.now(), {
-      cache: "no-store"
-    });
-
-    if (!resp.ok) {
-      throw new Error(
-        "Cannot load " + BASE_FILE + " (HTTP " + resp.status + "). " +
-        "Make sure it is in the same folder as index.html."
-      );
-    }
-
-    BASE_TEXT = await resp.text();
-
-    BASE_PARSED = JSON.parse(BASE_TEXT);
-    BASE_NSW    = JSON.parse(BASE_PARSED.nsw);
-
-    setStatus("Base template loaded (" + BASE_TEXT.length + " bytes).");
-
-    generate();
-
-  } catch (error) {
-
-    setStatus(error.message, true);
-
-    document.getElementById("preview").textContent =
-      "ERROR: " + error.message;
-
-  }
-
-}
-
-
-/* ======================================================
- * SELECT2
- * ====================================================== */
+/*
+ * ======================================================
+ * SELECT2 INTERFACES
+ * ======================================================
+ */
 
 function initialiseInterfaces() {
+  const interfaceFields = ["wanIf", "mgmtIf", "inboundIf"];
 
-  ["wanIf"].forEach(function(id) {
+  interfaceFields.forEach(function(id) {
+    const element = $("#" + id);
+    element.empty();
 
-    const el = $("#" + id);
-
-    el.empty();
-
-    INTERFACES.forEach(function(name) {
-      el.append(new Option(name, name));
+    INTERFACES.forEach(function(interfaceName) {
+      element.append(new Option(interfaceName, interfaceName));
     });
 
-    el.select2({ minimumResultsForSearch: 0, width: "100%" });
-
+    element.select2({
+      minimumResultsForSearch: 0,
+      width: "100%"
+    });
   });
-
-  $("#wanIf").val("ge-0/0/0").trigger("change");
-
 }
 
 
-function initialiseHostnameSelect() {
+/*
+ * ======================================================
+ * HOSTNAME SELECT2
+ * ======================================================
+ */
 
+function initialiseHostnameSelect() {
   $("#hostnameSelect").select2({
     placeholder: "Select hostname / branch",
     allowClear: true,
@@ -423,340 +1356,1099 @@ function initialiseHostnameSelect() {
   });
 
   $("#hostnameSelect").on("change", function() {
-
     const hostname = this.value;
-
-    if (!hostname) { return; }
-
+    if (!hostname) return;
     loadHost(hostname);
-
   });
-
 }
 
 
-/* ======================================================
- * API
- * ====================================================== */
+/*
+ * ======================================================
+ * API URL
+ * ======================================================
+ */
+
+function getApiUrl() {
+  const configured = API_URL.trim();
+
+  const entered =
+    document.getElementById("apiUrl").value.trim();
+
+  if (
+    entered &&
+    !entered.includes("PASTE_YOUR_APPS_SCRIPT")
+  ) {
+    return entered;
+  }
+
+  return configured;
+}
+
+
+/*
+ * ======================================================
+ * API REQUEST
+ * ======================================================
+ */
 
 async function apiRequest(action, hostname = "") {
+  const base = getApiUrl();
 
-  const base = API_URL.trim();
-
-  if (!base || base.includes("PASTE_YOUR_APPS_SCRIPT")) {
-    throw new Error("Apps Script URL not configured.");
+  if (
+    !base ||
+    base.includes("PASTE_YOUR_APPS_SCRIPT")
+  ) {
+    throw new Error(
+      "Please enter the Apps Script Web App API URL."
+    );
   }
 
-  let url = base + (base.includes("?") ? "&" : "?") +
-            "action=" + encodeURIComponent(action);
+  let url =
+    base +
+    (base.includes("?") ? "&" : "?") +
+    "action=" +
+    encodeURIComponent(action);
 
   if (hostname) {
-    url += "&hostname=" + encodeURIComponent(hostname);
+    url +=
+      "&hostname=" +
+      encodeURIComponent(hostname);
   }
 
-  const resp = await fetch(url, { method: "GET", cache: "no-store" });
+  const response = await fetch(url, {
+    method: "GET",
+    cache: "no-store"
+  });
 
-  if (!resp.ok) {
-    throw new Error("API HTTP error: " + resp.status);
+  if (!response.ok) {
+    throw new Error(
+      "API HTTP error: " + response.status
+    );
   }
 
-  const data = await resp.json();
+  const data = await response.json();
 
   if (data.success === false) {
-    throw new Error(data.error || "API returned an error.");
+    throw new Error(
+      data.error || "API returned an error."
+    );
   }
 
   return data;
-
 }
 
 
-async function loadHostnames() {
+/*
+ * ======================================================
+ * TEMPLATE LOADER
+ *
+ * wizard_configuration.txt is deliberately loaded as
+ * the baseline.  The existing escaped format is decoded
+ * without changing the actual configuration content.
+ * ======================================================
+ */
 
+async function loadConfigurationTemplate() {
   try {
+    setStatus("Loading wizard_configuration.txt...");
 
+    const response = await fetch(
+      TEMPLATE_URL + "?t=" + Date.now(),
+      {
+        method: "GET",
+        cache: "no-store"
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        "Unable to load " + TEMPLATE_URL +
+        " (HTTP " + response.status + ")."
+      );
+    }
+
+    const raw = await response.text();
+
+    /*
+     * The supplied file is a JSON document whose complete
+     * content has one additional escaping layer.
+     */
+    const decoded = JSON.parse('"' + raw + '"');
+
+    templateWrapper = JSON.parse(decoded);
+    templateNSW = JSON.parse(templateWrapper.nsw);
+    templatePPPOE = JSON.parse(templateWrapper.pppoe);
+    templateRootPasswordEncoded =
+      (templateNSW.system && templateNSW.system.rootpassword) || "";
+
+    templateText = decoded;
+    templateLoaded = true;
+
+    applyTemplateToForm();
+
+    /*
+     * Show the ORIGINAL downloaded file immediately.
+     * Do not regenerate it here.
+     */
+    generatedText = raw;
+    document.getElementById("preview").value = raw;
+
+    setStatus(
+      "wizard_configuration.txt loaded successfully."
+    );
+
+  } catch (error) {
+    templateLoaded = false;
+    setStatus(error.message, true);
+  }
+}
+
+
+/*
+ * ======================================================
+ * APPLY TEMPLATE VALUES TO FORM
+ * ======================================================
+ */
+
+function applyTemplateToForm() {
+  if (!templateNSW || !templatePPPOE) return;
+
+  const nsw = templateNSW;
+  const ppp = Array.isArray(templatePPPOE)
+    ? templatePPPOE[0]
+    : null;
+
+  const system = nsw.system || {};
+  const internet =
+    nsw.zones &&
+    nsw.zones.internetZone &&
+    nsw.zones.internetZone.address &&
+    nsw.zones.internetZone.address[0]
+      ? nsw.zones.internetZone.address[0]
+      : {};
+
+  const internal =
+    nsw.zones &&
+    nsw.zones.internalZones
+      ? nsw.zones.internalZones
+      : {};
+
+  const mgmt =
+    internal.mgmt || {};
+
+  const inbound =
+    internal.inbound || {};
+
+  const policy =
+    nsw.policies &&
+    nsw.policies.internetInternal
+      ? nsw.policies.internetInternal[
+          Object.keys(nsw.policies.internetInternal)[0]
+        ]
+      : {};
+
+  if (ppp) {
+    $("#wanIf")
+      .val(ppp["underlying-intf"] || "")
+      .trigger("change");
+
+    document.getElementById("wanIp").value =
+      (ppp["ipv4Add"] || "").split("/")[0] ||
+      internet.ip ||
+      "";
+
+    document.getElementById("wanPrefix").value =
+      (ppp["ipv4Add"] || "").includes("/")
+        ? Number(ppp["ipv4Add"].split("/")[1])
+        : Number(internet.cidr || 0);
+
+    document.getElementById("wanGw").value =
+      ppp.def_gateway ||
+      internet.gateway ||
+      "";
+
+    document.getElementById("dns1").value =
+      ppp["inet-prefDNS"] ||
+      internet.prefdns ||
+      "";
+
+    document.getElementById("dns2").value =
+      ppp["inet-altDNS"] ||
+      internet.altdns ||
+      "";
+
+    document.getElementById("addressMode").value =
+      ppp["inet-address"] || "Static";
+
+    document.getElementById("internetZone").value =
+      ppp.zone_assigned || "Internet";
+  }
+
+  document.getElementById("model").value =
+    nsw.chassis &&
+    nsw.chassis[0]
+      ? (nsw.chassis[0].model || "")
+      : "";
+
+  document.getElementById("savedModel").value =
+    nsw.savedModel || "";
+
+  document.getElementById("hostname").value =
+    system.hostname || "";
+
+  document.getElementById("version").value =
+    nsw.savedVersion || "";
+
+  document.getElementById("timezone").value =
+    system.timezone || "";
+
+  document.getElementById("mgmtIp").value =
+    mgmt.ipAddress || "";
+
+  document.getElementById("mgmtPrefix").value =
+    Number(mgmt.cidr || 0);
+
+  document.getElementById("mgmtZone").value =
+    mgmt.name || "mgmt";
+
+  $("#mgmtIf")
+    .val(mgmt.interfaces || "")
+    .trigger("change");
+
+  document.getElementById("inboundIp").value =
+    inbound.ipAddress || "";
+
+  document.getElementById("inboundPrefix").value =
+    Number(inbound.cidr || 0);
+
+  document.getElementById("inboundZone").value =
+    inbound.name || "inbound";
+
+  $("#inboundIf")
+    .val(inbound.interfaces || "")
+    .trigger("change");
+
+  document.getElementById("policyName").value =
+    policy.name || "All:inbound/Internet";
+
+  document.getElementById("policyAction").value =
+    policy.action || "Allow";
+
+  const state = nsw.state || {};
+
+  document.getElementById("internalZoneMode").value =
+    state.internalZoneMode || "Two_Zone";
+
+  document.getElementById("zoneMode").value =
+    state.zoneMode || "Internet_Setup";
+
+  document.getElementById("setupMode").value =
+    state.setupMode || "Basic_Setup";
+
+  document.getElementById("pppoeMode").value =
+    state.pppoeMode || "Not_Applicable";
+
+  document.getElementById("timeMode").value =
+    state.timeMode || "ManualTime";
+
+  document.getElementById("pingable").value =
+    internet.pingable === false ? "false" : "true";
+
+  /*
+   * Root password is encoded in the source file.
+   * Keep the source value intact unless the user changes it.
+   * We therefore do not try to decode it here.
+   */
+  document.getElementById("rootpassword").value =
+    "Admin@123";
+
+  document.getElementById("rootpassword2").value =
+    "Admin@123";
+
+  setServices(
+    "mgmtSvc",
+    nsw.zones &&
+    nsw.zones.mgmtZones &&
+    nsw.zones.mgmtZones.mgmt
+      ? nsw.zones.mgmtZones.mgmt.svcs
+      : ""
+  );
+
+  setServices(
+    "inboundSvc",
+    nsw.zones &&
+    nsw.zones.mgmtZones &&
+    nsw.zones.mgmtZones.inbound
+      ? nsw.zones.mgmtZones.inbound.svcs
+      : ""
+  );
+
+  document.getElementById("nat").value =
+    Array.isArray(nsw.selectedSrcNAT) &&
+    nsw.selectedSrcNAT.length
+      ? "true"
+      : "false";
+}
+
+
+function setServices(className, services) {
+  const list = String(services || "")
+    .split(",")
+    .map(x => x.trim())
+    .filter(Boolean);
+
+  document
+    .querySelectorAll("." + className)
+    .forEach(function(cb) {
+      cb.checked = list.includes(cb.value);
+    });
+}
+
+
+/*
+ * ======================================================
+ * LOAD HOSTNAMES
+ * ======================================================
+ */
+
+async function loadHostnames() {
+  try {
     setStatus("Loading hostnames...");
 
     const data = await apiRequest("hostnames");
 
     const hostnames =
-      Array.isArray(data.hostnames) ? data.hostnames : [];
+      Array.isArray(data.hostnames)
+        ? data.hostnames
+        : [];
 
     const select = $("#hostnameSelect");
 
     select.empty();
 
-    select.append(new Option("", "", false, false));
+    select.append(
+      new Option("", "", false, false)
+    );
 
-    hostnames.forEach(function(h) {
-      select.append(new Option(h, h));
+    hostnames.forEach(function(hostname) {
+      select.append(
+        new Option(hostname, hostname)
+      );
     });
 
     select.trigger("change");
 
-    setStatus(hostnames.length + " hostname(s) loaded.");
+    setStatus(
+      hostnames.length +
+      " hostname(s) loaded."
+    );
 
   } catch (error) {
     setStatus(error.message, true);
   }
-
 }
 
 
+/*
+ * ======================================================
+ * LOAD PARTICULAR HOST
+ *
+ * IMPORTANT:
+ * Only branch-dependent fields are changed here.
+ * Other form values remain exactly as the user left them.
+ * ======================================================
+ */
+
 async function loadHost(hostname) {
-
   try {
-
     document.body.classList.add("loading");
 
-    setStatus("Loading " + hostname + " ...");
+    setStatus(
+      "Loading " + hostname + " ..."
+    );
 
-    const data = await apiRequest("host", hostname);
+    const data =
+      await apiRequest("host", hostname);
 
     if (!data.data) {
-      throw new Error("No data returned for " + hostname);
+      throw new Error(
+        "No data returned for " + hostname
+      );
     }
 
     document.getElementById("hostname").value =
       data.data.hostname || hostname;
 
-    document.getElementById("inboundIp").value =
-      data.data.inboundIp || "";
+    if (data.data.inboundIp) {
+      document.getElementById("inboundIp").value =
+        data.data.inboundIp;
+    }
 
-    document.getElementById("wanIp").value =
-      data.data.wanIp || "";
+    if (data.data.wanIp) {
+      document.getElementById("wanIp").value =
+        data.data.wanIp;
+    }
 
-    document.getElementById("wanGw").value =
-      data.data.wanGateway || "";
+    if (data.data.wanGateway) {
+      document.getElementById("wanGw").value =
+        data.data.wanGateway;
+    }
+
+    /*
+     * Prefixes are calculated from the template/current
+     * subnet information, rather than hard-coded.
+     */
+    calculatePrefixes();
+
+    /*
+     * Patch the loaded template only after branch values
+     * have been applied.  No unrelated template fields
+     * are reconstructed from defaults.
+     */
+    generate();
+
+    setStatus(
+      hostname +
+      " loaded successfully."
+    );
+
+  } catch (error) {
+    setStatus(error.message, true);
+  } finally {
+    document.body.classList.remove("loading");
+  }
+}
+
+
+/*
+ * ======================================================
+ * IPv4 VALIDATION
+ * ======================================================
+ */
+
+function isValidIPv4(ip) {
+  const parts = ip.trim().split(".");
+
+  if (parts.length !== 4) return false;
+
+  return parts.every(function(part) {
+    return (
+      /^\d+$/.test(part) &&
+      Number(part) >= 0 &&
+      Number(part) <= 255
+    );
+  });
+}
+
+
+/*
+ * ======================================================
+ * PREFIX / NETMASK
+ * ======================================================
+ */
+
+function prefixToMask(prefix) {
+  prefix = Number(prefix);
+
+  if (prefix < 0 || prefix > 32) return "";
+
+  if (prefix === 0) return "0.0.0.0";
+
+  const mask =
+    (0xffffffff << (32 - prefix)) >>> 0;
+
+  return [
+    (mask >>> 24) & 255,
+    (mask >>> 16) & 255,
+    (mask >>> 8) & 255,
+    mask & 255
+  ].join(".");
+}
+
+
+/*
+ * Calculate prefixes automatically from the current
+ * template data when possible.
+ */
+function calculatePrefixes() {
+  if (!templateNSW) return;
+
+  const internet =
+    templateNSW.zones &&
+    templateNSW.zones.internetZone &&
+    templateNSW.zones.internetZone.address &&
+    templateNSW.zones.internetZone.address[0]
+      ? templateNSW.zones.internetZone.address[0]
+      : {};
+
+  const internal =
+    templateNSW.zones &&
+    templateNSW.zones.internalZones
+      ? templateNSW.zones.internalZones
+      : {};
+
+  /*
+   * If the branch API supplies a subnet/prefix in the future,
+   * use it. Otherwise preserve the template CIDR.
+   */
+  if (
+    !value("wanPrefix") &&
+    internet.cidr !== undefined
+  ) {
+    document.getElementById("wanPrefix").value =
+      Number(internet.cidr);
+  }
+
+  if (
+    !value("mgmtPrefix") &&
+    internal.mgmt &&
+    internal.mgmt.cidr !== undefined
+  ) {
+    document.getElementById("mgmtPrefix").value =
+      Number(internal.mgmt.cidr);
+  }
+
+  if (
+    !value("inboundPrefix") &&
+    internal.inbound &&
+    internal.inbound.cidr !== undefined
+  ) {
+    document.getElementById("inboundPrefix").value =
+      Number(internal.inbound.cidr);
+  }
+}
+
+
+/*
+ * ======================================================
+ * CHECKBOX VALUES
+ * ======================================================
+ */
+
+function checked(className) {
+  return [
+    ...document.querySelectorAll(
+      "." + className + ":checked"
+    )
+  ]
+    .map(function(element) {
+      return element.value;
+    })
+    .join(",");
+}
+
+
+/*
+ * ======================================================
+ * CURRENT TIME
+ * ======================================================
+ */
+
+function currentTimestamp() {
+  const now = new Date();
+
+  function pad(n) {
+    return String(n).padStart(2, "0");
+  }
+
+  return (
+    now.getFullYear() +
+    "-" +
+    pad(now.getMonth() + 1) +
+    "-" +
+    pad(now.getDate()) +
+    " " +
+    pad(now.getHours()) +
+    ":" +
+    pad(now.getMinutes()) +
+    ":" +
+    pad(now.getSeconds())
+  );
+}
+
+
+/*
+ * ======================================================
+ * GENERATE / PATCH TEMPLATE
+ *
+ * This function NEVER rebuilds the whole configuration
+ * from hard-coded defaults.
+ *
+ * It clones the downloaded template and changes only
+ * values represented by the form.
+ * ======================================================
+ */
+
+function generate() {
+  if (!templateLoaded || !templateNSW || !templatePPPOE) {
+    setStatus(
+      "Please wait for wizard_configuration.txt to load.",
+      true
+    );
+    return;
+  }
+
+  const rootPassword =
+    value("rootpassword");
+
+  const confirmPassword =
+    value("rootpassword2");
+
+  if (rootPassword !== confirmPassword) {
+    setStatus(
+      "Root passwords do not match.",
+      true
+    );
+    return;
+  }
+
+  const ipFields = [
+    ["WAN IP", value("wanIp")],
+    ["WAN Gateway", value("wanGw")],
+    ["DNS 1", value("dns1")],
+    ["DNS 2", value("dns2")],
+    ["Management IP", value("mgmtIp")],
+    ["Inbound IP", value("inboundIp")]
+  ];
+
+  for (const field of ipFields) {
+    if (
+      field[1] &&
+      !isValidIPv4(field[1])
+    ) {
+      setStatus(
+        field[0] +
+        " is not a valid IPv4 address.",
+        true
+      );
+      return;
+    }
+  }
+
+  const wanPrefix = Number(value("wanPrefix"));
+  const mgmtPrefix = Number(value("mgmtPrefix"));
+  const inboundPrefix = Number(value("inboundPrefix"));
+
+  const wanMask = prefixToMask(wanPrefix);
+  const mgmtMask = prefixToMask(mgmtPrefix);
+  const inboundMask = prefixToMask(inboundPrefix);
+
+  if (!wanMask || !mgmtMask || !inboundMask) {
+    setStatus(
+      "One or more prefix values are invalid.",
+      true
+    );
+    return;
+  }
+
+  /*
+   * Deep clone the ORIGINAL template.
+   * Every property not explicitly changed below remains
+   * untouched.
+   */
+  const nsw =
+    JSON.parse(JSON.stringify(templateNSW));
+
+  const pppoe =
+    JSON.parse(JSON.stringify(templatePPPOE));
+
+  /*
+   * Device/system values.
+   */
+  if (nsw.chassis && nsw.chassis[0]) {
+    nsw.chassis[0].model = value("model");
+  }
+
+  nsw.savedModel = value("savedModel");
+  nsw.savedVersion = value("version");
+
+  nsw.system =
+    nsw.system || {};
+
+  nsw.system.hostname =
+    value("hostname");
+
+  nsw.system.timezone =
+    value("timezone");
+
+  /*
+   * Preserve the template password when the user has not
+   * actually changed the existing form password.
+   * If the user changes it, encode the new password.
+   */
+  if (
+    templateRootPasswordEncoded &&
+    rootPassword === "Admin@123" &&
+    confirmPassword === "Admin@123"
+  ) {
+    nsw.system.rootpassword =
+      templateRootPasswordEncoded;
+  } else {
+    nsw.system.rootpassword =
+      btoa(
+        unescape(
+          encodeURIComponent(rootPassword)
+        )
+      );
+  }
+
+  /*
+   * Update generated timestamp as requested.
+   */
+  nsw.time = currentTimestamp();
+
+  /*
+   * WAN / Internet zone.
+   */
+  nsw.zones =
+    nsw.zones || {};
+
+  nsw.zones.internetZone =
+    nsw.zones.internetZone || {};
+
+  const internet =
+    nsw.zones.internetZone;
+
+  internet.pingable =
+    value("pingable") === "true";
+
+  internet.configured = true;
+  internet.selinterface = value("wanIf");
+
+  if (!Array.isArray(internet.address)) {
+    internet.address = [{}];
+  }
+
+  if (!internet.address[0]) {
+    internet.address[0] = {};
+  }
+
+  const wanAddress =
+    internet.address[0];
+
+  wanAddress.ip = value("wanIp");
+  wanAddress.mask = "CIDR";
+  wanAddress.netmask = wanMask;
+  wanAddress.cidr = wanPrefix;
+  wanAddress.gateway = value("wanGw");
+  wanAddress.zonedns = "Manual";
+  wanAddress.prefdns = value("dns1");
+  wanAddress.altdns = value("dns2");
+
+  /*
+   * Management / inbound zones.
+   */
+  nsw.zones.internalZones =
+    nsw.zones.internalZones || {};
+
+  nsw.zones.internalZones.mgmt =
+    nsw.zones.internalZones.mgmt || {};
+
+  nsw.zones.internalZones.inbound =
+    nsw.zones.internalZones.inbound || {};
+
+  const mgmt =
+    nsw.zones.internalZones.mgmt;
+
+  mgmt.pingable = true;
+  mgmt.ipAddress = value("mgmtIp");
+  mgmt.mask = "CIDR";
+  mgmt.cidr = mgmtPrefix;
+  mgmt.netmask = mgmtMask;
+  mgmt.interfaces = value("mgmtIf");
+
+  const inbound =
+    nsw.zones.internalZones.inbound;
+
+  inbound.pingable = true;
+  inbound.ipAddress = value("inboundIp");
+  inbound.mask = "CIDR";
+  inbound.cidr = inboundPrefix;
+  inbound.netmask = inboundMask;
+  inbound.interfaces = value("inboundIf");
+
+  /*
+   * Zone service names.
+   */
+  nsw.zones.mgmtZones =
+    nsw.zones.mgmtZones || {};
+
+  nsw.zones.mgmtZones.mgmt =
+    nsw.zones.mgmtZones.mgmt || {};
+
+  nsw.zones.mgmtZones.inbound =
+    nsw.zones.mgmtZones.inbound || {};
+
+  nsw.zones.mgmtZones.mgmt.name =
+    value("mgmtZone");
+
+  nsw.zones.mgmtZones.mgmt.svcs =
+    checked("mgmtSvc");
+
+  nsw.zones.mgmtZones.inbound.name =
+    value("inboundZone");
+
+  nsw.zones.mgmtZones.inbound.svcs =
+    checked("inboundSvc");
+
+  /*
+   * Policy.
+   */
+  nsw.policies =
+    nsw.policies || {};
+
+  nsw.policies.internetInternal =
+    nsw.policies.internetInternal || {};
+
+  const policyName =
+    value("policyName");
+
+  const existingPolicyKeys =
+    Object.keys(
+      nsw.policies.internetInternal
+    );
+
+  const originalPolicyKey =
+    existingPolicyKeys.length
+      ? existingPolicyKeys[0]
+      : policyName;
+
+  let policy =
+    nsw.policies.internetInternal[
+      originalPolicyKey
+    ] || {};
+
+  /*
+   * If the policy name itself is changed, preserve the
+   * policy object but move it to the new key.
+   */
+  if (originalPolicyKey !== policyName) {
+    delete nsw.policies.internetInternal[
+      originalPolicyKey
+    ];
+
+    nsw.policies.internetInternal[
+      policyName
+    ] = policy;
+  }
+
+  policy.name = policyName;
+  policy.action = value("policyAction");
+  policy.fromZone = value("inboundZone");
+  policy.toZone = value("internetZone");
+
+  /*
+   * Wizard state.
+   */
+  nsw.state =
+    nsw.state || {};
+
+  nsw.state.currentPage =
+    nsw.state.currentPage || "Confirm_Apply";
+
+  nsw.state.setupMode =
+    value("setupMode");
+
+  nsw.state.zoneMode =
+    value("zoneMode");
+
+  nsw.state.internalZoneMode =
+    value("internalZoneMode");
+
+  nsw.state.pppoeMode =
+    value("pppoeMode");
+
+  nsw.state.timeMode =
+    value("timeMode");
+
+  /*
+   * NAT is changed only according to the form.
+   * All other NAT structures remain untouched.
+   */
+  if (value("nat") === "true") {
+    nsw.selectedSrcNAT = [
+      {
+        fromZone: value("inboundZone"),
+        toZone: value("internetZone")
+      }
+    ];
+  } else {
+    nsw.selectedSrcNAT = [];
+  }
+
+  /*
+   * PPPoE object(s):
+   * preserve every original property, changing only
+   * the fields controlled by the form.
+   */
+  if (!Array.isArray(pppoe)) {
+    throw new Error(
+      "Invalid pppoe structure in template."
+    );
+  }
+
+  pppoe.forEach(function(connection) {
+    connection["underlying-intf"] =
+      value("wanIf");
+
+    connection["inet-address"] =
+      value("addressMode");
+
+    connection["ipv4Add"] =
+      value("wanIp") +
+      "/" +
+      wanPrefix;
+
+    connection["def_gateway"] =
+      value("wanGw");
+
+    connection["inet-prefDNS"] =
+      value("dns1");
+
+    connection["inet-altDNS"] =
+      value("dns2");
+
+    connection["zone_assigned"] =
+      value("internetZone");
+  });
+
+  /*
+   * Final wrapper preserves the original wizard format.
+   */
+  const wrapper = {
+    nsw: JSON.stringify(nsw),
+    pppoe: JSON.stringify(pppoe)
+  };
+
+  generatedText =
+    JSON.stringify(wrapper);
+
+  document.getElementById("preview").value =
+    generatedText;
+
+  setStatus(
+    "Configuration updated. Unchanged template values were preserved."
+  );
+}
+
+
+/*
+ * ======================================================
+ * DOWNLOAD
+ * ======================================================
+ */
+
+function downloadFile() {
+
+  if (!generatedText) {
 
     generate();
 
-    setStatus(hostname + " loaded successfully.");
+  }
 
-  } catch (error) {
 
-    setStatus(error.message, true);
+  if (!generatedText) {
 
-  } finally {
-
-    document.body.classList.remove("loading");
+    return;
 
   }
 
-}
+
+  const blob =
+    new Blob(
+
+      [
+        generatedText
+      ],
+
+      {
+        type:
+          "text/plain;charset=utf-8"
+      }
+
+    );
 
 
-/* ======================================================
- * PATCH + HIGHLIGHT
- * ====================================================== */
-
-function deepClone(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
-
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
+  const link =
+    document.createElement("a");
 
 
-function generate() {
+  link.href =
+    URL.createObjectURL(
+      blob
+    );
 
-  if (!BASE_NSW) { return; }
 
-  /* -------- read variable values -------- */
+  link.download =
+    "wizard_configuration.txt";
 
-  const newHostname = value("hostname");
-  const newWanIp    = value("wanIp");
-  const newWanGw    = value("wanGw");
 
-  /* -------- original values from base file -------- */
+  document.body
+    .appendChild(link);
 
-  const origHostname = BASE_NSW.system.hostname;
-  const origWanIp    = BASE_NSW.zones.internetZone.address[0].ip;
-  const origWanGw    = BASE_NSW.zones.internetZone.address[0].gateway;
 
-  /* -------- clone and patch -------- */
+  link.click();
 
-  const patched = deepClone(BASE_NSW);
 
-  patched.system.hostname =
-    newHostname;
+  link.remove();
 
-  patched.zones.internetZone.address[0].ip =
-    newWanIp;
 
-  patched.zones.internetZone.address[0].gateway =
-    newWanGw;
-
-  /* -------- re-stringify (preserves key order) -------- */
-
-  const patchedNswStr = JSON.stringify(patched);
-
-  /* -------- rebuild wrapper (pppoe copied verbatim) -------- */
-
-  const wrapper = {
-    nsw:   patchedNswStr,
-    pppoe: BASE_PARSED.pppoe
-  };
-
-  CURRENT_TEXT = JSON.stringify(wrapper);
-
-  /* -------- build highlighted preview -------- */
-
-  const html = buildHighlightedPreview(
-    CURRENT_TEXT,
-    [
-      { key: "hostname", oldVal: origHostname, newVal: newHostname },
-      { key: "ip",       oldVal: origWanIp,    newVal: newWanIp    },
-      { key: "gateway",  oldVal: origWanGw,    newVal: newWanGw    }
-    ]
+  setStatus(
+    "wizard_configuration.txt downloaded."
   );
-
-  document.getElementById("preview").innerHTML = html;
-
-  setStatus("Preview updated.");
 
 }
 
 
 /*
- * Locate  "key":"value"  in the raw JSON text and wrap
- * the value in a highlight span. The class is chosen
- * based on whether the value equals the original.
- */
-function buildHighlightedPreview(rawText, patches) {
-
-  const ranges = [];
-
-  patches.forEach(function(p) {
-
-    const keyPattern = '"' + p.key + '":"';
-
-    let idx = 0;
-
-    while (true) {
-
-      const found = rawText.indexOf(keyPattern, idx);
-
-      if (found === -1) { break; }
-
-      const valueStart = found + keyPattern.length;
-      const valueEnd   = rawText.indexOf('"', valueStart);
-
-      if (valueEnd === -1) { break; }
-
-      const valueInFile = rawText.slice(valueStart, valueEnd);
-
-      if (valueInFile === p.newVal) {
-
-        const changed = (p.newVal !== p.oldVal);
-
-        ranges.push({
-          start: valueStart,
-          end:   valueEnd,
-          cls:   changed ? "hl-green" : "hl-yellow"
-        });
-
-        break;   /* only first occurrence per key */
-
-      }
-
-      idx = valueEnd + 1;
-
-    }
-
-  });
-
-  ranges.sort(function(a, b) { return a.start - b.start; });
-
-  let out = "";
-  let pos = 0;
-
-  ranges.forEach(function(r) {
-
-    out += escapeHtml(rawText.slice(pos, r.start));
-
-    out += '<span class="' + r.cls + '">' +
-           escapeHtml(rawText.slice(r.start, r.end)) +
-           '</span>';
-
-    pos = r.end;
-
-  });
-
-  out += escapeHtml(rawText.slice(pos));
-
-  return out;
-
-}
-
-
-/* ======================================================
- * DOWNLOAD
- * ====================================================== */
-
-function downloadFile() {
-
-  if (!CURRENT_TEXT) {
-    setStatus("Nothing generated yet.", true);
-    return;
-  }
-
-  const blob = new Blob(
-    [CURRENT_TEXT],
-    { type: "text/plain;charset=utf-8" }
-  );
-
-  const link = document.createElement("a");
-
-  link.href = URL.createObjectURL(blob);
-  link.download = "wizard_configuration.txt";
-
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-
-  setStatus("wizard_configuration.txt downloaded.");
-
-}
-
-
-/* ======================================================
+ * ======================================================
  * RESET
- * ====================================================== */
+ * ======================================================
+ */
 
 function resetForm() {
+
   location.reload();
+
 }
 
 
-/* ======================================================
+/*
+ * ======================================================
  * START
- * ====================================================== */
+ * ======================================================
+ */
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener(
+  "DOMContentLoaded",
+  function() {
 
-  initialiseInterfaces();
-  initialiseHostnameSelect();
+    initialiseInterfaces();
 
-  /* auto-refresh preview when any field changes */
-  ["hostname", "wanIp", "wanGw", "inboundIp"]
-    .forEach(function(id) {
+    initialiseHostnameSelect();
 
-      document
-        .getElementById(id)
-        .addEventListener("input", generate);
+    /*
+     * First load the GitHub-hosted configuration
+     * template.  The template is the authoritative
+     * baseline for all configuration values.
+     */
 
-    });
+    loadConfigurationTemplate()
+      .then(function() {
+        /*
+         * Load the branch list after the template has
+         * populated the form.
+         */
+        return loadHostnames();
+      });
 
-  loadBaseFile().then(loadHostnames);
-
-});
+  }
+);
 
 </script>
 
+
 </body>
+
 </html>
