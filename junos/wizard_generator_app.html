@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juniper SRX210 Wizard Configuration Generator</title>
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+
+<style>
+
+:root {
+  color-scheme: light dark;
+  font-family: Arial, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #f4f6f8;
+  color: #1f2937;
+}
+
+.wrap {
+  max-width: 1100px;
+  margin: 28px auto;
+  padding: 0 18px;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 28px #0001;
+}
+
+h1 { margin: 0 0 6px; font-size: 25px; }
+h2 { font-size: 17px; margin: 0 0 15px; }
+
+.note {
+  color: #64748b;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #fff;
+  color: #111827;
+}
+
+.full { grid-column: 1 / -1; }
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+button {
+  border: 0;
+  border-radius: 9px;
+  padding: 11px 16px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.primary   { background: #2563eb; color: #fff; }
+.secondary { background: #64748b; color: #fff; }
+.danger    { background: #dc2626; color: #fff; }
+
+/* ---------- Preview with highlight ---------- */
+
+.preview-box {
+  width: 100%;
+  height: 460px;
+  overflow: auto;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #fff;
+  color: #111827;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.hl-yellow {
+  background: #fef08a;
+  color: #111827;
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+.hl-green {
+  background: #86efac;
+  color: #052e16;
+  border-radius: 3px;
+  padding: 0 1px;
+  font-weight: 700;
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.legend span {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.legend .sw-yellow { background: #fef08a; color: #111827; }
+.legend .sw-green  { background: #86efac; color: #052e16; }
+
+.status {
+  font-size: 13px;
+  margin-top: 10px;
+  min-height: 18px;
+}
+
+.loading {
+  opacity: .65;
+  pointer-events: none;
+}
+
+.select2-container { width: 100% !important; }
+
+.select2-container .select2-selection--single {
+  height: 40px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 9px !important;
+}
+
+.select2-container .select2-selection--single .select2-selection__rendered {
+  line-height: 38px !important;
+}
+
+.select2-container .select2-selection--single .select2-selection__arrow {
+  height: 38px !important;
+}
+
+@media (max-width: 700px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-color-scheme: dark) {
+  body { background: #111827; color: #e5e7eb; }
+  .card { background: #1f2937; }
+  input, select, .preview-box {
+    background: #111827; color: #e5e7eb; border-color: #475569;
+  }
+  .note { color: #94a3b8; }
+  .hl-yellow { background: #a16207; color: #fff; }
+  .hl-green  { background: #15803d; color: #fff; }
+  .legend .sw-yellow { background: #a16207; color: #fff; }
+  .legend .sw-green  { background: #15803d; color: #fff; }
+  .select2-container .select2-selection--single {
+    background: #111827 !important;
+    border-color: #475569 !important;
+  }
+  .select2-container .select2-selection--single .select2-selection__rendered {
+    color: #e5e7eb !important;
+  }
+  .select2-dropdown {
+    background: #1f2937; color: #e5e7eb; border-color: #475569;
+  }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="wrap">
+
+<!-- ================= HEADER ================= -->
+
+<div class="card">
+
+  <h1>Juniper SRX210 Wizard Configuration Generator</h1>
+
+  <div class="note">
+    Base template is loaded from <code>wizard_configuration.txt</code>
+    (must be in the same folder). Only <b>Hostname</b>, <b>WAN IP</b>
+    and <b>WAN Gateway</b> are patched — every other byte is preserved.
+  </div>
+
+  <div class="grid">
+
+    <div class="field">
+      <label>Hostname / Branch</label>
+      <select id="hostnameSelect" style="width:100%"></select>
+    </div>
+
+    <div class="field" style="display:none;">
+      <label>Apps Script API URL</label>
+      <input id="apiUrl" value="PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE">
+    </div>
+
+  </div>
+
+  <div id="status" class="status">Loading...</div>
+
+</div>
+
+<!-- ================= VARIABLE FIELDS ================= -->
+
+<div class="card">
+
+  <h2>Variable Fields (patched into preview)</h2>
+
+  <div class="grid">
+
+    <div class="field">
+      <label>Hostname</label>
+      <input id="hostname" value="BR0102">
+    </div>
+
+    <div class="field">
+      <label>WAN Interface</label>
+      <select id="wanIf"></select>
+    </div>
+
+    <div class="field">
+      <label>WAN IP</label>
+      <input id="wanIp" value="172.16.232.205">
+    </div>
+
+    <div class="field">
+      <label>WAN Prefix</label>
+      <input id="wanPrefix" type="number" min="0" max="32" value="30">
+    </div>
+
+    <div class="field">
+      <label>WAN Gateway</label>
+      <input id="wanGw" value="172.16.232.206">
+    </div>
+
+    <div class="field">
+      <label>Inbound IP</label>
+      <input id="inboundIp" value="10.165.5.225">
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= ACTIONS ================= -->
+
+<div class="card">
+  <div class="actions">
+    <button class="primary"   onclick="generate()">Refresh Preview</button>
+    <button class="secondary" onclick="downloadFile()">Download wizard_configuration.txt</button>
+    <button class="danger"    onclick="resetForm()">Reset</button>
+  </div>
+</div>
+
+<!-- ================= PREVIEW ================= -->
+
+<div class="card">
+
+  <h2>Preview</h2>
+
+  <div class="legend">
+    <span class="sw-yellow">Original value (from base file)</span>
+    <span class="sw-green">Changed value (your edit)</span>
+  </div>
+
+  <div id="preview" class="preview-box" spellcheck="false"></div>
+
+</div>
+
+</div>
+
+<!-- ================= LIBRARIES ================= -->
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+
+"use strict";
+
+/* ======================================================
+ * CONFIG
+ * ====================================================== */
+
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbyU2fcGWpmg5vYEPqsBQT6dOalgsOmcvst4ACwTbApujrX8RqPo1Ue12TPCZmayWi-H/exec";
+
+const BASE_FILE = "wizard_configuration.txt";
+
+const INTERFACES = [
+  "ge-0/0/0", "ge-0/0/1",
+  "fe-0/0/2", "fe-0/0/3", "fe-0/0/4", "fe-0/0/5",
+  "fe-0/0/6", "fe-0/0/7"
+];
+
+
+/* Runtime state */
+let BASE_TEXT    = "";   // raw base file text
+let BASE_PARSED  = null; // { nsw: "...", pppoe: "..." }
+let BASE_NSW     = null; // parsed nsw object
+let CURRENT_TEXT = "";   // last generated text
+
+
+/* ======================================================
+ * DOM HELPERS
+ * ====================================================== */
+
+function value(id) {
+  return document.getElementById(id).value.trim();
+}
+
+function setStatus(msg, error = false) {
+  const el = document.getElementById("status");
+  el.textContent = msg;
+  el.style.color = error ? "#dc2626" : "#16a34a";
+}
+
+
+/* ======================================================
+ * LOAD BASE FILE
+ * ====================================================== */
+
+async function loadBaseFile() {
+
+  try {
+
+    setStatus("Loading " + BASE_FILE + " ...");
+
+    const resp = await fetch(BASE_FILE + "?v=" + Date.now(), {
+      cache: "no-store"
+    });
+
+    if (!resp.ok) {
+      throw new Error(
+        "Cannot load " + BASE_FILE + " (HTTP " + resp.status + "). " +
+        "Make sure it is in the same folder as index.html."
+      );
+    }
+
+    BASE_TEXT = await resp.text();
+
+    BASE_PARSED = JSON.parse(BASE_TEXT);
+    BASE_NSW    = JSON.parse(BASE_PARSED.nsw);
+
+    setStatus("Base template loaded (" + BASE_TEXT.length + " bytes).");
+
+    generate();
+
+  } catch (error) {
+
+    setStatus(error.message, true);
+
+    document.getElementById("preview").textContent =
+      "ERROR: " + error.message;
+
+  }
+
+}
+
+
+/* ======================================================
+ * SELECT2
+ * ====================================================== */
+
+function initialiseInterfaces() {
+
+  ["wanIf"].forEach(function(id) {
+
+    const el = $("#" + id);
+
+    el.empty();
+
+    INTERFACES.forEach(function(name) {
+      el.append(new Option(name, name));
+    });
+
+    el.select2({ minimumResultsForSearch: 0, width: "100%" });
+
+  });
+
+  $("#wanIf").val("ge-0/0/0").trigger("change");
+
+}
+
+
+function initialiseHostnameSelect() {
+
+  $("#hostnameSelect").select2({
+    placeholder: "Select hostname / branch",
+    allowClear: true,
+    width: "100%",
+    minimumResultsForSearch: 0
+  });
+
+  $("#hostnameSelect").on("change", function() {
+
+    const hostname = this.value;
+
+    if (!hostname) { return; }
+
+    loadHost(hostname);
+
+  });
+
+}
+
+
+/* ======================================================
+ * API
+ * ====================================================== */
+
+async function apiRequest(action, hostname = "") {
+
+  const base = API_URL.trim();
+
+  if (!base || base.includes("PASTE_YOUR_APPS_SCRIPT")) {
+    throw new Error("Apps Script URL not configured.");
+  }
+
+  let url = base + (base.includes("?") ? "&" : "?") +
+            "action=" + encodeURIComponent(action);
+
+  if (hostname) {
+    url += "&hostname=" + encodeURIComponent(hostname);
+  }
+
+  const resp = await fetch(url, { method: "GET", cache: "no-store" });
+
+  if (!resp.ok) {
+    throw new Error("API HTTP error: " + resp.status);
+  }
+
+  const data = await resp.json();
+
+  if (data.success === false) {
+    throw new Error(data.error || "API returned an error.");
+  }
+
+  return data;
+
+}
+
+
+async function loadHostnames() {
+
+  try {
+
+    setStatus("Loading hostnames...");
+
+    const data = await apiRequest("hostnames");
+
+    const hostnames =
+      Array.isArray(data.hostnames) ? data.hostnames : [];
+
+    const select = $("#hostnameSelect");
+
+    select.empty();
+
+    select.append(new Option("", "", false, false));
+
+    hostnames.forEach(function(h) {
+      select.append(new Option(h, h));
+    });
+
+    select.trigger("change");
+
+    setStatus(hostnames.length + " hostname(s) loaded.");
+
+  } catch (error) {
+    setStatus(error.message, true);
+  }
+
+}
+
+
+async function loadHost(hostname) {
+
+  try {
+
+    document.body.classList.add("loading");
+
+    setStatus("Loading " + hostname + " ...");
+
+    const data = await apiRequest("host", hostname);
+
+    if (!data.data) {
+      throw new Error("No data returned for " + hostname);
+    }
+
+    document.getElementById("hostname").value =
+      data.data.hostname || hostname;
+
+    document.getElementById("inboundIp").value =
+      data.data.inboundIp || "";
+
+    document.getElementById("wanIp").value =
+      data.data.wanIp || "";
+
+    document.getElementById("wanGw").value =
+      data.data.wanGateway || "";
+
+    generate();
+
+    setStatus(hostname + " loaded successfully.");
+
+  } catch (error) {
+
+    setStatus(error.message, true);
+
+  } finally {
+
+    document.body.classList.remove("loading");
+
+  }
+
+}
+
+
+/* ======================================================
+ * PATCH + HIGHLIGHT
+ * ====================================================== */
+
+function deepClone(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+
+function generate() {
+
+  if (!BASE_NSW) { return; }
+
+  /* -------- read variable values -------- */
+
+  const newHostname = value("hostname");
+  const newWanIp    = value("wanIp");
+  const newWanGw    = value("wanGw");
+
+  /* -------- original values from base file -------- */
+
+  const origHostname = BASE_NSW.system.hostname;
+  const origWanIp    = BASE_NSW.zones.internetZone.address[0].ip;
+  const origWanGw    = BASE_NSW.zones.internetZone.address[0].gateway;
+
+  /* -------- clone and patch -------- */
+
+  const patched = deepClone(BASE_NSW);
+
+  patched.system.hostname =
+    newHostname;
+
+  patched.zones.internetZone.address[0].ip =
+    newWanIp;
+
+  patched.zones.internetZone.address[0].gateway =
+    newWanGw;
+
+  /* -------- re-stringify (preserves key order) -------- */
+
+  const patchedNswStr = JSON.stringify(patched);
+
+  /* -------- rebuild wrapper (pppoe copied verbatim) -------- */
+
+  const wrapper = {
+    nsw:   patchedNswStr,
+    pppoe: BASE_PARSED.pppoe
+  };
+
+  CURRENT_TEXT = JSON.stringify(wrapper);
+
+  /* -------- build highlighted preview -------- */
+
+  const html = buildHighlightedPreview(
+    CURRENT_TEXT,
+    [
+      { key: "hostname", oldVal: origHostname, newVal: newHostname },
+      { key: "ip",       oldVal: origWanIp,    newVal: newWanIp    },
+      { key: "gateway",  oldVal: origWanGw,    newVal: newWanGw    }
+    ]
+  );
+
+  document.getElementById("preview").innerHTML = html;
+
+  setStatus("Preview updated.");
+
+}
+
+
+/*
+ * Locate  "key":"value"  in the raw JSON text and wrap
+ * the value in a highlight span. The class is chosen
+ * based on whether the value equals the original.
+ */
+function buildHighlightedPreview(rawText, patches) {
+
+  const ranges = [];
+
+  patches.forEach(function(p) {
+
+    const keyPattern = '"' + p.key + '":"';
+
+    let idx = 0;
+
+    while (true) {
+
+      const found = rawText.indexOf(keyPattern, idx);
+
+      if (found === -1) { break; }
+
+      const valueStart = found + keyPattern.length;
+      const valueEnd   = rawText.indexOf('"', valueStart);
+
+      if (valueEnd === -1) { break; }
+
+      const valueInFile = rawText.slice(valueStart, valueEnd);
+
+      if (valueInFile === p.newVal) {
+
+        const changed = (p.newVal !== p.oldVal);
+
+        ranges.push({
+          start: valueStart,
+          end:   valueEnd,
+          cls:   changed ? "hl-green" : "hl-yellow"
+        });
+
+        break;   /* only first occurrence per key */
+
+      }
+
+      idx = valueEnd + 1;
+
+    }
+
+  });
+
+  ranges.sort(function(a, b) { return a.start - b.start; });
+
+  let out = "";
+  let pos = 0;
+
+  ranges.forEach(function(r) {
+
+    out += escapeHtml(rawText.slice(pos, r.start));
+
+    out += '<span class="' + r.cls + '">' +
+           escapeHtml(rawText.slice(r.start, r.end)) +
+           '</span>';
+
+    pos = r.end;
+
+  });
+
+  out += escapeHtml(rawText.slice(pos));
+
+  return out;
+
+}
+
+
+/* ======================================================
+ * DOWNLOAD
+ * ====================================================== */
+
+function downloadFile() {
+
+  if (!CURRENT_TEXT) {
+    setStatus("Nothing generated yet.", true);
+    return;
+  }
+
+  const blob = new Blob(
+    [CURRENT_TEXT],
+    { type: "text/plain;charset=utf-8" }
+  );
+
+  const link = document.createElement("a");
+
+  link.href = URL.createObjectURL(blob);
+  link.download = "wizard_configuration.txt";
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  setStatus("wizard_configuration.txt downloaded.");
+
+}
+
+
+/* ======================================================
+ * RESET
+ * ====================================================== */
+
+function resetForm() {
+  location.reload();
+}
+
+
+/* ======================================================
+ * START
+ * ====================================================== */
+
+document.addEventListener("DOMContentLoaded", function() {
+
+  initialiseInterfaces();
+  initialiseHostnameSelect();
+
+  /* auto-refresh preview when any field changes */
+  ["hostname", "wanIp", "wanGw", "inboundIp"]
+    .forEach(function(id) {
+
+      document
+        .getElementById(id)
+        .addEventListener("input", generate);
+
+    });
+
+  loadBaseFile().then(loadHostnames);
+
+});
+
+</script>
+
+</body>
+</html>
