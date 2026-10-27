@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Treasury Administrator Contact Directory",
-  "short_name": "Treasury Contacts",
-  "description": "Contact directory for Treasury Administrators and offices.",
+  "name": "Administrator Contact Directory",
+  "short_name": "Admins",
+  "description": "Contact directory for  Administrators and offices.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
