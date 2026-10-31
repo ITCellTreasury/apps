@@ -23,6 +23,12 @@
 .thread-message-body{padding:16px;overflow-wrap:anywhere;word-break:break-word;line-height:1.6;font-size:14px}.thread-message-body img{max-width:100%;height:auto}.thread-message-body table{max-width:100%;border-collapse:collapse}.thread-message-body pre{white-space:pre-wrap;overflow-wrap:anywhere}.thread-message-body iframe{max-width:100%}
 .thread-attachments{padding:0 14px 14px;display:flex;gap:8px;flex-wrap:wrap}.thread-attachments:empty{display:none}.thread-attachments .attachment{display:flex;align-items:center;gap:7px;max-width:100%;padding:8px 10px;border:1px solid var(--border,#e5e7eb);border-radius:8px;text-decoration:none;color:inherit;font-size:12px}.thread-attachments .attachment span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}.thread-empty{padding:24px;text-align:center;color:var(--muted,#64748b)}
 @media(max-width:700px){.thread-messages{padding:10px}.thread-message-head{flex-wrap:wrap}.thread-date{margin-left:46px;width:100%}.thread-message-actions{gap:2px}.thread-action{padding:7px 6px}.thread-topbar{padding:10px}.thread-topbar .read-subject{font-size:16px}}
+
+.drawer-logout{display:flex;align-items:center;gap:10px;width:100%;margin:14px 0 0;padding:11px 13px;border:1px solid var(--border,#e5e7eb);border-radius:9px;background:var(--surface,#f8fafc);color:var(--text,#334155);font:inherit;cursor:pointer;text-align:left}
+.drawer-logout:hover{background:var(--hover,#eaf0f8)}
+.theme-swatches button.selected{outline:3px solid var(--mailbox-accent,var(--primary,#2563eb));outline-offset:3px}
+.mail-row-end{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex:0 0 34px}
+.conversation-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px; border: solid 1px;color:var(--muted);font-size:10px;font-weight:700;line-height:1}
 </style>
 
 </head>
@@ -43,6 +49,7 @@
   <h3 id="drawerName">User</h3>
   <p id="drawerEmail"></p>
   <p id="drawerRole"></p>
+  <button id="logoutBtn" class="drawer-logout" type="button"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button>
   <div class="theme-palette">
     <strong>Theme colour</strong>
     <div class="theme-swatches">
@@ -72,7 +79,6 @@
       <button class="folder" data-folder="ARCHIVE"><i class="bi bi-archive"></i><span>Archive</span></button>
       <button class="folder" data-folder="SPAM"><i class="bi bi-exclamation-triangle"></i><span>Spam</span></button>
       <button class="folder" data-folder="TRASH"><i class="bi bi-trash3"></i><span>Trash</span></button>
-      <div class="logout-side"><button id="logoutBtn"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button></div>
     </aside>
     <section class="mail-area">
       <div class="list-head">
@@ -133,7 +139,7 @@
 </div>
 
 <script>
-window.MAILBOX_API_URL=window.MAILBOX_API_URL||'https://script.google.com/macros/s/AKfycbxX4e6vmmdJCPjTXtLju9G5sokalDtIQhytZNKc2WcKqPV9dcunz7K0wgx2cUhgk0C_/exec';
+window.MAILBOX_API_URL=window.MAILBOX_API_URL||'https://script.google.com/macros/s/AKfycbxUSVKvxyqpx50TzqxikOv2hmPEN-N0sXWwXVmwVTgx9pXaQ326Hk9FUWTKvIbRMbia/exec';
 const MailboxAPI=(()=>{
  async function request(action,payload={}){const response=await fetch(window.MAILBOX_API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action},payload)),redirect:'follow'});if(!response.ok)throw new Error('Server error: '+response.status);const data=await response.json();if(!data.ok)throw new Error(data.error||'Request failed.');return data}
  const token=()=>sessionStorage.getItem('mailbox_token')||'';
@@ -141,7 +147,7 @@ const MailboxAPI=(()=>{
  const setSession=data=>{sessionStorage.setItem('mailbox_token',data.token);sessionStorage.setItem('mailbox_user',JSON.stringify(data.user))};
  const clearSession=()=>{sessionStorage.removeItem('mailbox_token');sessionStorage.removeItem('mailbox_user')};
  const requireLogin=()=>{if(!token())location.href='login.html'};
- return{request,token,user,setSession,clearSession,requireLogin,logout:()=>request('logout',{token:token()}),bootstrap:()=>request('bootstrap',{token:token()}),list:(folder,search='',page=1,pageSize=25)=>request('mailbox',{token:token(),folder,search,page,pageSize}),get:mailId=>request('getMessage',{token:token(),mailId}),getThread:mailId=>request('getThread',{token:token(),mailId}),suggestRecipients:query=>request('suggestRecipients',{token:token(),query}),send:payload=>request('sendMessage',Object.assign({token:token()},payload)),draft:payload=>request('saveDraft',Object.assign({token:token()},payload)),update:payload=>request('updateMessage',Object.assign({token:token()},payload))}
+ return{request,token,user,setSession,clearSession,requireLogin,logout:()=>request('logout',{token:token()}),bootstrap:()=>request('bootstrap',{token:token()}),list:(folder,search='',page=1,pageSize=25,sort='date-desc')=>request('mailbox',{token:token(),folder,search,page,pageSize,sort}),get:mailId=>request('getMessage',{token:token(),mailId}),getThread:mailId=>request('getThread',{token:token(),mailId}),suggestRecipients:query=>request('suggestRecipients',{token:token(),query}),send:payload=>request('sendMessage',Object.assign({token:token()},payload)),draft:payload=>request('saveDraft',Object.assign({token:token()},payload)),update:payload=>request('updateMessage',Object.assign({token:token()},payload))}
 })();
 
 (() => {
@@ -166,6 +172,9 @@ let currentSort = localStorage.getItem('mailbox_sort') || 'date-desc';
 
 function sortMessages(list) {
   const arr = Array.isArray(list) ? list.slice() : [];
+  // The API sorts before pagination; never re-sort only the current page in the browser.
+  return arr;
+  /*
   const [field, dir] = currentSort.split('-');
   const mul = dir === 'asc' ? 1 : -1;
   arr.sort((a, b) => {
@@ -192,6 +201,7 @@ function sortMessages(list) {
     return 0;
   });
   return arr;
+  */
 }
 
 /* =========================================================
@@ -208,7 +218,7 @@ function showOverlay(){ $('loadingOverlay').classList.add('show'); $('loadingOve
 function hideOverlay(){ $('loadingOverlay').classList.remove('show'); $('loadingOverlay').setAttribute('aria-hidden','true') }
 function saveFolder(){sessionStorage.setItem('mailbox_folder',currentFolder)}
 function updateFolderUI(){document.querySelectorAll('.folder').forEach(b=>b.classList.toggle('active',b.dataset.folder===currentFolder));$('listTitle').textContent=folders[currentFolder]||currentFolder}
-function signature(list){return (list||[]).map(m=>[m.mailId,m.date,m.subject,m.isRead?'1':'0',m.isStarred?'1':'0'].join('|')).join('~')}
+function signature(list){return (list||[]).map(m=>[m.mailId,m.date,m.subject,m.isRead?'1':'0',m.isStarred?'1':'0',m.threadId||'',m.conversationCount||1].join('|')).join('~')}
 
 /* =========================================================
    UNIFIED ALERT BOX
@@ -409,7 +419,7 @@ const ComposerManager = (() => {
     tab.innerHTML = '<span class="compose-tab-label"></span><span class="compose-tab-close" role="button" aria-label="Close compose tab">×</span>';
     tabsEl.appendChild(tab);
 
-    const state = { id, el, tab, mode, originalMessage: message, originalAttachments: attachments || [], attachmentFiles: [], recipients: {to:[],cc:[],bcc:[]}, sending: false, suggestTimer: null, suggestSeq: 0, dirty: false };
+    const state = { id, el, tab, mode, originalMessage: message, originalAttachments: attachments || [], attachmentFiles: [], recipients: {to:[],cc:[],bcc:[]}, sending: false, suggestTimer: {to:null,cc:null,bcc:null}, suggestSeq: {to:0,cc:0,bcc:0}, dirty: false };
     composers.set(id, state);
     bindComposerEvents(state);
     initComposerFields(state, mode, message, attachments);
@@ -478,13 +488,23 @@ const ComposerManager = (() => {
       });
       input.addEventListener('input', () => {
         const raw = input.value;
-        if (/[;,]$/.test(raw)) { commitRecipient(state, field); hideSuggestions(suggestions); return; }
-        clearTimeout(state.suggestTimer);
-        const q = raw.trim();
-        if (!q || !q.includes('@')) { hideSuggestions(suggestions); return; }
-        const seq = ++state.suggestSeq;
-        state.suggestTimer = setTimeout(async () => {
-          try { const r = await MailboxAPI.suggestRecipients(q); if (seq === state.suggestSeq) renderSuggestions(suggestions, r.items || [], input, state, field); } catch (_) { hideSuggestions(suggestions); }
+        if (/[;,]$/.test(raw)) { ++state.suggestSeq[field]; clearTimeout(state.suggestTimer[field]); commitRecipient(state, field); hideSuggestions(suggestions); return; }
+
+        // Search only the current address token. Suggestions begin after 3 characters;
+        // an '@' is not required, so names and the beginning of email IDs can match.
+        const q = raw.split(/[;,]/).pop().trim();
+        const seq = ++state.suggestSeq[field];
+        clearTimeout(state.suggestTimer[field]);
+        if (q.length < 3) { hideSuggestions(suggestions); return; }
+
+        state.suggestTimer[field] = setTimeout(async () => {
+          try {
+            const r = await MailboxAPI.suggestRecipients(q);
+            if (seq === state.suggestSeq[field] && input.value.split(/[;,]/).pop().trim() === q)
+              renderSuggestions(suggestions, r.items || [], input, state, field);
+          } catch (_) {
+            if (seq === state.suggestSeq[field]) hideSuggestions(suggestions);
+          }
         }, 180);
       });
       input.addEventListener('blur', () => setTimeout(() => { commitRecipient(state, field); hideSuggestions(suggestions); }, 180));
@@ -723,7 +743,7 @@ const ComposerManager = (() => {
 /* =========================================================
    MAILBOX LOADING
    ========================================================= */
-function cacheKey(folder=currentFolder,page=1){return `${folder}|${$('searchInput').value.trim().toLowerCase()}|${page}|${pageSize}`}
+function cacheKey(folder=currentFolder,page=1){return `${folder}|${$('searchInput').value.trim().toLowerCase()}|${page}|${pageSize}|${currentSort}`}
 
 function applyMailboxData(data){
  currentMessages=sortMessages(data.messages);
@@ -760,7 +780,7 @@ async function load(page=1,opts={}){
  loading=true;
  if(!cached && !opts.silent)renderListLoading();
  try{
-  const data=await MailboxAPI.list(currentFolder,$('searchInput').value.trim(),page,pageSize);
+  const data=await MailboxAPI.list(currentFolder,$('searchInput').value.trim(),page,pageSize,currentSort);
   if(seq!==loadSequence)return;
   folderCache.set(key,{data,time:Date.now()});
   const changed = signature(data.messages||[]) !== signature(currentMessages) || Number(data.total||0)!==Number(currentMessages.length);
@@ -784,7 +804,7 @@ function renderList(){
    $('mailList').innerHTML='<div class="empty"><div class="empty-title">No messages in '+esc(folderName)+'</div><div class="empty-text">This folder is empty. New messages will appear here.</div></div>';
    return
  }
- $('mailList').innerHTML=currentMessages.map(m=>`<div class="mail-row ${m.isRead?'':'unread'} ${m.mailId===selectedMailId?'selected':''}" data-id="${escAttr(m.mailId)}"><div class="mail-check"><input type="checkbox" data-select="${escAttr(m.mailId)}" ${selectedIds.has(m.mailId)?'checked':''}></div><div class="mail-main"><div class="mail-top"><div class="sender">${esc(m.senderName||m.senderEmail||m.to||'Unknown')}</div><div class="date">${esc(formatDate(m.date))}</div></div><div class="subject">${esc(m.subject||'(No subject)')} ${m.hasAttachment?'<span class="attachment-dot"><i class="bi bi-paperclip"></i></span>':''}</div><div class="preview">${esc(m.body||'')}</div></div><button class="star ${m.isStarred?'active':''}" data-star="${escAttr(m.mailId)}" title="${m.isStarred?'Unstar':'Star'}"><i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i></button></div>`).join('');
+ $('mailList').innerHTML=currentMessages.map(m=>`<div class="mail-row ${m.isRead?'':'unread'} ${m.mailId===selectedMailId?'selected':''}" data-id="${escAttr(m.mailId)}"><div class="mail-check"><input type="checkbox" data-select="${escAttr(m.mailId)}" ${selectedIds.has(m.mailId)?'checked':''}></div><div class="mail-main"><div class="mail-top"><div class="sender">${esc(m.senderName||m.senderEmail||m.to||'Unknown')}</div><div class="date">${esc(formatDate(m.date))}</div></div><div class="subject" style="color:var(--text)">${esc(m.subject||'(No subject)')} ${m.hasAttachment?'<span class="attachment-dot"><i class="bi bi-paperclip"></i></span>':''}</div><div class="preview">${esc(m.body||'')}</div></div><div class="mail-row-end"><button class="star ${m.isStarred?'active':''}" data-star="${escAttr(m.mailId)}" title="${m.isStarred?'Unstar':'Star'}"><i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i></button>${Number(m.conversationCount||1)>1?`<span class="conversation-count" title="${Number(m.conversationCount)} messages in this conversation">${Number(m.conversationCount)}</span>`:''}</div></div>`).join('');
  document.querySelectorAll('[data-select]').forEach(c=>c.addEventListener('click',e=>{e.stopPropagation();const id=c.dataset.select;if(c.checked)selectedIds.add(id);else selectedIds.delete(id);updateToolbar()}));
  document.querySelectorAll('[data-star]').forEach(b=>b.addEventListener('click',async e=>{e.stopPropagation();const id=b.dataset.star;const m=currentMessages.find(x=>x.mailId===id);try{b.disabled=true;await MailboxAPI.update({mailId:id,Is_Starred:m&&!m.isStarred?'YES':'NO'});invalidateFolderCache();await load(currentPage,{silent:true})}catch(err){showAlert(err.message||'Unable to update star.','error')}finally{b.disabled=false}}));
  document.querySelectorAll('.mail-row').forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('input,button'))return;openMessage(r.dataset.id)}));
@@ -794,7 +814,14 @@ function updatePager(data){const total=Number(data.total||0);const start=total?(
 function updateToolbar(){$('toolbar').classList.toggle('show',selectedIds.size>0)}
 function invalidateFolderCache(folder=currentFolder){for(const k of [...folderCache.keys()])if(k.startsWith(folder+'|'))folderCache.delete(k)}
 
-async function applySelected(changes){const ids=[...selectedIds];if(!ids.length)return;try{await Promise.all(ids.map(mailId=>MailboxAPI.update(Object.assign({mailId},changes))));selectedIds.clear();invalidateFolderCache();await load(currentPage)}catch(err){showAlert(err.message||'Unable to update messages.','error')}}
+async function applySelected(changes){
+ const ids=[...selectedIds];if(!ids.length)return;
+ try{
+   // Serialize writes to avoid bursts of simultaneous Apps Script executions.
+   for(const mailId of ids) await MailboxAPI.update(Object.assign({mailId},changes));
+   selectedIds.clear();invalidateFolderCache();await load(currentPage);
+ }catch(err){showAlert(err.message||'Unable to update messages.','error')}
+}
 
 function paintReadHeader(m){
  $('readSubject').textContent=m.subject||'(No subject)';
@@ -894,8 +921,8 @@ $('sortSelect').value = currentSort;
 $('sortSelect').addEventListener('change',()=>{
   currentSort = $('sortSelect').value;
   localStorage.setItem('mailbox_sort', currentSort);
-  currentMessages = sortMessages(currentMessages);
-  renderList();
+  folderCache.clear();folderViews.clear();currentPage=1;
+  load(1);
 });
 
 const prefetchTimers=new Map();
@@ -903,7 +930,7 @@ const prefetchPromises=new Map();
 function prefetchFolder(folder){
  const key=cacheKey(folder,1);
  if(folderCache.has(key)||prefetchPromises.has(key)||folder===currentFolder)return;
- const promise=MailboxAPI.list(folder,'',1,pageSize).then(data=>{folderCache.set(key,{data,time:Date.now()});return data}).catch(()=>null).finally(()=>prefetchPromises.delete(key));
+ const promise=MailboxAPI.list(folder,'',1,pageSize,currentSort).then(data=>{folderCache.set(key,{data,time:Date.now()});return data}).catch(()=>null).finally(()=>prefetchPromises.delete(key));
  prefetchPromises.set(key,promise);
 }
 document.querySelectorAll('.folder').forEach(b=>{
@@ -969,7 +996,7 @@ async function silentRefresh(){
   if(document.hidden){silentTimer=setTimeout(silentRefresh,30000);return}
   try{
     const key=cacheKey(currentFolder,currentPage);
-    const data=await MailboxAPI.list(currentFolder,$('searchInput').value.trim(),currentPage,pageSize);
+    const data=await MailboxAPI.list(currentFolder,$('searchInput').value.trim(),currentPage,pageSize,currentSort);
     folderCache.set(key,{data,time:Date.now()});
     const sig=signature(data.messages||[]);
     if(sig!==signature(currentMessages)){
@@ -1032,7 +1059,9 @@ load(1).finally(()=>startSilent());
  const drawer=$('profileDrawer');
  av.addEventListener('click',()=>{drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');av.setAttribute('aria-expanded','true')});
  $('closeProfile').addEventListener('click',()=>{drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');av.setAttribute('aria-expanded','false')});
- document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.theme;document.documentElement.style.setProperty('--mailbox-accent',c);document.documentElement.style.setProperty('--primary',c);localStorage.setItem('mailbox_theme_color',c)}));
+ const applyTheme=c=>{if(!/^#[0-9a-f]{6}$/i.test(String(c||'')))return;document.documentElement.style.setProperty('--mailbox-accent',c);document.documentElement.style.setProperty('--primary',c);document.documentElement.style.setProperty('--accent',c);document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('selected',b.dataset.theme.toLowerCase()===c.toLowerCase()));};
+ const savedTheme=localStorage.getItem('mailbox_theme_color')||'#2563eb';applyTheme(savedTheme);
+ document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.theme;applyTheme(c);localStorage.setItem('mailbox_theme_color',c)}));
 })();
 </script>
 </body>
