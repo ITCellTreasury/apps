@@ -821,7 +821,7 @@ async function openMessage(id){
 
 function renderThread(){
  const host=$('threadMessages');
- host.innerHTML=threadMessages.map((item,index)=>{
+ host.innerHTML=threadMessages.slice().reverse().map((item,index)=>{
    const m=item.message||{},files=item.attachments||[],mid=escAttr(m.mailId||'');
    const recipients=[m.to?`To: ${esc(m.to)}`:'',m.cc?`Cc: ${esc(m.cc)}`:'',m.bcc?`Bcc: ${esc(m.bcc)}`:''].filter(Boolean).join(' · ');
    const body=String(m.bodyType||'').toUpperCase()==='HTML'?(m.body||''):`<div style="white-space:pre-wrap">${esc(m.body||'')}</div>`;
