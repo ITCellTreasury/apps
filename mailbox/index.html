@@ -1,98 +1,347 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mailbox</title>
-    
-    <!-- Method 1: Meta Refresh - Fastest -->
-    <meta http-equiv="refresh" content="0; url="mailbox.html">
-    
-    <!-- Method 2: Preconnect for faster loading -->
-    <link rel="preconnect" href="./app/mailbox.html">
-    <link rel="icon" type="image/svg+xml" href="favicon.png">
-    <style>
-        /* Minimal styles for loading state */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #f8fafc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        
-        .redirect-container {
-            text-align: center;
-            padding: 2rem;
-        }
-        
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid #e2e8f0;
-            border-top: 4px solid #4f46e5;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            margin: 0 auto 1rem;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .text {
-            color: #1e293b;
-            font-size: 1rem;
-        }
-        
-        .redirect-link {
-            color: #4f46e5;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        .redirect-link:hover {
-            text-decoration: underline;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="MailBox">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="description" content="Mailbox • Secure internal service">
+  <title>MailBox</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <style>
+    :root {
+      color-scheme: light;
+      --brand: #4f46e5;
+      --brand-dark: #3730a3;
+      --ink: #171936;
+      --muted: #69708b;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      overflow-x: hidden;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+                   "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 15%, rgba(255,255,255,.19), transparent 28%),
+        radial-gradient(circle at 88% 82%, rgba(129,140,248,.42), transparent 30%),
+        linear-gradient(135deg, #4338ca 0%, #4f46e5 48%, #6366f1 100%);
+    }
+
+    .ambient {
+      position: fixed;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .ambient.one { width: 420px; height: 420px; top: -210px; right: -110px; }
+    .ambient.two { width: 300px; height: 300px; bottom: -170px; left: -90px; }
+
+    .shell {
+      position: relative;
+      width: min(100%, 520px);
+      padding: 16px;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(34px, 7vw, 58px) clamp(25px, 6vw, 54px) 38px;
+      text-align: center;
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(255,255,255,.7);
+      border-radius: 30px;
+      box-shadow: 0 28px 90px rgba(24, 24, 80, .28),
+                  0 4px 14px rgba(24, 24, 80, .08);
+      backdrop-filter: blur(16px);
+      animation: appear .65s cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #818cf8, #4f46e5, #a5b4fc);
+    }
+
+    .app-icon {
+      width: 94px;
+      height: 94px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 25px;
+      padding: 13px;
+      border-radius: 26px;
+      background: #eef2ff;
+      box-shadow: 0 12px 28px rgba(79,70,229,.15);
+    }
+
+    .app-icon img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 15px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 13px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      color: #4338ca;
+      background: #eef2ff;
+      font-size: .72rem;
+      font-weight: 750;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34,197,94,.13);
+    }
+
+    h1 {
+      margin: 0;
+      color: #171936;
+      font-size: clamp(2.5rem, 8vw, 3.35rem);
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -.055em;
+    }
+
+    .description {
+      margin: 17px 0 30px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.65;
+    }
+
+    .launch {
+      display: inline-flex;
+      width: 100%;
+      min-height: 58px;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 15px 22px;
+      border: 0;
+      border-radius: 15px;
+      color: #fff;
+      background: linear-gradient(135deg, #4f46e5, #4338ca);
+      box-shadow: 0 10px 22px rgba(79,70,229,.27);
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 750;
+      transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+    }
+
+    .launch:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 28px rgba(79,70,229,.34);
+      filter: brightness(1.04);
+    }
+
+    .launch:active { transform: translateY(0); }
+    .launch:focus-visible {
+      outline: 4px solid rgba(99,102,241,.25);
+      outline-offset: 4px;
+    }
+
+    .arrow {
+      width: 19px;
+      height: 19px;
+      transition: transform .2s ease;
+    }
+    .launch:hover .arrow { transform: translateX(4px); }
+
+    .install-button {
+      display: inline-flex;
+      width: 100%;
+      min-height: 52px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 13px;
+      padding: 13px 18px;
+      border: 1px solid #dfe3ff;
+      border-radius: 15px;
+      color: #4338ca;
+      background: #f5f6ff;
+      cursor: pointer;
+      font: inherit;
+      font-size: .94rem;
+      font-weight: 700;
+      transition: background .2s ease, border-color .2s ease, transform .2s ease;
+    }
+    .install-button:hover {
+      background: #eef0ff;
+      border-color: #c7ccff;
+      transform: translateY(-1px);
+    }
+    .install-button:focus-visible {
+      outline: 4px solid rgba(99,102,241,.22);
+      outline-offset: 3px;
+    }
+    .install-help {
+      min-height: 1.2em;
+      margin: 9px 0 0;
+      color: #858ba2;
+      font-size: .76rem;
+      line-height: 1.5;
+    }
+
+    .divider {
+      height: 1px;
+      margin: 29px 0 18px;
+      background: #edf0f7;
+    }
+
+    .secure-note {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      color: #858ba2;
+      font-size: .8rem;
+    }
+
+    .secure-note svg { color: #6366f1; flex: 0 0 auto; }
+
+    footer {
+      margin-top: 18px;
+      color: rgba(255,255,255,.76);
+      text-align: center;
+      font-size: .76rem;
+      letter-spacing: .02em;
+    }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(16px) scale(.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="redirect-container">
-        <div class="spinner"></div>
-        <p class="text">Redirecting to <a href="mailbox.html" class="redirect-link">mailbox</a>...</p>
-        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #64748b;">
-            If you are not redirected, <a href="mailbox.html" class="redirect-link">click here</a>
-        </p>
-    </div>
+  <div class="ambient one" aria-hidden="true"></div>
+  <div class="ambient two" aria-hidden="true"></div>
 
-    <!-- Method 3: JavaScript Redirect - Immediate (fastest) -->
-    <script>
-        // Immediate redirect using location.replace (doesn't add to browser history)
-        (function() {
-            // Use location.replace for fastest redirect without history entry
-            window.location.replace('mailbox.html');
-        })();
-        
-        // Backup redirect after 100ms (in case the first one fails)
-        setTimeout(function() {
-            window.location.href = 'mailbox.html';
-        }, 100);
-        
-        // Another backup using window.location (after 200ms)
-        setTimeout(function() {
-            if (window.location.href.indexOf('redirect.html') !== -1) {
-                window.location = 'mailbox.html';
-            }
-        }, 200);
-    </script>
+  <main class="shell">
+    <section class="card" aria-labelledby="app-title">
+      <div class="app-icon">
+        <img src="favicon.png" alt="MailBox application icon">
+      </div>
+
+      <div class="eyebrow"><span class="status-dot" aria-hidden="true"></span> Internal mail service</div>
+      <h1 id="app-title">MailBox</h1>
+      <p class="description">Mailbox&nbsp; • &nbsp;Secure internal service</p>
+
+      <a class="launch" href="mailbox.html">
+        <span>Go to MailBox</span>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+
+      <button class="install-button" id="installButton" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"
+                stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round"/>
+        </svg>
+        <span id="installButtonText">Install MailBox app</span>
+      </button>
+      <p class="install-help" id="installHelp" role="status" aria-live="polite">
+        Add MailBox to your home screen for quick access.
+      </p>
+
+      <div class="divider"></div>
+      <div class="secure-note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3 5 6v5c0 4.6 2.9 8.1 7 10 4.1-1.9 7-5.4 7-10V6l-7-3Z"
+                stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+          <path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Secure access to your internal mailbox
+      </div>
+    </section>
+    <footer>MailBox · Secure internal service</footer>
+  </main>
+  <script>
+    (() => {
+      const installButton = document.getElementById('installButton');
+      const installButtonText = document.getElementById('installButtonText');
+      const installHelp = document.getElementById('installHelp');
+      let deferredInstallPrompt = null;
+
+      // The browser only supplies this prompt when its PWA install criteria are met.
+      window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        installButtonText.textContent = 'Install MailBox app';
+        installHelp.textContent = 'Install MailBox on this device for app-like access.';
+      });
+
+      installButton.addEventListener('click', async () => {
+        if (deferredInstallPrompt) {
+          deferredInstallPrompt.prompt();
+          const choice = await deferredInstallPrompt.userChoice;
+          installHelp.textContent = choice.outcome === 'accepted'
+            ? 'MailBox installation started.'
+            : 'You can install MailBox later from your browser menu.';
+          deferredInstallPrompt = null;
+          return;
+        }
+
+        // Fallback guidance for browsers that do not expose the install prompt yet.
+        installHelp.textContent =
+          'In Chrome, open the menu (⋮) and choose “Install app” or “Add to Home screen”.';
+      });
+
+      window.addEventListener('appinstalled', () => {
+        installButtonText.textContent = 'MailBox installed';
+        installButton.disabled = true;
+        installButton.style.opacity = '.7';
+        installHelp.textContent = 'MailBox is now available from your home screen.';
+      });
+
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch((error) => {
+            console.error('MailBox service worker registration failed:', error);
+          });
+        });
+      }
+    })();
+  </script>
 </body>
 </html>

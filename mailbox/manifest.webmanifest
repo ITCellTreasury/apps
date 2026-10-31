@@ -1,0 +1,26 @@
+{
+  "id": "./mailbox.html",
+  "name": "MailBox",
+  "short_name": "MailBox",
+  "description": "Mailbox • Secure internal service",
+  "start_url": "./mailbox.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#4f46e5",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
