@@ -1,98 +1,1021 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
-    
-    <!-- Method 1: Meta Refresh - Fastest -->
-    <meta http-equiv="refresh" content="0; url="./app/mailbox.html">
-    
-    <!-- Method 2: Preconnect for faster loading -->
-    <link rel="preconnect" href="./app/mailbox.html">
-    
-    <style>
-        /* Minimal styles for loading state */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #f8fafc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        
-        .redirect-container {
-            text-align: center;
-            padding: 2rem;
-        }
-        
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid #e2e8f0;
-            border-top: 4px solid #4f46e5;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            margin: 0 auto 1rem;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .text {
-            color: #1e293b;
-            font-size: 1rem;
-        }
-        
-        .redirect-link {
-            color: #4f46e5;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        .redirect-link:hover {
-            text-decoration: underline;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+<title>Internal Mailbox | Login</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+:root{
+  --bg:#eef3f8;
+  --card:rgba(255,255,255,.88);
+  --text:#172033;
+  --muted:#697386;
+  --border:rgba(120,135,160,.20);
+  --primary:#2563eb;
+  --primary-dark:#1d4ed8;
+  --danger:#dc2626;
+  --success:#16a34a;
+  --shadow:0 24px 70px rgba(20,35,60,.16);
+}
+
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0d1117;
+    --card:rgba(22,27,34,.90);
+    --text:#edf2f7;
+    --muted:#9ca7b8;
+    --border:rgba(255,255,255,.10);
+    --shadow:0 24px 70px rgba(0,0,0,.45);
+  }
+}
+
+html,body{
+  width:100%;
+  min-height:100%;
+  font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  overflow:hidden;
+}
+
+.background{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+}
+
+.orb{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(70px);
+  opacity:.35;
+}
+
+.orb.one{
+  width:340px;
+  height:340px;
+  background:#60a5fa;
+  top:-130px;
+  left:-100px;
+}
+
+.orb.two{
+  width:380px;
+  height:380px;
+  background:#818cf8;
+  right:-130px;
+  bottom:-150px;
+}
+
+.login-wrap{
+  width:100%;
+  max-width:430px;
+  position:relative;
+  z-index:2;
+}
+
+.login-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+  border-radius:28px;
+  box-shadow:var(--shadow);
+  padding:38px;
+}
+
+.logo{
+  width:72px;
+  height:72px;
+  border-radius:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0 auto 22px;
+  background:linear-gradient(135deg,#2563eb,#4f46e5);
+  color:#fff;
+  box-shadow:0 14px 32px rgba(37,99,235,.28);
+}
+
+.logo svg{
+  width:38px;
+  height:38px;
+}
+
+h1{
+  text-align:center;
+  font-size:26px;
+  letter-spacing:-.5px;
+  margin-bottom:7px;
+}
+
+.subtitle{
+  text-align:center;
+  color:var(--muted);
+  font-size:14px;
+  margin-bottom:30px;
+}
+
+.field{
+  margin-bottom:18px;
+}
+
+label{
+  display:block;
+  font-size:13px;
+  font-weight:600;
+  margin-bottom:8px;
+}
+
+.input-wrap{
+  position:relative;
+}
+
+input{
+  width:100%;
+  height:50px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:0 15px;
+  background:rgba(255,255,255,.48);
+  color:var(--text);
+  outline:none;
+  font-size:14px;
+  transition:.2s;
+}
+
+@media(prefers-color-scheme:dark){
+  input{
+    background:rgba(255,255,255,.04);
+  }
+}
+
+input:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 4px rgba(37,99,235,.10);
+}
+
+.password-input{
+  padding-right:48px;
+}
+
+.toggle-password{
+  position:absolute;
+  right:7px;
+  top:7px;
+  width:36px;
+  height:36px;
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.toggle-password:hover{
+  background:rgba(100,116,139,.10);
+}
+
+.options{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:4px 0 22px;
+}
+
+.remember{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:var(--muted);
+  font-size:13px;
+  cursor:pointer;
+}
+
+.remember input{
+  width:16px;
+  height:16px;
+  accent-color:var(--primary);
+}
+
+.login-btn{
+  width:100%;
+  height:52px;
+  border:0;
+  border-radius:15px;
+  background:linear-gradient(135deg,#2563eb,#4f46e5);
+  color:#fff;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  box-shadow:0 12px 28px rgba(37,99,235,.24);
+}
+
+.login-btn:hover{
+  transform:translateY(-1px);
+}
+
+.login-btn:disabled{
+  opacity:.75;
+  cursor:not-allowed;
+  transform:none;
+}
+
+.spinner{
+  width:19px;
+  height:19px;
+  border:2px solid rgba(255,255,255,.4);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  display:none;
+}
+
+.login-btn.loading .spinner{
+  display:block;
+}
+
+.login-btn.loading .btn-text{
+  display:none;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+.footer{
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  margin-top:24px;
+}
+
+.alert{
+  position:fixed;
+  top:24px;
+  left:50%;
+  transform:translate(-50%,-120px);
+  min-width:280px;
+  max-width:calc(100% - 30px);
+  padding:14px 17px;
+  border-radius:14px;
+  background:var(--card);
+  border:1px solid var(--border);
+  box-shadow:0 15px 40px rgba(0,0,0,.16);
+  z-index:100;
+  display:flex;
+  gap:11px;
+  align-items:flex-start;
+  transition:.35s ease;
+}
+
+.alert.show{
+  transform:translate(-50%,0);
+}
+
+.alert-icon{
+  width:22px;
+  height:22px;
+  flex:none;
+}
+
+.alert-content{
+  font-size:13px;
+  line-height:1.45;
+}
+
+.alert-title{
+  font-weight:700;
+  margin-bottom:2px;
+}
+
+.alert.success .alert-icon{
+  color:var(--success);
+}
+
+.alert.error .alert-icon{
+  color:var(--danger);
+}
+
+@media(max-width:520px){
+  body{
+    padding:15px;
+  }
+
+  .login-card{
+    padding:28px 22px;
+    border-radius:23px;
+  }
+
+  h1{
+    font-size:23px;
+  }
+}
+</style>
 </head>
+
 <body>
-    <div class="redirect-container">
-        <div class="spinner"></div>
-        <p class="text">Redirecting to <a href="./app/mailbox.html" class="redirect-link">./app/mailbox.html</a>...</p>
-        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #64748b;">
-            If you are not redirected, <a href="./app/mailbox.html" class="redirect-link">click here</a>
-        </p>
+
+<div class="background">
+  <div class="orb one"></div>
+  <div class="orb two"></div>
+</div>
+
+<div id="alert" class="alert">
+  <div id="alertIcon" class="alert-icon"></div>
+
+  <div class="alert-content">
+    <div id="alertTitle" class="alert-title"></div>
+    <div id="alertMessage"></div>
+  </div>
+</div>
+
+<main class="login-wrap">
+
+  <section class="login-card">
+
+    <div class="logo">
+      <svg viewBox="0 0 24 24"
+           fill="none"
+           stroke="currentColor"
+           stroke-width="1.8"
+           stroke-linecap="round"
+           stroke-linejoin="round">
+        <path d="M4 5.5h16v13H4z"/>
+        <path d="m4 7 8 6 8-6"/>
+      </svg>
     </div>
 
-    <!-- Method 3: JavaScript Redirect - Immediate (fastest) -->
-    <script>
-        // Immediate redirect using location.replace (doesn't add to browser history)
-        (function() {
-            // Use location.replace for fastest redirect without history entry
-            window.location.replace('./app/mailbox.html');
-        })();
-        
-        // Backup redirect after 100ms (in case the first one fails)
-        setTimeout(function() {
-            window.location.href = './app/mailbox.html';
-        }, 100);
-        
-        // Another backup using window.location (after 200ms)
-        setTimeout(function() {
-            if (window.location.href.indexOf('redirect.html') !== -1) {
-                window.location = './app/mailbox.html';
-            }
-        }, 200);
-    </script>
+    <h1>Internal Mailbox</h1>
+
+    <p class="subtitle">
+      Secure internal communication system
+    </p>
+
+    <form id="loginForm" autocomplete="on">
+
+      <div class="field">
+
+        <label for="userId">
+          Email Address
+        </label>
+
+        <input
+          id="userId"
+          name="email"
+          type="email"
+          autocomplete="username"
+          placeholder="Enter your email address"
+          required
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label for="password">
+          Password
+        </label>
+
+        <div class="input-wrap">
+
+          <input
+            id="password"
+            name="password"
+            class="password-input"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Enter your password"
+            required
+          >
+
+          <button
+            type="button"
+            class="toggle-password"
+            id="togglePassword"
+            aria-label="Show password"
+          >
+
+            <svg
+              id="eyeIcon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              width="20"
+              height="20"
+            >
+              <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/>
+              <circle cx="12" cy="12" r="2.5"/>
+            </svg>
+
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="options">
+
+        <label class="remember">
+
+          <input
+            id="rememberMe"
+            type="checkbox"
+          >
+
+          <span>
+            Remember me
+          </span>
+
+        </label>
+
+      </div>
+
+      <button
+        id="loginBtn"
+        class="login-btn"
+        type="submit"
+      >
+
+        <span class="spinner"></span>
+
+        <span class="btn-text">
+          Sign in
+        </span>
+
+      </button>
+
+    </form>
+
+    <div class="footer">
+      Internal Mailbox
+    </div>
+
+  </section>
+
+</main>
+
+<script>
+
+/* =========================================================
+   INTERNAL MAILBOX - LOGIN CONFIGURATION
+   ========================================================= */
+
+const AUTH_API_URL =
+  "https://script.google.com/macros/s/AKfycbwpxQ40evkE6asfp-JkdJxn6DRThnZ2U83t615YRl9oLVzHbk0AE8fNmCj4lCXu7Nhy/exec";
+
+
+/* =========================================================
+   STORAGE KEYS
+   ========================================================= */
+
+const SESSION_KEY =
+  "internal_mailbox_session";
+
+const USER_KEY =
+  "internal_mailbox_user";
+
+const REMEMBER_KEY =
+  "internal_mailbox_remember";
+
+
+/* =========================================================
+   ELEMENTS
+   ========================================================= */
+
+const loginForm =
+  document.getElementById("loginForm");
+
+const userIdInput =
+  document.getElementById("userId");
+
+const passwordInput =
+  document.getElementById("password");
+
+const rememberMe =
+  document.getElementById("rememberMe");
+
+const loginBtn =
+  document.getElementById("loginBtn");
+
+const togglePassword =
+  document.getElementById("togglePassword");
+
+
+/* =========================================================
+   ALERT
+   ========================================================= */
+
+let alertTimer;
+
+function showAlert(type, title, message){
+
+  const box =
+    document.getElementById("alert");
+
+  const icon =
+    document.getElementById("alertIcon");
+
+  document.getElementById("alertTitle")
+    .textContent = title;
+
+  document.getElementById("alertMessage")
+    .textContent = message;
+
+  box.className =
+    "alert " + type;
+
+  if(type === "success"){
+
+    icon.innerHTML = `
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        width="22"
+        height="22"
+      >
+        <circle cx="12" cy="12" r="9"/>
+        <path d="m8 12 2.7 2.7L16.5 9"/>
+      </svg>
+    `;
+
+  }else{
+
+    icon.innerHTML = `
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        width="22"
+        height="22"
+      >
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 7v5"/>
+        <path d="M12 16h.01"/>
+      </svg>
+    `;
+
+  }
+
+  requestAnimationFrame(() => {
+
+    box.classList.add("show");
+
+  });
+
+  clearTimeout(alertTimer);
+
+  alertTimer =
+    setTimeout(() => {
+
+      box.classList.remove("show");
+
+    },4200);
+
+}
+
+
+/* =========================================================
+   PASSWORD VISIBILITY
+   ========================================================= */
+
+togglePassword.addEventListener(
+  "click",
+  () => {
+
+    const showing =
+      passwordInput.type === "text";
+
+    passwordInput.type =
+      showing ? "password" : "text";
+
+    togglePassword.setAttribute(
+      "aria-label",
+      showing
+        ? "Show password"
+        : "Hide password"
+    );
+
+  }
+);
+
+
+/* =========================================================
+   BUTTON STATE
+   ========================================================= */
+
+function setLoginLoading(state){
+
+  loginBtn.disabled = state;
+
+  if(state){
+
+    loginBtn.classList.add("loading");
+
+  }else{
+
+    loginBtn.classList.remove("loading");
+
+  }
+
+}
+
+
+/* =========================================================
+   API REQUEST
+   ========================================================= */
+
+async function apiRequest(url, payload){
+
+  if(
+    !url ||
+    url.includes("PASTE_YOUR_")
+  ){
+
+    throw new Error(
+      "Authentication API URL has not been configured."
+    );
+
+  }
+
+  let response;
+
+  try{
+
+    response = await fetch(
+      url,
+      {
+        method:"POST",
+
+        headers:{
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+
+        body:JSON.stringify(payload)
+      }
+    );
+
+  }catch(error){
+
+    throw new Error(
+      "Unable to connect to the mailbox server. Please check the Apps Script Web App URL and deployment."
+    );
+
+  }
+
+  const text =
+    await response.text();
+
+  if(!text){
+
+    throw new Error(
+      "The mailbox server returned an empty response."
+    );
+
+  }
+
+  let data;
+
+  try{
+
+    data =
+      JSON.parse(text);
+
+  }catch(error){
+
+    console.error(
+      "Invalid server response:",
+      text
+    );
+
+    throw new Error(
+      "Invalid response received from the mailbox server."
+    );
+
+  }
+
+  return data;
+
+}
+
+
+/* =========================================================
+   LOGIN
+   ========================================================= */
+
+loginForm.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+    const email =
+      userIdInput.value
+        .trim()
+        .toLowerCase();
+
+    const password =
+      passwordInput.value;
+
+
+    /* -----------------------------------------------------
+       BASIC VALIDATION
+    ----------------------------------------------------- */
+
+    if(!email){
+
+      showAlert(
+        "error",
+        "Email required",
+        "Please enter your email address."
+      );
+
+      userIdInput.focus();
+
+      return;
+
+    }
+
+    if(!password){
+
+      showAlert(
+        "error",
+        "Password required",
+        "Please enter your password."
+      );
+
+      passwordInput.focus();
+
+      return;
+
+    }
+
+
+    setLoginLoading(true);
+
+
+    try{
+
+      /*
+       * IMPORTANT:
+       *
+       * Your current Code.gs expects:
+       *
+       * {
+       *   action: "login",
+       *   email: "...",
+       *   password: "..."
+       * }
+       *
+       * It returns:
+       *
+       * {
+       *   ok: true,
+       *   token: "...",
+       *   user: {...}
+       * }
+       */
+
+      const result =
+        await apiRequest(
+          AUTH_API_URL,
+          {
+            action:"login",
+            email:email,
+            password:password
+          }
+        );
+
+
+      /* ---------------------------------------------------
+         BACKEND ERROR
+      --------------------------------------------------- */
+
+      if(
+        !result ||
+        result.ok !== true
+      ){
+
+        throw new Error(
+          result?.error ||
+          result?.message ||
+          "Invalid login credentials."
+        );
+
+      }
+
+
+      /* ---------------------------------------------------
+         TOKEN VALIDATION
+      --------------------------------------------------- */
+
+      if(
+        !result.token ||
+        typeof result.token !== "string"
+      ){
+
+        throw new Error(
+          "Login succeeded, but the server did not return a valid session token."
+        );
+
+      }
+
+
+      /* ---------------------------------------------------
+         USER DATA
+      --------------------------------------------------- */
+
+      const user =
+        result.user || {};
+
+
+      /* ---------------------------------------------------
+         SESSION
+         IMPORTANT:
+         Store token in the session object.
+      --------------------------------------------------- */
+
+      const session = {
+
+        token:result.token,
+
+        user:user,
+
+        createdAt:Date.now()
+
+      };
+
+
+      localStorage.setItem(
+        SESSION_KEY,
+        JSON.stringify(session)
+      );
+
+
+      localStorage.setItem(
+        USER_KEY,
+        JSON.stringify(user)
+      );
+
+
+      /* ---------------------------------------------------
+         REMEMBER ME
+      --------------------------------------------------- */
+
+      if(rememberMe.checked){
+
+        localStorage.setItem(
+          REMEMBER_KEY,
+          "1"
+        );
+
+      }else{
+
+        localStorage.removeItem(
+          REMEMBER_KEY
+        );
+
+      }
+
+
+      /* ---------------------------------------------------
+         SUCCESS
+      --------------------------------------------------- */
+
+      showAlert(
+        "success",
+        "Login successful",
+        "Opening your mailbox..."
+      );
+
+
+      setTimeout(
+        () => {
+
+          window.location.href =
+            "mailbox.html";
+
+        },
+        700
+      );
+
+
+    }catch(error){
+
+      console.error(
+        "Login error:",
+        error
+      );
+
+
+      showAlert(
+        "error",
+        "Login failed",
+        error?.message ||
+        "Unable to sign in."
+      );
+
+
+    }finally{
+
+      setLoginLoading(false);
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   RESTORE PREVIOUS LOGIN INFORMATION
+   ========================================================= */
+
+(function restoreLogin(){
+
+  try{
+
+    const raw =
+      localStorage.getItem(
+        USER_KEY
+      );
+
+
+    if(raw){
+
+      const user =
+        JSON.parse(raw);
+
+
+      /*
+       * Backend safeUser_() returns:
+       *
+       * userId
+       * email
+       * name
+       * designation
+       * department
+       * role
+       */
+
+      if(user?.email){
+
+        userIdInput.value =
+          user.email;
+
+      }
+
+    }
+
+
+    rememberMe.checked =
+      localStorage.getItem(
+        REMEMBER_KEY
+      ) === "1";
+
+
+  }catch(error){
+
+    console.warn(
+      "Unable to restore previous login.",
+      error
+    );
+
+  }
+
+})();
+
+</script>
+
 </body>
 </html>
