@@ -42,6 +42,27 @@
 .thread-message-actions{border-bottom:0;border-top:1px solid var(--border,#e5e7eb);background:transparent}
 .editor-tools{order:0}
 .compose-area.rich-editor{order:1}
+
+/* Recipient address directory */
+.compose-label{display:flex;align-items:center;justify-content:flex-end;gap:5px}
+.recipient-directory-trigger{border:0;background:transparent;color:var(--muted,#64748b);padding:3px 4px;border-radius:5px;cursor:pointer;line-height:1}
+.recipient-directory-trigger:hover{background:var(--hover,#eaf0f8);color:var(--primary,#2563eb)}
+.recipient-box{position:relative}
+.recipient-directory-modal{display:none;position:fixed;inset:0;z-index:10050;background:rgba(15,23,42,.55);align-items:center;justify-content:center;padding:16px}
+.recipient-directory-modal.show{display:flex}
+.recipient-directory-dialog{width:min(720px,100%);max-height:min(82vh,760px);display:flex;flex-direction:column;background:var(--panel,#fff);color:var(--text,#1f2937);border:1px solid var(--border,#e5e7eb);border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.25);overflow:hidden}
+.recipient-directory-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--border,#e5e7eb)}
+.recipient-directory-head h3{margin:0;font-size:18px}.recipient-directory-head p{margin:5px 0 0;color:var(--muted,#64748b);font-size:12px}
+.recipient-directory-tools{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border,#e5e7eb);flex-wrap:wrap}
+#recipientDirectorySearch{flex:1;min-width:180px;border:1px solid var(--border,#cbd5e1);border-radius:8px;padding:10px 12px;background:var(--surface,#f8fafc);color:inherit;font:inherit}
+.recipient-select-all{display:flex;align-items:center;gap:7px;white-space:nowrap;font-size:13px}.recipient-directory-tools>span{font-size:12px;color:var(--muted,#64748b);white-space:nowrap}
+.recipient-directory-list{overflow:auto;min-height:180px;max-height:calc(82vh - 220px)}
+.recipient-directory-row{display:flex;align-items:flex-start;gap:11px;padding:12px 20px;border-bottom:1px solid var(--border,#e5e7eb);cursor:pointer}
+.recipient-directory-row:hover{background:var(--hover,#f1f5f9)}.recipient-directory-row input{margin-top:4px;accent-color:var(--primary,#2563eb)}
+.recipient-directory-person{min-width:0;flex:1}.recipient-directory-name{font-size:13px;font-weight:650;overflow-wrap:anywhere}.recipient-directory-meta{font-size:12px;color:var(--muted,#64748b);margin-top:3px;overflow-wrap:anywhere}
+.recipient-directory-loading,.recipient-directory-empty{padding:28px 18px;text-align:center;color:var(--muted,#64748b);font-size:13px}
+.recipient-directory-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-top:1px solid var(--border,#e5e7eb)}.recipient-directory-foot>span{font-size:12px;color:var(--muted,#64748b)}.recipient-directory-foot>div{display:flex;gap:8px}
+@media(max-width:600px){.recipient-directory-modal{padding:8px}.recipient-directory-dialog{max-height:90vh}.recipient-directory-list{max-height:calc(90vh - 230px)}.recipient-directory-head{padding:14px}.recipient-directory-row{padding:12px 14px}.recipient-directory-foot{padding:12px;align-items:flex-start;flex-direction:column}.recipient-directory-foot>div{width:100%}.recipient-directory-foot button{flex:1}}
 </style>
 
 </head>
@@ -148,6 +169,16 @@
       <button class="confirm-btn" id="confirmCancel">Cancel</button>
       <button class="confirm-btn primary" id="confirmOk">Confirm</button>
     </div>
+  </div>
+</div>
+
+<!-- Recipient directory picker -->
+<div id="recipientDirectoryModal" class="recipient-directory-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="recipientDirectoryTitle">
+  <div class="recipient-directory-dialog">
+    <div class="recipient-directory-head"><div><h3 id="recipientDirectoryTitle">Mail ID Details</h3><p>Select one or more recipients to insert into the address field.</p></div><button type="button" id="recipientDirectoryClose" class="icon-btn" aria-label="Close recipient directory">×</button></div>
+    <div class="recipient-directory-tools"><input id="recipientDirectorySearch" type="search" placeholder="Search name, designation or mail ID…" autocomplete="off"><label class="recipient-select-all"><input type="checkbox" id="recipientDirectorySelectAll"> Select all</label><span id="recipientDirectoryCount">Loading…</span></div>
+    <div id="recipientDirectoryList" class="recipient-directory-list"><div class="recipient-directory-loading">Loading Mail ID Details…</div></div>
+    <div class="recipient-directory-foot"><span id="recipientDirectorySelected">0 selected</span><div><button type="button" id="recipientDirectoryCancel" class="secondary-btn">Cancel</button><button type="button" id="recipientDirectoryInsert" class="send-btn">Insert selected</button></div></div>
   </div>
 </div>
 
@@ -411,9 +442,9 @@ const ComposerManager = (() => {
       <div class="compose-body">
         <div class="alert hidden" data-role="alert"></div>
         <div class="alert hidden" data-role="loading">Loading original message…</div>
-        <div class="compose-row"><label class="compose-label">To</label><div class="recipient-box" data-recipient-box="to"><div class="recipient-chips" data-chips="to"></div><input class="compose-input recipient-entry" data-field="to" autocomplete="off" placeholder="Recipient email"><div class="autocomplete" data-role="suggestions-to"></div></div></div>
-        <div class="compose-row"><label class="compose-label">Cc</label><div class="recipient-box" data-recipient-box="cc"><div class="recipient-chips" data-chips="cc"></div><input class="compose-input recipient-entry" data-field="cc" autocomplete="off" placeholder="Optional"><div class="autocomplete" data-role="suggestions-cc"></div></div></div>
-        <div class="compose-row"><label class="compose-label">Bcc</label><div class="recipient-box" data-recipient-box="bcc"><div class="recipient-chips" data-chips="bcc"></div><input class="compose-input recipient-entry" data-field="bcc" autocomplete="off" placeholder="Optional"><div class="autocomplete" data-role="suggestions-bcc"></div></div></div>
+        <div class="compose-row"><label class="compose-label" for="recipient-to">To <button type="button" class="recipient-directory-trigger" data-open-recipient-directory="to" title="Choose from Mail ID Details" aria-label="Choose To recipients"><i class="bi bi-chevron-down"></i></button></label><div class="recipient-box" data-recipient-box="to"><div class="recipient-chips" data-chips="to"></div><input id="recipient-to" class="compose-input recipient-entry" data-field="to" autocomplete="off" placeholder="Recipient email"><div class="autocomplete" data-role="suggestions-to"></div></div></div>
+        <div class="compose-row"><label class="compose-label" for="recipient-cc">Cc <button type="button" class="recipient-directory-trigger" data-open-recipient-directory="cc" title="Choose from Mail ID Details" aria-label="Choose Cc recipients"><i class="bi bi-chevron-down"></i></button></label><div class="recipient-box" data-recipient-box="cc"><div class="recipient-chips" data-chips="cc"></div><input id="recipient-cc" class="compose-input recipient-entry" data-field="cc" autocomplete="off" placeholder="Optional"><div class="autocomplete" data-role="suggestions-cc"></div></div></div>
+        <div class="compose-row"><label class="compose-label" for="recipient-bcc">Bcc <button type="button" class="recipient-directory-trigger" data-open-recipient-directory="bcc" title="Choose from Mail ID Details" aria-label="Choose Bcc recipients"><i class="bi bi-chevron-down"></i></button></label><div class="recipient-box" data-recipient-box="bcc"><div class="recipient-chips" data-chips="bcc"></div><input id="recipient-bcc" class="compose-input recipient-entry" data-field="bcc" autocomplete="off" placeholder="Optional"><div class="autocomplete" data-role="suggestions-bcc"></div></div></div>
         <div class="compose-row"><label class="compose-label">Subject</label><input class="compose-input" data-field="subject" placeholder="Subject"></div>
         <div class="editor-tools">
           <button type="button" data-cmd="bold"><b>B</b></button>
@@ -524,6 +555,7 @@ const ComposerManager = (() => {
         // Search only the current address token. Suggestions begin after 3 characters;
         // an '@' is not required, so names and the beginning of email IDs can match.
         const q = raw.split(/[;,]/).pop().trim();
+        state.dirty = true;
         const seq = ++state.suggestSeq[field];
         clearTimeout(state.suggestTimer[field]);
         if (q.length < 3) { hideSuggestions(suggestions); return; }
@@ -538,8 +570,9 @@ const ComposerManager = (() => {
           }
         }, 180);
       });
-      input.addEventListener('blur', () => setTimeout(() => { commitRecipient(state, field); hideSuggestions(suggestions); }, 180));
-      el.querySelector(`[data-recipient-box="${field}"]`).addEventListener('click', () => input.focus());
+      input.addEventListener('blur', () => setTimeout(() => { commitRecipient(state, field); hideSuggestions(suggestions); }, 220));
+      el.querySelector(`[data-recipient-box="${field}"]`).addEventListener('click', (e) => { if (!e.target.closest('.recipient-directory-trigger')) input.focus(); });
+      el.querySelector(`[data-open-recipient-directory="${field}"]`).addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openRecipientDirectory(state, field); });
     });
   }
 
@@ -572,9 +605,63 @@ const ComposerManager = (() => {
     container.innerHTML = items.map((x, i) => `<div class="suggestion" data-suggest-index="${i}"><div class="suggestion-name">${esc(x.name || x.email)}</div><div class="suggestion-email">${esc(x.email)}${x.department ? ' · ' + esc(x.department) : ''}</div></div>`).join('');
     container.classList.add('show');
     container.querySelectorAll('[data-suggest-index]').forEach(el => {
-      el.addEventListener('mousedown', (e) => { e.preventDefault(); const x = items[Number(el.dataset.suggestIndex)]; addRecipient(state, field, x.email); hideSuggestions(container); });
+      el.addEventListener('mousedown', (e) => { e.preventDefault(); const x = items[Number(el.dataset.suggestIndex)]; addRecipient(state, field, x.email); input.value = ''; ++state.suggestSeq[field]; clearTimeout(state.suggestTimer[field]); hideSuggestions(container); input.focus(); state.dirty = true; });
     });
   }
+
+  // Cache the user directory after the first successful load.
+  let recipientDirectoryCache = null;
+  let recipientDirectoryTarget = null;
+  let recipientDirectoryState = null;
+  let recipientDirectoryRows = [];
+  let recipientDirectorySelected = new Set();
+
+  function normalizeDirectoryItems(result) {
+    const candidates = [result && result.items, result && result.users, result && result.mailboxUsers, result && result.recipients, result && result.data && result.data.items, result && result.data && result.data.users];
+    const list = candidates.find(Array.isArray) || [];
+    const seen = new Set();
+    return list.map(x => ({
+      name: String(x.name || x.fullName || x.full_name || x.Name || x.displayName || '').trim(),
+      email: String(x.email || x.emailAddress || x.mailId || x.mailID || x.Email || x['Mail ID'] || x.mail || '').trim(),
+      designation: String(x.designation || x.Designation || x.title || x.jobTitle || '').trim(),
+      department: String(x.department || x.Department || x.role || x.Role || '').trim()
+    })).filter(x => { if (!validEmail(x.email)) return false; const k=x.email.toLowerCase(); if(seen.has(k)) return false; seen.add(k); return true; }).sort((a,b)=>(a.name||a.email).localeCompare(b.name||b.email));
+  }
+
+  async function fetchRecipientDirectory() {
+    if (recipientDirectoryCache) return recipientDirectoryCache;
+    let lastError = null;
+    try { const r=await MailboxAPI.request('listMailboxUsers',{}); const items=normalizeDirectoryItems(r); if(items.length)return recipientDirectoryCache=items; } catch(e) { lastError=e; }
+    try { const r=await MailboxAPI.bootstrap(); const items=normalizeDirectoryItems(r); if(items.length)return recipientDirectoryCache=items; } catch(e) { lastError=e; }
+    try { const r=await MailboxAPI.suggestRecipients('@'); const items=normalizeDirectoryItems(r); if(items.length)return recipientDirectoryCache=items; } catch(e) { lastError=e; }
+    throw new Error(lastError && lastError.message ? lastError.message : 'The mailbox user directory was not returned by the server.');
+  }
+
+  function renderRecipientDirectory() {
+    const q=$('recipientDirectorySearch').value.trim().toLowerCase();
+    const filtered=recipientDirectoryRows.filter(x=>[x.name,x.email,x.designation,x.department].join(' ').toLowerCase().includes(q));
+    $('recipientDirectoryCount').textContent=`${filtered.length} user${filtered.length===1?'':'s'}`;
+    $('recipientDirectoryList').innerHTML=filtered.length?filtered.map(x=>{const key=x.email.toLowerCase();return `<label class="recipient-directory-row"><input type="checkbox" data-directory-email="${escAttr(key)}" ${recipientDirectorySelected.has(key)?'checked':''}><span class="recipient-directory-person"><span class="recipient-directory-name">${esc(x.name||x.email)}</span><span class="recipient-directory-meta">${esc(x.email)}${x.designation?' · '+esc(x.designation):''}${x.department?' · '+esc(x.department):''}</span></span></label>`}).join(''):'<div class="recipient-directory-empty">No matching Mail ID Details found.</div>';
+    const selectedFiltered=filtered.filter(x=>recipientDirectorySelected.has(x.email.toLowerCase())).length;
+    $('recipientDirectorySelectAll').checked=filtered.length>0&&selectedFiltered===filtered.length;
+    $('recipientDirectorySelectAll').indeterminate=selectedFiltered>0&&selectedFiltered<filtered.length;
+    $('recipientDirectorySelected').textContent=`${recipientDirectorySelected.size} selected`;
+    $('recipientDirectoryList').querySelectorAll('[data-directory-email]').forEach(cb=>cb.addEventListener('change',()=>{const key=cb.dataset.directoryEmail;if(cb.checked)recipientDirectorySelected.add(key);else recipientDirectorySelected.delete(key);renderRecipientDirectory()}));
+  }
+
+  async function openRecipientDirectory(state,field) {
+    recipientDirectoryState=state;recipientDirectoryTarget=field;recipientDirectorySelected=new Set();$('recipientDirectorySearch').value='';
+    $('recipientDirectoryModal').classList.add('show');$('recipientDirectoryModal').setAttribute('aria-hidden','false');$('recipientDirectoryList').innerHTML='<div class="recipient-directory-loading">Loading Mail ID Details…</div>';$('recipientDirectoryCount').textContent='Loading…';$('recipientDirectorySelected').textContent='0 selected';
+    try { recipientDirectoryRows=await fetchRecipientDirectory();renderRecipientDirectory(); }
+    catch(err) {$('recipientDirectoryList').innerHTML=`<div class="recipient-directory-empty">Unable to load Mail ID Details.<br>${esc(err.message||'Please check the mailbox Apps Script backend.')}</div>`;$('recipientDirectoryCount').textContent='Unavailable'}
+  }
+  function closeRecipientDirectory() {$('recipientDirectoryModal').classList.remove('show');$('recipientDirectoryModal').setAttribute('aria-hidden','true');recipientDirectoryState=null;recipientDirectoryTarget=null;}
+  $('recipientDirectoryClose').addEventListener('click',closeRecipientDirectory);
+  $('recipientDirectoryCancel').addEventListener('click',closeRecipientDirectory);
+  $('recipientDirectoryModal').addEventListener('click',e=>{if(e.target===$('recipientDirectoryModal'))closeRecipientDirectory()});
+  $('recipientDirectorySearch').addEventListener('input',renderRecipientDirectory);
+  $('recipientDirectorySelectAll').addEventListener('change',()=>{const q=$('recipientDirectorySearch').value.trim().toLowerCase();recipientDirectoryRows.filter(x=>[x.name,x.email,x.designation,x.department].join(' ').toLowerCase().includes(q)).forEach(x=>{const key=x.email.toLowerCase();if($('recipientDirectorySelectAll').checked)recipientDirectorySelected.add(key);else recipientDirectorySelected.delete(key)});renderRecipientDirectory()});
+  $('recipientDirectoryInsert').addEventListener('click',()=>{if(!recipientDirectoryState||!recipientDirectoryTarget){closeRecipientDirectory();return}const state=recipientDirectoryState,field=recipientDirectoryTarget;const chosen=recipientDirectoryRows.filter(x=>recipientDirectorySelected.has(x.email.toLowerCase()));chosen.forEach(x=>addRecipient(state,field,x.email));state.dirty=state.dirty||chosen.length>0;state.el.querySelector(`[data-field="${field}"]`).focus();closeRecipientDirectory();if(chosen.length)showAlert(`${chosen.length} recipient${chosen.length===1?'':'s'} inserted into ${field.toUpperCase()}.`,'success',1800)});
 
   function syncTabLabel(state) {
     const el = state.el;
