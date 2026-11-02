@@ -13,8 +13,8 @@
 .thread-topbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--panel,#fff);border-bottom:1px solid var(--border,#e5e7eb)}
 .thread-topbar .read-subject{flex:1;min-width:0;font-size:18px;font-weight:650;overflow-wrap:anywhere}
 .thread-count{font-size:12px;color:var(--muted,#64748b);white-space:nowrap}
-.thread-messages{padding:14px 16px 28px;overflow:auto;min-height:100%;}
-.thread-message{border:1px solid var(--border,#e5e7eb);border-radius:12px;margin:0 0 14px;background:var(--panel,#fff);overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.thread-messages{padding:1px;overflow:auto;min-height:100%;}
+.thread-message{border:1px solid var(--border,#e5e7eb);/*border-radius:12px*/;margin:0 0 0px;background:var(--panel,#fff);overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.04)}
 .thread-message-head{display:flex;align-items:flex-start;gap:10px;padding:13px 14px;border-bottom:1px solid var(--border,#e5e7eb)}
 .thread-avatar{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft,#e8efff);color:var(--accent,#2563eb);font-weight:700;font-size:12px}
 .thread-person{flex:1;min-width:0}.thread-person-name{font-size:14px;font-weight:650;overflow-wrap:anywhere}.thread-person-email{font-size:12px;color:var(--muted,#64748b);overflow-wrap:anywhere;margin-top:2px}.thread-recipients{font-size:12px;color:var(--muted,#64748b);margin-top:5px;line-height:1.5;overflow-wrap:anywhere}.thread-date{font-size:11px;color:var(--muted,#64748b);white-space:nowrap;padding-top:2px}
@@ -29,6 +29,19 @@
 .theme-swatches button.selected{outline:3px solid var(--mailbox-accent,var(--primary,#2563eb));outline-offset:3px}
 .mail-row-end{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex:0 0 34px}
 .conversation-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px; border: solid 1px;color:var(--muted);font-size:10px;font-weight:700;line-height:1}
+
+/* Reading pane is hidden until a message is selected. */
+.main.reading-hidden #readPane,.main.reading-hidden #paneSplitter{display:none!important}
+.main.reading-hidden .mail-area{flex:1 1 100%;width:100%;min-width:0}
+/* Compact conversation: latest message open, older messages collapsed. */
+.thread-message{transition:border-color .15s ease,box-shadow .15s ease}
+.thread-message.expanded{border-left:3px solid var(--primary,var(--accent,#2563eb));box-shadow:0 2px 7px rgba(15,23,42,.06)}
+.thread-message:not(.expanded) .thread-message-actions,.thread-message:not(.expanded) .thread-message-body,.thread-message:not(.expanded) .thread-attachments{display:none}
+.thread-message-head{cursor:pointer}
+.thread-message-head:focus-visible{outline:2px solid var(--primary,var(--accent,#2563eb));outline-offset:-2px}
+.thread-message-actions{border-bottom:0;border-top:1px solid var(--border,#e5e7eb);background:transparent}
+.editor-tools{order:0}
+.compose-area.rich-editor{order:1}
 </style>
 
 </head>
@@ -68,7 +81,7 @@
 </nav>
 
 <div id="workspaceStage" class="workspace-stage">
-  <main class="main" id="foldersWorkspace">
+  <main class="main reading-hidden" id="foldersWorkspace">
     <aside class="sidebar">
       <button id="composeBtn" class="compose-btn"><i class="bi bi-pencil-square"></i><span>Compose</span></button>
       <div class="folder-title">Folders</div>
@@ -402,7 +415,6 @@ const ComposerManager = (() => {
         <div class="compose-row"><label class="compose-label">Cc</label><div class="recipient-box" data-recipient-box="cc"><div class="recipient-chips" data-chips="cc"></div><input class="compose-input recipient-entry" data-field="cc" autocomplete="off" placeholder="Optional"><div class="autocomplete" data-role="suggestions-cc"></div></div></div>
         <div class="compose-row"><label class="compose-label">Bcc</label><div class="recipient-box" data-recipient-box="bcc"><div class="recipient-chips" data-chips="bcc"></div><input class="compose-input recipient-entry" data-field="bcc" autocomplete="off" placeholder="Optional"><div class="autocomplete" data-role="suggestions-bcc"></div></div></div>
         <div class="compose-row"><label class="compose-label">Subject</label><input class="compose-input" data-field="subject" placeholder="Subject"></div>
-        <div class="compose-area rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-field="body" data-placeholder="Write your message…"></div>
         <div class="editor-tools">
           <button type="button" data-cmd="bold"><b>B</b></button>
           <button type="button" data-cmd="italic"><i>I</i></button>
@@ -410,6 +422,7 @@ const ComposerManager = (() => {
           <button type="button" data-cmd="insertUnorderedList">• List</button>
           <button type="button" data-cmd="createLink">Link</button>
         </div>
+        <div class="compose-area rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-field="body" data-placeholder="Write your message…"></div>
         <div class="file-list" data-role="files"></div>
         <div class="compose-status" data-role="status"></div>
       </div>
@@ -432,7 +445,7 @@ const ComposerManager = (() => {
     tab.innerHTML = '<span class="compose-tab-label"></span><span class="compose-tab-close" role="button" aria-label="Close compose tab">×</span>';
     tabsEl.appendChild(tab);
 
-    const state = { id, el, tab, mode, originalMessage: message, originalAttachments: attachments || [], attachmentFiles: [], recipients: {to:[],cc:[],bcc:[]}, sending: false, suggestTimer: {to:null,cc:null,bcc:null}, suggestSeq: {to:0,cc:0,bcc:0}, dirty: false };
+    const state = { id, el, tab, mode, originalMessage: message, draftMailId: mode === 'draft' && message ? (message.mailId || message.id || '') : '', originalAttachments: attachments || [], attachmentFiles: [], recipients: {to:[],cc:[],bcc:[]}, sending: false, suggestTimer: {to:null,cc:null,bcc:null}, suggestSeq: {to:0,cc:0,bcc:0}, dirty: false };
     composers.set(id, state);
     bindComposerEvents(state);
     initComposerFields(state, mode, message, attachments);
@@ -448,12 +461,17 @@ const ComposerManager = (() => {
     const subjectInput = el.querySelector('[data-field="subject"]');
     const bodyEl = el.querySelector('[data-field="body"]');
 
-    titleEl.textContent = mode === 'reply' ? 'Reply message' : mode === 'forward' ? 'Forward message' : 'New message';
-    badgeEl.classList.toggle('hidden', mode === 'new');
+    titleEl.textContent = mode === 'reply' ? 'Reply message' : mode === 'forward' ? 'Forward message' : mode === 'draft' ? 'Edit draft' : 'New message';
+    badgeEl.classList.toggle('hidden', mode === 'new' || mode === 'draft');
     badgeEl.textContent = mode === 'reply' ? 'Reply' : 'Forward';
 
     if (mode === 'reply' && message) { addRecipient(state, 'to', message.senderEmail || '', false); subjectInput.value = replySubject(message.subject); bodyEl.innerHTML = '<br><br>'; }
     if (mode === 'forward' && message) { subjectInput.value = forwardSubject(message.subject); bodyEl.innerHTML = createForwarded(message); }
+    if (mode === 'draft' && message) {
+      subjectInput.value = message.subject || message.Subject || '';
+      bodyEl.innerHTML = message.body || message.Body || '';
+      ['to','cc','bcc'].forEach(field => String(message[field] || message[field.toUpperCase()] || '').split(/[;,]+/).map(v=>v.trim()).filter(Boolean).forEach(v=>addRecipient(state,field,v,false)));
+    }
 
     Object.defineProperty(bodyEl, 'value', { get() { return this.innerHTML; }, set(v) { this.innerHTML = v || ''; }, configurable: true });
 
@@ -588,14 +606,22 @@ const ComposerManager = (() => {
     }
     const hasContent = isComposerDirty(state);
     if (!hasContent) { closeComposer(id); return; }
-    const confirmed = await showConfirm({
-      title: 'Close this message?',
-      message: 'You have unsent changes. If you close this tab, your message will be discarded.',
-      confirmText: 'Close & discard',
-      cancelText: 'Keep editing',
+    const saveFirst = await showConfirm({
+      title: 'Save draft before closing?',
+      message: 'This message has unsaved changes. Save it as a draft before closing the composer?',
+      confirmText: 'Save draft',
+      cancelText: 'Discard',
       variant: 'warn'
     });
-    if (confirmed) closeComposer(id);
+    if (saveFirst) { await saveDraftComposer(state, { closeAfter: true }); return; }
+    const discard = await showConfirm({
+      title: 'Discard unsaved message?',
+      message: 'The unsaved changes will be lost permanently.',
+      confirmText: 'Discard message',
+      cancelText: 'Keep editing',
+      variant: 'danger'
+    });
+    if (discard) closeComposer(id);
   }
 
   function isComposerDirty(state) {
@@ -713,6 +739,7 @@ const ComposerManager = (() => {
         forwardedFrom: state.mode === 'forward' && original ? (original.messageId || '') : ''
       });
       setSendingState(state, false);
+      if (state.draftMailId) { MailboxAPI.update({mailId:state.draftMailId,Folder:'TRASH',Is_Deleted:'YES'}).catch(()=>{}); invalidateFolderCache('DRAFT'); }
       closeComposer(state.id);
       $('successReference').textContent = 'Reference: ' + (result.referenceNo || '—');
       $('successModal').classList.add('show');
@@ -721,13 +748,14 @@ const ComposerManager = (() => {
     } catch (err) { setSendingState(state, false); showAlert(err.message || 'Unable to send message.', 'error'); el.querySelector('[data-role="status"]').textContent = ''; }
   }
 
-  async function saveDraftComposer(state) {
+  async function saveDraftComposer(state, options = {}) {
     if (state.sending) return;
     const el = state.el;
     try {
       setSendingState(state, true);
       const original = state.originalMessage || null;
       const result = await MailboxAPI.draft({
+        ...(state.draftMailId ? {mailId: state.draftMailId} : {}),
         to: recipientValue(state, 'to'),
         cc: recipientValue(state, 'cc'),
         bcc: recipientValue(state, 'bcc'),
@@ -740,9 +768,12 @@ const ComposerManager = (() => {
         forwardedFrom: state.mode === 'forward' && original ? (original.messageId || '') : ''
       });
       setSendingState(state, false);
+      if (result.mailId || result.id) state.draftMailId = result.mailId || result.id;
       el.querySelector('[data-role="status"]').textContent = 'Draft saved' + (result.referenceNo ? ' · ' + result.referenceNo : '');
-      invalidateFolderCache('DRAFT');
-      await load(1);
+      invalidateFolderCache('DRAFT'); folderViews.delete('DRAFT');
+      if (currentFolder === 'DRAFT') load(1,{silent:true}).catch(()=>{});
+      if (options.closeAfter) { closeComposer(state.id); showAlert('Draft saved. Composer closed.', 'success', 2500); }
+      else { showAlert('Draft saved.', 'success', 1800); }
     } catch (err) { setSendingState(state, false); showAlert(err.message || 'Unable to save draft.', 'error'); }
   }
 
@@ -819,8 +850,8 @@ function renderList(){
  }
  $('mailList').innerHTML=currentMessages.map(m=>`<div class="mail-row ${m.isRead?'':'unread'} ${m.mailId===selectedMailId?'selected':''}" data-id="${escAttr(m.mailId)}"><div class="mail-check"><input type="checkbox" data-select="${escAttr(m.mailId)}" ${selectedIds.has(m.mailId)?'checked':''}></div><div class="mail-main"><div class="mail-top"><div class="sender">${esc(m.senderName||m.senderEmail||m.to||'Unknown')}</div><div class="date">${esc(formatDate(m.date))}</div></div><div class="subject" style="color:var(--text)">${esc(m.subject||'(No subject)')} ${m.hasAttachment?'<span class="attachment-dot"><i class="bi bi-paperclip"></i></span>':''}</div><div class="preview">${esc(m.body||'')}</div></div><div class="mail-row-end"><button class="star ${m.isStarred?'active':''}" data-star="${escAttr(m.mailId)}" title="${m.isStarred?'Unstar':'Star'}"><i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i></button>${Number(m.conversationCount||1)>1?`<span class="conversation-count" title="${Number(m.conversationCount)} messages in this conversation">${Number(m.conversationCount)}</span>`:''}</div></div>`).join('');
  document.querySelectorAll('[data-select]').forEach(c=>c.addEventListener('click',e=>{e.stopPropagation();const id=c.dataset.select;if(c.checked)selectedIds.add(id);else selectedIds.delete(id);updateToolbar()}));
- document.querySelectorAll('[data-star]').forEach(b=>b.addEventListener('click',async e=>{e.stopPropagation();const id=b.dataset.star;const m=currentMessages.find(x=>x.mailId===id);try{b.disabled=true;await MailboxAPI.update({mailId:id,Is_Starred:m&&!m.isStarred?'YES':'NO'});invalidateFolderCache();await load(currentPage,{silent:true})}catch(err){showAlert(err.message||'Unable to update star.','error')}finally{b.disabled=false}}));
- document.querySelectorAll('.mail-row').forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('input,button'))return;openMessage(r.dataset.id)}));
+ document.querySelectorAll('[data-star]').forEach(b=>b.addEventListener('click',async e=>{e.stopPropagation();const id=b.dataset.star;const m=currentMessages.find(x=>x.mailId===id);if(!m)return;const old=!!m.isStarred;m.isStarred=!old;renderList();try{await MailboxAPI.update({mailId:id,Is_Starred:m.isStarred?'YES':'NO'});invalidateFolderCache();folderViews.clear();if(currentFolder==='STARRED'&&!m.isStarred){currentMessages=currentMessages.filter(x=>x.mailId!==id);renderList()}else{folderCache.delete(cacheKey(currentFolder,currentPage));}showAlert(m.isStarred?'Added to Starred.':'Removed from Starred.','success',1500)}catch(err){m.isStarred=old;renderList();showAlert(err.message||'Unable to update star.','error')}}));
+ document.querySelectorAll('.mail-row').forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('input,button'))return;if(currentFolder==='DRAFT')openDraft(r.dataset.id);else openMessage(r.dataset.id)}));
 }
 
 function updatePager(data){const total=Number(data.total||0);const start=total?((currentPage-1)*pageSize+1):0;const end=Math.min(currentPage*pageSize,total);$('rangeText').textContent=total?`${start}-${end} of ${total}`:'0 messages';$('pageText').textContent=`${currentPage} / ${totalPages}`;$('prevPage').disabled=!data.hasPrevious;$('nextPage').disabled=!data.hasNext;$('pageSize').value=String(pageSize)}
@@ -832,7 +863,9 @@ async function applySelected(changes){
  try{
    // Serialize writes to avoid bursts of simultaneous Apps Script executions.
    for(const mailId of ids) await MailboxAPI.update(Object.assign({mailId},changes));
-   selectedIds.clear();invalidateFolderCache();await load(currentPage);
+   selectedIds.clear();invalidateFolderCache();folderViews.clear();
+   if(changes.Folder || changes.Is_Deleted==='YES' || changes.Is_Spam==='YES') { currentMessages=currentMessages.filter(m=>!ids.includes(m.mailId));renderList(); } else { currentMessages.forEach(m=>{if(ids.includes(m.mailId)){if(changes.Is_Read!==undefined)m.isRead=changes.Is_Read==='YES';}});renderList(); }
+   load(currentPage,{silent:true}).catch(()=>{});
  }catch(err){showAlert(err.message||'Unable to update messages.','error')}
 }
 
@@ -843,7 +876,7 @@ function paintReadHeader(m){
 
 async function openMessage(id){
  const row=currentMessages.find(x=>x.mailId===id);if(!row)return;
- selectedMailId=id;selectedMessage=row;selectedAttachments=[];threadMessages=[];
+ selectedMailId=id;selectedMessage=row;selectedAttachments=[];threadMessages=[];$('foldersWorkspace').classList.remove('reading-hidden');
  renderList();$('readEmpty').classList.add('hidden');$('readContent').classList.remove('hidden');$('readPane').classList.add('mobile-show');
  $('readSubject').textContent=row.subject||'(No subject)';$('threadCount').textContent='';
  $('threadMessages').innerHTML='<div class="loading-inline"><span class="panel-spinner" aria-label="Loading"></span></div>';
@@ -861,13 +894,17 @@ async function openMessage(id){
 
 function renderThread(){
  const host=$('threadMessages');
- host.innerHTML=threadMessages.slice().reverse().map((item,index)=>{
+ const ordered=threadMessages.slice().reverse();
+ host.innerHTML=ordered.map((item,index)=>{
    const m=item.message||{},files=item.attachments||[],mid=escAttr(m.mailId||'');
+   const expanded=index===0;
    const recipients=[m.to?`To: ${esc(m.to)}`:'',m.cc?`Cc: ${esc(m.cc)}`:'',m.bcc?`Bcc: ${esc(m.bcc)}`:''].filter(Boolean).join(' · ');
    const body=String(m.bodyType||'').toUpperCase()==='HTML'?(m.body||''):`<div style="white-space:pre-wrap">${esc(m.body||'')}</div>`;
    const attachments=files.map(a=>`<a class="attachment" href="${escAttr(a.url||'#')}" target="_blank" rel="noopener noreferrer" download><span><i class="bi bi-paperclip"></i></span><span title="${escAttr(a.fileName)}">${esc(a.fileName||'Attachment')}</span><small>${esc(formatSize(a.size))}</small></a>`).join('');
-   return `<article class="thread-message" data-thread-mail="${mid}">
-     <div class="thread-message-head"><div class="thread-avatar">${esc(initials(m.senderName,m.senderEmail))}</div><div class="thread-person"><div class="thread-person-name">${esc(m.senderName||m.senderEmail||'Unknown sender')}</div><div class="thread-person-email">${esc(m.senderEmail||'')}</div><div class="thread-recipients">${recipients||'Recipients not available'}</div></div><time class="thread-date">${esc(formatDate(m.date)||m.date||'')}</time></div>
+   return `<article class="thread-message ${expanded?'expanded':''}" data-thread-mail="${mid}">
+     <div class="thread-message-head" role="button" tabindex="0" aria-expanded="${expanded}" data-thread-toggle="${mid}"><div class="thread-avatar">${esc(initials(m.senderName,m.senderEmail))}</div><div class="thread-person"><div class="thread-person-name">${esc(m.senderName||m.senderEmail||'Unknown sender')}</div><div class="thread-person-email">${esc(m.senderEmail||'')}</div><div class="thread-recipients">${recipients||'Recipients not available'}</div></div><time class="thread-date">${esc(formatDate(m.date)||m.date||'')}</time></div>
+     <div class="thread-message-body">${body}</div>
+     ${attachments?`<div class="thread-attachments">${attachments}</div>`:''}
      <div class="thread-message-actions">
        <button class="thread-action" data-thread-action="reply" data-mail="${mid}" title="Reply"><i class="bi bi-reply"></i> Reply</button>
        <button class="thread-action" data-thread-action="forward" data-mail="${mid}" title="Forward"><i class="bi bi-forward"></i> Forward</button>
@@ -877,10 +914,19 @@ function renderThread(){
        <button class="thread-action" data-thread-action="spam" data-mail="${mid}" title="Report spam"><i class="bi bi-exclamation-octagon"></i> Spam</button>
        <button class="thread-action danger" data-thread-action="trash" data-mail="${mid}" title="Move to Trash"><i class="bi bi-trash3"></i></button>
      </div>
-     <div class="thread-message-body">${body}</div>
-     ${attachments?`<div class="thread-attachments">${attachments}</div>`:''}
    </article>`;
  }).join('');
+}
+
+async function openDraft(id){
+ const row=currentMessages.find(x=>String(x.mailId)===String(id));if(!row)return;
+ try{
+   showAlert('Opening draft…','info',900);
+   const result=await MailboxAPI.get(id);
+   const draft=result.message||result.data||result;
+   const message=Object.assign({},row,draft,{mailId:id});
+   ComposerManager.createComposer('draft',message,[]);
+ }catch(err){showAlert(err.message||'Unable to open draft for editing.','error');}
 }
 
 async function refreshThread(){
@@ -910,17 +956,25 @@ async function threadMessageAction(mailId,action){
    if(!ok)return;changes={Folder:'TRASH',Is_Deleted:'YES'};
  }
  try{
+   // Update the visible UI immediately; refresh the server-backed list in the background.
+   if(action==='star') { m.isStarred=!m.isStarred; }
+   if(action==='read') { m.isRead=!m.isRead; }
+   if(['archive','spam','trash'].includes(action)) { threadMessages=threadMessages.filter(x=>String(x.message.mailId)!==String(mailId)); }
+   if(action==='archive'||action==='spam'||action==='trash') { closeRead(); currentMessages=currentMessages.filter(x=>String(x.mailId)!==String(mailId));renderList(); }
    await MailboxAPI.update(Object.assign({mailId},changes));
-   invalidateFolderCache();await load(currentPage,{silent:true});
-   await refreshThread();
+   invalidateFolderCache();folderViews.clear();
+   load(currentPage,{silent:true}).catch(()=>{});
+   if(!['archive','spam','trash'].includes(action)) await refreshThread();
+   showAlert(action==='star'?(m.isStarred?'Added to Starred.':'Removed from Starred.'):action==='read'?'Read status updated.': 'Message moved.', 'success', 1400);
  }catch(err){showAlert(err.message||'Unable to update message.','error');}
 }
 
 $('threadMessages').addEventListener('click',e=>{
- const b=e.target.closest('[data-thread-action]');if(!b)return;
- threadMessageAction(b.dataset.mail,b.dataset.threadAction);
+ const action=e.target.closest('[data-thread-action]');if(action){threadMessageAction(action.dataset.mail,action.dataset.threadAction);return;}
+ const head=e.target.closest('[data-thread-toggle]');if(head){const card=head.closest('.thread-message');const expanded=card.classList.toggle('expanded');head.setAttribute('aria-expanded',String(expanded));}
 });
-function closeRead(){selectedMailId='';selectedMessage=null;selectedAttachments=[];threadMessages=[];$('readContent').classList.add('hidden');$('readEmpty').classList.remove('hidden');$('readPane').classList.remove('mobile-show');renderList()}
+$('threadMessages').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-thread-toggle]')){e.preventDefault();const card=e.target.closest('.thread-message');const expanded=card.classList.toggle('expanded');e.target.setAttribute('aria-expanded',String(expanded));}});
+function closeRead(){selectedMailId='';selectedMessage=null;selectedAttachments=[];threadMessages=[];$('readContent').classList.add('hidden');$('readEmpty').classList.remove('hidden');$('readPane').classList.remove('mobile-show');$('foldersWorkspace').classList.add('reading-hidden');renderList()}
 
 /* =========================================================
    WIRE-UP
@@ -950,7 +1004,7 @@ document.querySelectorAll('.folder').forEach(b=>{
  b.addEventListener('mouseenter',()=>{ const folder=b.dataset.folder; clearTimeout(prefetchTimers.get(folder)); prefetchTimers.set(folder,setTimeout(()=>prefetchFolder(folder),180)); });
  b.addEventListener('mouseleave',()=>clearTimeout(prefetchTimers.get(b.dataset.folder)));
  b.addEventListener('click',()=>{
-   if(currentFolder===b.dataset.folder) { switchView('folders'); return; }
+   if(currentFolder===b.dataset.folder) { closeRead(); switchView('folders'); return; }
    folderViews.set(currentFolder,{html:$('mailList').innerHTML,scrollTop:$('mailList').scrollTop,messages:currentMessages,page:currentPage,totalPages:totalPages});
    currentFolder=b.dataset.folder;currentPage=1;selectedMailId='';selectedMessage=null;selectedAttachments=[];saveFolder();updateFolderUI();closeRead();
    const view=folderViews.get(currentFolder);const c=folderCache.get(cacheKey(currentFolder,1));
