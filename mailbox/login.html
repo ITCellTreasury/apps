@@ -1,0 +1,609 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<meta name="theme-color" content="#f4f7fb" id="themeColorMeta">
+
+<title>Mailbox - Sign In</title>
+
+<!-- Bootstrap Icons only; login CSS is self-contained for faster startup. -->
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+<link rel="icon" type="image/svg+xml" href="favicon.png">
+
+<!-- Avoid competing with the login API request; mailbox loads after authentication. -->
+
+<link rel="stylesheet" href="mailbox-common.css">
+
+</head>
+
+<body>
+
+<main class="login-shell">
+
+  <section
+    class="login-card"
+    aria-labelledby="login-title">
+
+
+<div class="login-content">
+
+  <!-- BRAND -->
+  <header class="brand">
+
+    <div
+      class="brand-icon"
+      aria-hidden="true">
+
+      <i class="bi bi-envelope-paper"></i>
+
+    </div>
+
+    <div
+      id="login-title"
+      class="brand-name">
+
+      Mailbox
+
+    </div>
+
+    <div class="brand-subtitle">
+
+      Your internal mailbox
+
+    </div>
+
+  </header>
+
+
+  <!-- ALERT -->
+  <div
+    id="alert"
+    class="alert"
+    role="alert"
+    aria-live="polite">
+  </div>
+
+
+  <!-- LOGIN FORM -->
+  <form
+    id="loginForm"
+    novalidate>
+
+    <!-- EMAIL -->
+    <div class="field">
+
+      <label
+        class="field-label"
+        for="email">
+
+        Email address
+
+      </label>
+
+      <div class="input-wrap">
+
+        <i
+          class="bi bi-person input-icon"
+          aria-hidden="true">
+        </i>
+
+        <input
+          id="email"
+          class="form-control"
+          type="email"
+          autocomplete="username"
+          autocapitalize="none"
+          spellcheck="false"
+          placeholder="Enter your email address"
+          required>
+
+      </div>
+
+    </div>
+
+
+    <!-- PASSWORD -->
+    <div class="field">
+
+      <label
+        class="field-label"
+        for="password">
+
+        Password
+
+      </label>
+
+      <div class="input-wrap">
+
+        <i
+          class="bi bi-lock input-icon"
+          aria-hidden="true">
+        </i>
+
+        <input
+          id="password"
+          class="form-control"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Enter your password"
+          required>
+
+        <button
+          id="passwordToggle"
+          class="password-toggle"
+          type="button"
+          aria-label="Show password"
+          title="Show password">
+
+          <i class="bi bi-eye"></i>
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- LOGIN -->
+    <button
+      id="loginBtn"
+      class="login-button"
+      type="submit">
+
+      <span
+        id="loginButtonContent"
+        class="btn-content">
+
+        <i class="bi bi-box-arrow-in-right"></i>
+
+        <span>Sign in</span>
+
+      </span>
+
+    </button>
+
+  </form>
+
+
+  <!-- ACCOUNT LINKS -->
+  <nav
+    class="links"
+    aria-label="Account links">
+
+    <a
+      href="new-user-register.html"
+      target="_blank"
+      rel="noopener">
+
+      <i class="bi bi-person-plus me-1"></i>
+
+      New User Register
+
+    </a>
+
+    <span class="dot">•</span>
+
+    <a
+      href="user-password-reset.html"
+      target="_blank"
+      rel="noopener">
+
+      <i class="bi bi-key me-1"></i>
+
+      Forgot Password
+
+    </a>
+
+  </nav>
+
+
+  <!-- FOOTER -->
+  <div class="footer-note">
+
+    Mailbox
+    &nbsp; • &nbsp;
+    Secure internal service
+
+  </div>
+
+</div>
+
+
+  </section>
+
+</main>
+
+<script>
+'use strict';
+
+
+/* =========================================================
+   SAME API URL AS CURRENT MAILBOX.HTML
+   ========================================================= */
+
+const MAILBOX_API_URL =
+  'https://script.google.com/macros/s/AKfycbw4mqHyFR665ZueNNR-YYT7FtyXjQOeKFlJXXKXZtBoHWeDE45wCBipPeITgUqhsmLd/exec';
+
+
+const SESSION_TOKEN_KEY = 'mailbox_token';
+const SESSION_USER_KEY = 'mailbox_user';
+
+
+/* =========================================================
+   ELEMENTS
+   ========================================================= */
+
+const form =
+  document.getElementById('loginForm');
+
+const emailInput =
+  document.getElementById('email');
+
+const passwordInput =
+  document.getElementById('password');
+
+const loginBtn =
+  document.getElementById('loginBtn');
+
+const loginButtonContent =
+  document.getElementById('loginButtonContent');
+
+const alertBox =
+  document.getElementById('alert');
+
+const passwordToggle =
+  document.getElementById('passwordToggle');
+
+const themeColorMeta = document.getElementById('themeColorMeta');
+const savedAccent = localStorage.getItem('mailbox_theme_color');
+if(savedAccent){document.documentElement.style.setProperty('--mailbox-accent',savedAccent);themeColorMeta.content=savedAccent;}
+
+
+/* =========================================================
+   AUTOMATIC THEME COLOR
+   Keeps browser/mobile address bar synchronized with
+   the current device theme.
+   ========================================================= */
+
+const darkModeQuery =
+  window.matchMedia('(prefers-color-scheme: dark)');
+
+
+function updateThemeColor(){
+
+  if(darkModeQuery.matches){
+
+    themeColorMeta.setAttribute(
+      'content',
+      '#111722'
+    );
+
+  }else{
+
+    themeColorMeta.setAttribute(
+      'content',
+      '#f4f7fb'
+    );
+
+  }
+}
+
+
+/* Apply immediately. */
+updateThemeColor();
+
+
+/*
+ * If the user changes Windows/browser theme while the
+ * login page is open, update the browser theme color too.
+ *
+ * The CSS itself automatically updates because it uses
+ * prefers-color-scheme.
+ */
+if(darkModeQuery.addEventListener){
+
+  darkModeQuery.addEventListener(
+    'change',
+    updateThemeColor
+  );
+
+}else if(darkModeQuery.addListener){
+
+  /* Compatibility with older browsers. */
+  darkModeQuery.addListener(
+    updateThemeColor
+  );
+
+}
+
+
+/* =========================================================
+   ALERT
+   ========================================================= */
+
+function showAlert(
+  message,
+  type='error'
+){
+
+  alertBox.className =
+    'alert show ' + type;
+
+  alertBox.innerHTML =
+    '<i class="bi ' +
+    (
+      type === 'success'
+        ? 'bi-check-circle'
+        : 'bi-exclamation-circle'
+    ) +
+    '"></i><span></span>';
+
+  alertBox
+    .querySelector('span')
+    .textContent = message;
+}
+
+
+function clearAlert(){
+
+  alertBox.className = 'alert';
+
+  alertBox.textContent = '';
+
+}
+
+
+/* =========================================================
+   BUSY STATE
+   ========================================================= */
+
+function setBusy(busy){
+
+  loginBtn.disabled = busy;
+
+  emailInput.disabled = busy;
+
+  passwordInput.disabled = busy;
+
+  passwordToggle.disabled = busy;
+
+
+  loginButtonContent.innerHTML = busy
+
+    ? '<span class="spinner"></span>' +
+      '<span>Signing in...</span>'
+
+    : '<i class="bi bi-box-arrow-in-right"></i>' +
+      '<span>Sign in</span>';
+}
+
+
+/* =========================================================
+   SAVE SESSION
+   ========================================================= */
+
+function saveSession(data){
+
+  sessionStorage.setItem(
+    SESSION_TOKEN_KEY,
+    data.token
+  );
+
+  sessionStorage.setItem(
+    SESSION_USER_KEY,
+    JSON.stringify(data.user || null)
+  );
+
+}
+
+
+/* =========================================================
+   LOGIN API
+   ========================================================= */
+
+async function login(
+  email,
+  password
+){
+
+  const response =
+    await fetch(
+      MAILBOX_API_URL,
+      {
+        method:'POST',
+
+        headers:{
+          'Content-Type':
+            'text/plain;charset=utf-8'
+        },
+
+        body:JSON.stringify({
+          action:'login',
+          email,
+          password
+        }),
+
+        redirect:'follow'
+      }
+    );
+
+
+  if(!response.ok){
+
+    throw new Error(
+      'Server error: ' +
+      response.status
+    );
+
+  }
+
+
+  const data =
+    await response.json();
+
+
+  if(!data || data.ok === false){
+
+    throw new Error(
+      data?.error ||
+      data?.message ||
+      'Invalid login credentials.'
+    );
+
+  }
+
+
+  if(!data.token){
+
+    throw new Error(
+      'Login succeeded but no session token was returned.'
+    );
+
+  }
+
+
+  return data;
+
+}
+
+
+/* =========================================================
+   PASSWORD SHOW / HIDE
+   ========================================================= */
+
+passwordToggle.addEventListener(
+  'click',
+  () => {
+
+    const visible =
+      passwordInput.type === 'text';
+
+
+    passwordInput.type =
+      visible
+        ? 'password'
+        : 'text';
+
+
+    passwordToggle.innerHTML =
+      visible
+
+        ? '<i class="bi bi-eye"></i>'
+
+        : '<i class="bi bi-eye-slash"></i>';
+
+
+    passwordToggle.setAttribute(
+      'aria-label',
+      visible
+        ? 'Show password'
+        : 'Hide password'
+    );
+
+
+    passwordToggle.setAttribute(
+      'title',
+      visible
+        ? 'Show password'
+        : 'Hide password'
+    );
+
+  }
+);
+
+
+/* =========================================================
+   LOGIN SUBMIT
+   ========================================================= */
+
+form.addEventListener(
+  'submit',
+  async event => {
+
+    event.preventDefault();
+
+    clearAlert();
+
+
+    const email =
+      emailInput.value.trim();
+
+    const password =
+      passwordInput.value;
+
+
+    if(!email || !password){
+
+      showAlert(
+        'Please enter your email address and password.'
+      );
+
+      return;
+
+    }
+
+
+    setBusy(true);
+    const loginStartedAt = performance.now();
+
+    try{
+
+      const result =
+        await login(
+          email,
+          password
+        );
+      console.info('[Mailbox login] API completed in ' + Math.round(performance.now() - loginStartedAt) + ' ms.');
+
+
+      saveSession(result);
+
+
+      /*
+       * mailbox.html is already prefetched where supported,
+       * so this navigation can use browser cache instead of
+       * starting completely cold.
+       */
+
+      document.body.classList.add(
+        'page-leaving'
+      );
+
+
+      window.location.replace(
+        'mailbox.html'
+      );
+
+
+    }catch(error){
+
+      showAlert(
+        error?.message ||
+        'Unable to sign in.'
+      );
+
+      setBusy(false);
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   INITIAL FOCUS
+   ========================================================= */
+
+window.requestAnimationFrame(
+  () => emailInput.focus()
+);
+
+</script>
+
+</body>
+</html>

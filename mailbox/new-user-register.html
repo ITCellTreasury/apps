@@ -1,0 +1,973 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f4f7fb" id="themeColorMeta">
+<title>Mailbox - New User Registration</title>
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+<style>
+:root{
+  --primary:#0d6efd;
+  --text:#172033;
+  --muted:#6b7485;
+  --label:#394357;
+  --border:#e5eaf1;
+  --surface:rgba(255,255,255,.88);
+  --input-bg:rgba(255,255,255,.86);
+  --input-focus-bg:#fff;
+  --page-top:#f8fafc;
+  --page-bottom:#eef3f8;
+  --card-border:rgba(255,255,255,.9);
+  --top-fade-start:rgba(255,255,255,.9);
+  --top-fade-end:rgba(255,255,255,0);
+  --soft-bg:#f1f4f8;
+  --soft-text:#475569;
+  --link:#1769d1;
+  --shadow:0 24px 70px rgba(23,32,51,.14),0 4px 18px rgba(23,32,51,.06);
+  --success-text:#17663b;
+  --success-bg:#edf9f2;
+  --success-border:#ccefd9;
+  --error-text:#9b1c1c;
+  --error-bg:#fff0f0;
+  --error-border:#ffd2d2;
+  --info-text:#1d4ed8;
+  --info-bg:#eff6ff;
+  --info-border:#bfdbfe;
+  color-scheme:light;
+}
+
+@media(prefers-color-scheme:dark){
+  :root{
+    --text:#edf2f7;
+    --muted:#a8b1c0;
+    --label:#cbd3df;
+    --border:#394353;
+    --surface:rgba(28,34,45,.88);
+    --input-bg:rgba(22,28,38,.88);
+    --input-focus-bg:#1c2430;
+    --page-top:#111722;
+    --page-bottom:#0b1018;
+    --card-border:rgba(255,255,255,.08);
+    --top-fade-start:rgba(255,255,255,.08);
+    --top-fade-end:rgba(255,255,255,0);
+    --soft-bg:#252e3b;
+    --soft-text:#c5cedb;
+    --link:#6ea8fe;
+    --shadow:0 24px 70px rgba(0,0,0,.45),0 4px 18px rgba(0,0,0,.28);
+    --success-text:#8ee0b1;
+    --success-bg:rgba(25,135,84,.13);
+    --success-border:rgba(80,200,130,.25);
+    --error-text:#ffb4b4;
+    --error-bg:rgba(220,53,69,.13);
+    --error-border:rgba(255,100,115,.25);
+    --info-text:#8bb8ff;
+    --info-bg:rgba(13,110,253,.12);
+    --info-border:rgba(90,150,255,.25);
+    color-scheme:dark;
+  }
+}
+
+*{box-sizing:border-box}
+
+html,body{min-height:100%;margin:0}
+
+body{
+  min-height:100vh;
+  padding:24px;
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 15% 10%,rgba(13,110,253,.09),transparent 34%),
+    radial-gradient(circle at 90% 85%,rgba(25,135,84,.07),transparent 32%),
+    linear-gradient(180deg,var(--page-top),var(--page-bottom));
+  transition:background .25s ease,color .25s ease;
+}
+
+.container{
+  width:min(760px,100%);
+  margin:20px auto;
+}
+
+.header{
+  text-align:center;
+  margin-bottom:22px;
+}
+
+.brand-icon{
+  width:62px;
+  height:62px;
+  margin:0 auto 13px;
+  display:grid;
+  place-items:center;
+  border-radius:19px;
+  color:#fff;
+  background:linear-gradient(135deg,#0d6efd,#3d8bfd);
+  box-shadow:0 12px 28px rgba(13,110,253,.25);
+  font-size:28px;
+}
+
+.header h1{
+  margin:0;
+  font-size:1.5rem;
+  font-weight:750;
+  letter-spacing:-.02em;
+}
+
+.header p{
+  margin:5px 0 0;
+  color:var(--muted);
+  font-size:.88rem;
+}
+
+.card{
+  position:relative;
+  overflow:hidden;
+  padding:30px;
+  border:1px solid var(--card-border);
+  border-radius:28px;
+  background:var(--surface);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+
+.card::before{
+  content:"";
+  position:absolute;
+  left:0;right:0;top:0;
+  height:110px;
+  background:linear-gradient(180deg,var(--top-fade-start),var(--top-fade-end));
+  pointer-events:none;
+}
+
+.card>*{position:relative}
+
+.note{
+  margin-bottom:20px;
+  padding:13px 14px;
+  border-radius:13px;
+  background:var(--soft-bg);
+  color:var(--soft-text);
+  font-size:.84rem;
+  line-height:1.5;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:17px;
+}
+
+.full{grid-column:1/-1}
+
+.field{min-width:0}
+
+label{
+  display:block;
+  margin:0 0 7px 2px;
+  color:var(--label);
+  font-size:.82rem;
+  font-weight:650;
+}
+
+.optional{
+  color:var(--muted);
+  font-weight:400;
+}
+
+input{
+  width:100%;
+  height:48px;
+  padding:0 14px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  outline:0;
+  color:var(--text);
+  background:var(--input-bg);
+  font:inherit;
+  font-size:.93rem;
+  transition:border-color .16s,box-shadow .16s,background .16s;
+}
+
+input::placeholder{color:var(--muted);opacity:.82}
+
+input:focus{
+  border-color:rgba(13,110,253,.58);
+  background:var(--input-focus-bg);
+  box-shadow:0 0 0 4px rgba(13,110,253,.10);
+}
+
+input:disabled{opacity:.65;cursor:not-allowed}
+
+.emailGroup{
+  display:flex;
+  width:100%;
+}
+
+.emailGroup input{
+  border-radius:14px 0 0 14px;
+  border-right:0;
+}
+
+.emailDomain{
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  min-width:150px;
+  border:1px solid var(--border);
+  border-radius:0 14px 14px 0;
+  background:var(--soft-bg);
+  color:var(--soft-text);
+  font-size:.9rem;
+  white-space:nowrap;
+}
+
+.usernameStatus{
+  min-height:19px;
+  margin:7px 2px 0;
+  font-size:.78rem;
+}
+
+.usernameStatus.available{color:#198754}
+.usernameStatus.unavailable{color:#dc3545}
+.usernameStatus.checking{color:var(--muted)}
+
+.suggestions{
+  display:none;
+  margin-top:9px;
+}
+
+.suggestionTitle{
+  margin-bottom:6px;
+  color:var(--muted);
+  font-size:.78rem;
+}
+
+.suggestion{
+  display:inline-flex;
+  margin:3px 5px 3px 0;
+  padding:7px 10px;
+  border:1px solid var(--info-border);
+  border-radius:10px;
+  background:var(--info-bg);
+  color:var(--info-text);
+  font-size:.78rem;
+  cursor:pointer;
+}
+
+.suggestion:hover{
+  filter:brightness(.96);
+}
+
+.primary{
+  width:100%;
+  height:48px;
+  border:0;
+  border-radius:14px;
+  color:#fff;
+  background:linear-gradient(135deg,#0d6efd,#1769d1);
+  box-shadow:0 9px 22px rgba(13,110,253,.22);
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+  transition:transform .15s,box-shadow .15s,opacity .15s;
+}
+
+.primary:hover:not(:disabled){
+  transform:translateY(-1px);
+  box-shadow:0 12px 27px rgba(13,110,253,.27);
+}
+
+.primary:disabled{
+  opacity:.72;
+  cursor:wait;
+}
+
+.alert{
+  display:none;
+  align-items:flex-start;
+  gap:9px;
+  margin:0 0 17px;
+  padding:11px 13px;
+  border-radius:13px;
+  font-size:.84rem;
+  line-height:1.4;
+}
+
+.alert.show{display:flex}
+
+.success{
+  color:var(--success-text);
+  background:var(--success-bg);
+  border:1px solid var(--success-border);
+}
+
+.error{
+  color:var(--error-text);
+  background:var(--error-bg);
+  border:1px solid var(--error-border);
+}
+
+.result{
+  margin-top:18px;
+  padding:16px;
+  border:1px solid var(--info-border);
+  border-radius:14px;
+  background:var(--info-bg);
+  color:var(--text);
+}
+
+.userId{
+  margin-top:4px;
+  color:var(--info-text);
+  font-size:1.35rem;
+  font-weight:750;
+}
+
+.mailResult{
+  margin-top:7px;
+  color:var(--soft-text);
+  font-weight:650;
+  font-size:.9rem;
+}
+
+.hidden{display:none!important}
+
+.loading{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+}
+
+.spinner{
+  width:17px;
+  height:17px;
+  border:2px solid rgba(255,255,255,.4);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.footer{
+  text-align:center;
+  margin-top:16px;
+  color:var(--muted);
+  font-size:.72rem;
+}
+
+@media(max-width:650px){
+  body{padding:14px}
+  .container{margin:8px auto}
+  .card{padding:23px 20px;border-radius:23px}
+  .grid{grid-template-columns:1fr}
+  .full{grid-column:auto}
+  .emailGroup{flex-direction:column}
+  .emailGroup input{
+    border-radius:14px;
+    border-right:1px solid var(--border);
+  }
+  .emailDomain{
+    margin-top:7px;
+    min-height:46px;
+    border-radius:14px;
+  }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <header class="header">
+    <div class="brand-icon">
+      <i class="bi bi-person-plus"></i>
+    </div>
+    <h1>Mailbox</h1>
+    <p>New User Registration</p>
+  </header>
+
+  <section class="card">
+
+
+<div id="regSuccess" class="alert success">
+  <i class="bi bi-check-circle"></i>
+  <span></span>
+</div>
+
+<div id="regError" class="alert error">
+  <i class="bi bi-exclamation-circle"></i>
+  <span></span>
+</div>
+
+<div class="note">
+  <i class="bi bi-info-circle me-1"></i>
+  Create your internal mailbox account. Your mailbox address will use the configured internal mail domain.
+</div>
+
+<div class="grid">
+
+  <div class="field full">
+    <label for="fullName">Full Name</label>
+    <input id="fullName" type="text" autocomplete="name"
+           placeholder="Enter full name">
+  </div>
+
+  <div class="field full">
+    <label for="username">Mailbox Email Address</label>
+
+    <div class="emailGroup">
+      <input id="username" type="text" maxlength="30"
+             autocomplete="off" spellcheck="false"
+             placeholder="Enter username">
+      <div id="emailDomain" class="emailDomain">Loading...</div>
+    </div>
+
+    <div id="usernameStatus" class="usernameStatus"></div>
+
+    <div id="suggestions" class="suggestions">
+      <div class="suggestionTitle">
+        This username is already registered. You may use:
+      </div>
+      <div id="suggestionList"></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="mobile">Mobile Number</label>
+    <input id="mobile" type="tel" maxlength="10"
+           inputmode="numeric"
+           placeholder="10 digit mobile number">
+  </div>
+
+  <div class="field">
+    <label for="designation">Designation</label>
+    <input id="designation" type="text"
+           placeholder="Designation">
+  </div>
+
+  <div class="field">
+    <label for="department">Department</label>
+    <input id="department" type="text"
+           placeholder="Department">
+  </div>
+
+  <div class="field">
+    <label for="recoveryEmail">
+      Recovery Email
+      <span class="optional">(Optional)</span>
+    </label>
+    <input id="recoveryEmail" type="email"
+           placeholder="Gmail / other external email">
+  </div>
+
+  <div class="field">
+    <label for="password">Password</label>
+    <input id="password" type="password"
+           autocomplete="new-password"
+           placeholder="Minimum 8 characters">
+  </div>
+
+  <div class="field">
+    <label for="confirmPassword">Confirm Password</label>
+    <input id="confirmPassword" type="password"
+           autocomplete="new-password"
+           placeholder="Confirm password">
+  </div>
+
+  <div class="full">
+    <button id="registerBtn" class="primary"
+            onclick="registerUser()">
+      <span class="btnText">
+        <i class="bi bi-person-check me-1"></i>
+        Create Mailbox Account
+      </span>
+    </button>
+  </div>
+
+</div>
+
+<div id="registrationResult" class="result hidden">
+  <div>
+    <i class="bi bi-check-circle-fill"></i>
+    Registration successful.
+  </div>
+
+  <div style="margin-top:8px">
+    Your Mailbox User ID:
+  </div>
+
+  <div id="newUserId" class="userId"></div>
+
+  <div id="newEmail" class="mailResult"></div>
+
+  <div style="margin-top:12px;font-size:.82rem">
+    Please keep your User ID safely.
+  </div>
+</div>
+
+
+  </section>
+
+  <div class="footer">
+    Internal Mailbox &nbsp;•&nbsp; Secure internal service
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+const API_URL =
+  'https://script.google.com/macros/s/AKfycbyF5Sa7dQd0PPU8oesAMp2WcAMC05NMSYjXYAF8hmiFOppc9qfC68CCi1eLSW-KfL1l/exec';
+
+let mailboxDomain = '';
+let usernameTimer = null;
+let usernameAvailable = false;
+
+const darkModeQuery =
+  window.matchMedia('(prefers-color-scheme: dark)');
+
+function updateThemeColor(){
+  document.getElementById('themeColorMeta')
+    .setAttribute(
+      'content',
+      darkModeQuery.matches ? '#111722' : '#f4f7fb'
+    );
+}
+
+updateThemeColor();
+
+if(darkModeQuery.addEventListener){
+  darkModeQuery.addEventListener('change',updateThemeColor);
+}else if(darkModeQuery.addListener){
+  darkModeQuery.addListener(updateThemeColor);
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  loadConfiguration();
+  setupUsernameInput();
+});
+
+async function loadConfiguration(){
+  try{
+    setDomainText('Loading...');
+    const result = await apiGet('getConfiguration');
+
+    if(!result.ok){
+      throw new Error(
+        result.message || 'Unable to load configuration.'
+      );
+    }
+
+    mailboxDomain = result.domain;
+    setDomainText(mailboxDomain);
+
+  }catch(error){
+    setDomainText('Unavailable');
+    showError('regError',getErrorMessage(error));
+  }
+}
+
+function setDomainText(text){
+  document.getElementById('emailDomain').textContent = text;
+}
+
+async function apiGet(action,params={}){
+  const url = new URL(API_URL);
+  url.searchParams.set('action',action);
+
+  Object.keys(params).forEach(key=>{
+    url.searchParams.set(key,params[key]);
+  });
+
+  const response = await fetch(url.toString(),{
+    method:'GET',
+    cache:'no-store',
+    redirect:'follow'
+  });
+
+  if(!response.ok){
+    throw new Error(
+      'API request failed: HTTP ' + response.status
+    );
+  }
+
+  return await response.json();
+}
+
+async function apiPost(payload){
+  const response = await fetch(API_URL,{
+    method:'POST',
+    headers:{
+      'Content-Type':'text/plain;charset=utf-8'
+    },
+    body:JSON.stringify(payload),
+    cache:'no-store',
+    redirect:'follow'
+  });
+
+  if(!response.ok){
+    throw new Error(
+      'API request failed: HTTP ' + response.status
+    );
+  }
+
+  return await response.json();
+}
+
+function setupUsernameInput(){
+  document.getElementById('username')
+    .addEventListener('input',usernameChanged);
+}
+
+function usernameChanged(){
+  const input = document.getElementById('username');
+
+  input.value = input.value
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]/g,'');
+
+  usernameAvailable = false;
+  clearUsernameSuggestions();
+
+  const username = input.value.trim();
+
+  if(!username){
+    setUsernameStatus('','');
+    return;
+  }
+
+  if(username.length < 3){
+    setUsernameStatus(
+      'Enter at least 3 characters.',
+      'checking'
+    );
+    return;
+  }
+
+  if(!/^[a-z0-9][a-z0-9._-]{2,29}$/.test(username)){
+    setUsernameStatus(
+      'Use letters, numbers, dot, underscore or hyphen.',
+      'unavailable'
+    );
+    return;
+  }
+
+  setUsernameStatus(
+    'Checking availability...',
+    'checking'
+  );
+
+  if(usernameTimer) clearTimeout(usernameTimer);
+
+  usernameTimer = setTimeout(
+    ()=>checkUsername(username),
+    450
+  );
+}
+
+async function checkUsername(username){
+  try{
+    const result = await apiGet(
+      'checkUsername',
+      {username}
+    );
+
+    const current =
+      document.getElementById('username')
+        .value.trim().toLowerCase();
+
+    if(current !== username) return;
+
+    if(result.available){
+      usernameAvailable = true;
+      setUsernameStatus(result.message,'available');
+      clearUsernameSuggestions();
+    }else{
+      usernameAvailable = false;
+      setUsernameStatus(result.message,'unavailable');
+      showSuggestions(result.suggestions);
+    }
+
+  }catch(error){
+    usernameAvailable = false;
+    setUsernameStatus(
+      getErrorMessage(error),
+      'unavailable'
+    );
+  }
+}
+
+function setUsernameStatus(message,type){
+  const el = document.getElementById('usernameStatus');
+  el.textContent = message || '';
+  el.className = 'usernameStatus ' + (type || '');
+}
+
+function showSuggestions(suggestions){
+  const container = document.getElementById('suggestions');
+  const list = document.getElementById('suggestionList');
+
+  list.innerHTML = '';
+
+  if(!suggestions || !suggestions.length){
+    container.style.display = 'none';
+    return;
+  }
+
+  suggestions.forEach(item=>{
+    const button = document.createElement('span');
+    button.className = 'suggestion';
+    button.textContent = item.email;
+    button.onclick = ()=>selectSuggestion(item);
+    list.appendChild(button);
+  });
+
+  container.style.display = 'block';
+}
+
+function selectSuggestion(item){
+  const input = document.getElementById('username');
+
+  input.value = item.username;
+  usernameAvailable = true;
+
+  setUsernameStatus(
+    item.email + ' selected.',
+    'available'
+  );
+
+  clearUsernameSuggestions();
+}
+
+function clearUsernameSuggestions(){
+  document.getElementById('suggestions').style.display = 'none';
+  document.getElementById('suggestionList').innerHTML = '';
+}
+
+async function registerUser(){
+  hideMessages();
+
+  const username =
+    document.getElementById('username').value.trim().toLowerCase();
+
+  const fullName =
+    document.getElementById('fullName').value.trim();
+
+  const mobile =
+    document.getElementById('mobile').value.trim();
+
+  const designation =
+    document.getElementById('designation').value.trim();
+
+  const department =
+    document.getElementById('department').value.trim();
+
+  const recoveryEmail =
+    document.getElementById('recoveryEmail').value.trim();
+
+  const password =
+    document.getElementById('password').value;
+
+  const confirmPassword =
+    document.getElementById('confirmPassword').value;
+
+  if(!username){
+    showError('regError','Mailbox username is required.');
+    return;
+  }
+
+  if(!/^[a-z0-9][a-z0-9._-]{2,29}$/.test(username)){
+    showError('regError','Please enter a valid mailbox username.');
+    return;
+  }
+
+  if(!usernameAvailable){
+    setUsernameStatus('Checking availability...','checking');
+
+    try{
+      const check = await apiGet(
+        'checkUsername',
+        {username}
+      );
+
+      if(!check.available){
+        usernameAvailable = false;
+        setUsernameStatus(check.message,'unavailable');
+        showSuggestions(check.suggestions);
+
+        showError(
+          'regError',
+          'Please choose an available mailbox username.'
+        );
+
+        return;
+      }
+
+      usernameAvailable = true;
+
+    }catch(error){
+      showError('regError',getErrorMessage(error));
+      return;
+    }
+  }
+
+  if(!fullName){
+    showError('regError','Full Name is required.');
+    return;
+  }
+
+  if(!mobile){
+    showError('regError','Mobile Number is required.');
+    return;
+  }
+
+  if(!designation){
+    showError('regError','Designation is required.');
+    return;
+  }
+
+  if(!department){
+    showError('regError','Department is required.');
+    return;
+  }
+
+  if(password.length < 8){
+    showError(
+      'regError',
+      'Password must contain at least 8 characters.'
+    );
+    return;
+  }
+
+  if(password !== confirmPassword){
+    showError(
+      'regError',
+      'Password and Confirm Password do not match.'
+    );
+    return;
+  }
+
+  const data = {
+    username,
+    fullName,
+    mobile,
+    designation,
+    department,
+    recoveryEmail,
+    password,
+    confirmPassword
+  };
+
+  setFormDisabled(true);
+  setButtonLoading(true);
+
+  try{
+    const result = await apiPost({
+      action:'registerUser',
+      data
+    });
+
+    if(!result.ok){
+      throw new Error(
+        result.message || 'Registration failed.'
+      );
+    }
+
+    showSuccess(
+      'regSuccess',
+      'Registration completed successfully.'
+    );
+
+    document.getElementById('registrationResult')
+      .classList.remove('hidden');
+
+    document.getElementById('newUserId')
+      .textContent = result.userId;
+
+    document.getElementById('newEmail')
+      .textContent = 'Mailbox Email: ' + result.email;
+
+    setButtonLoading(false);
+    document.getElementById('registerBtn').disabled = true;
+
+  }catch(error){
+
+    setFormDisabled(false);
+    setButtonLoading(false);
+    usernameAvailable = false;
+
+    showError('regError',getErrorMessage(error));
+
+    try{
+      await checkUsername(username);
+    }catch(ignore){}
+  }
+}
+
+function setFormDisabled(disabled){
+  document.querySelectorAll('input').forEach(input=>{
+    input.disabled = disabled;
+  });
+}
+
+function setButtonLoading(loading){
+  const button = document.getElementById('registerBtn');
+
+  if(loading){
+    button.disabled = true;
+    button.innerHTML =
+      '<span class="loading">' +
+      '<span class="spinner"></span>' +
+      'Creating account...' +
+      '</span>';
+  }else{
+    button.innerHTML =
+      '<span class="btnText">' +
+      '<i class="bi bi-person-check me-1"></i>' +
+      'Create Mailbox Account' +
+      '</span>';
+  }
+}
+
+function hideMessages(){
+  document.querySelectorAll('.success,.error')
+    .forEach(el=>{
+      el.classList.remove('show');
+      el.style.display = 'none';
+    });
+}
+
+function showSuccess(id,message){
+  const el = document.getElementById(id);
+  el.querySelector('span').textContent = message;
+  el.style.display = 'flex';
+  el.classList.add('show');
+}
+
+function showError(id,message){
+  const el = document.getElementById(id);
+  el.querySelector('span').textContent = message;
+  el.style.display = 'flex';
+  el.classList.add('show');
+}
+
+function getErrorMessage(error){
+  if(!error) return 'Unknown error.';
+  if(typeof error === 'string') return error;
+  return error.message || String(error);
+}
+</script>
+
+</body>
+</html>
