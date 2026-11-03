@@ -8,63 +8,15 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="icon" type="image/svg+xml" href="favicon.png">
 <link rel="stylesheet" href="mailbox-common.css">
-
 <style>
-.thread-topbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:12px 16px;/*border-bottom:1px solid var(--border,#e5e7eb)*/}
-.thread-topbar .read-subject{flex:1;min-width:0;font-size:18px;font-weight:650;overflow-wrap:anywhere}
-.thread-count{font-size:12px;color:var(--muted,#64748b);white-space:nowrap}
-.thread-messages{padding:1px;overflow:auto;min-height:100%;}
-.thread-message{/*border:1px solid var(--border,#e5e7eb);*//*border-radius:12px*/;margin:0 0 0px;background:var(--soft);overflow:hidden;/*box-shadow:0 1px 2px rgba(15,23,42,.04)*/}
-.thread-message-head{display:flex;align-items:flex-start;gap:10px;padding:13px 14px;border-bottom:1px solid var(--border,#e5e7eb)}
-.thread-avatar{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:grid;place-items:center;background:var(--primary,#e8efff);color:var(--accent-soft);font-weight:700;font-size:12px}
-.thread-person{flex:1;min-width:0}.thread-person-name{font-size:14px;font-weight:650;overflow-wrap:anywhere}.thread-person-email{font-size:12px;color:var(--muted,#64748b);overflow-wrap:anywhere;margin-top:2px}.thread-recipients{font-size:12px;color:var(--muted,#64748b);margin-top:5px;line-height:1.5;overflow-wrap:anywhere}.thread-date{font-size:11px;color:var(--muted,#64748b);white-space:nowrap;padding-top:2px}
-.thread-message-actions{display:flex;align-items:center;gap:3px;flex-wrap:wrap;padding:7px 12px;border-bottom:1px solid var(--panel);background:var(--surface,#f8fafc)}
-.thread-action{border:0;background:transparent;color:var(--text,#334155);border-radius:6px;padding:6px 8px;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;gap:5px}.thread-action:hover{background:var(--hover,#eaf0f8)}.thread-action.danger{color:#dc2626}.thread-action.active{color:#d97706}
-.thread-message-body{padding:16px;overflow-wrap:anywhere;word-break:break-word;line-height:1.6;font-size:14px}.thread-message-body img{max-width:100%;height:auto}.thread-message-body table{max-width:100%;border-collapse:collapse}.thread-message-body pre{white-space:pre-wrap;overflow-wrap:anywhere}.thread-message-body iframe{max-width:100%}
-.thread-attachments{padding:0 14px 14px;display:flex;gap:8px;flex-wrap:wrap}.thread-attachments:empty{display:none}.thread-attachments .attachment{display:flex;align-items:center;gap:7px;max-width:100%;padding:8px 10px;border:1px solid var(--primary,#e5e7eb);border-radius:8px;text-decoration:none;color:inherit;font-size:12px}.thread-attachments .attachment span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}.thread-empty{padding:24px;text-align:center;color:var(--muted,#64748b)}
-@media(max-width:700px){.thread-messages{padding:10px}.thread-message-head{flex-wrap:wrap}.thread-date{margin-left:46px;width:100%}.thread-message-actions{gap:2px}.thread-action{padding:7px 6px}.thread-topbar{padding:10px}.thread-topbar .read-subject{font-size:16px}}
-
-.drawer-logout{display:flex;align-items:center;gap:10px;width:100%;margin:14px 0 0;padding:11px 13px;border:1px solid var(--border,#e5e7eb);border-radius:9px;background:var(--surface,#f8fafc);color:var(--text,#334155);font:inherit;cursor:pointer;text-align:left}
-.drawer-logout:hover{background:var(--hover,#eaf0f8)}
-.theme-swatches button.selected{outline:3px solid var(--mailbox-accent,var(--primary,#2563eb));outline-offset:3px}
-.mail-row-end{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex:0 0 34px}
-.conversation-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px; border: solid 1px;color:var(--muted);font-size:10px;font-weight:700;line-height:1}
-
-/* Reading pane is hidden until a message is selected. */
-.main.reading-hidden #readPane,.main.reading-hidden #paneSplitter{display:none!important}
-.main.reading-hidden .mail-area{flex:1 1 100%;width:100%;min-width:0;}
-/* Compact conversation: latest message open, older messages collapsed. */
-.thread-message{transition:border-color .15s ease,box-shadow .15s ease}
-.thread-message:hover{background: var(--hover)}
-.thread-message.expanded{border-left:3px solid var(--primary,var(--accent,#2563eb));box-shadow:0 2px 7px rgba(15,23,42,.06);background: #0000;}
-.thread-message:not(.expanded) .thread-message-actions,.thread-message:not(.expanded) .thread-message-body,.thread-message:not(.expanded) .thread-attachments{display:none}
-.thread-message-head{cursor:pointer}
-.thread-message-head:focus-visible{outline:2px solid var(--primary,var(--accent,#2563eb));outline-offset:-2px}
-.thread-message-actions{border-bottom:0;border-top:1px solid var(--border,#e5e7eb);background:transparent}
-.editor-tools{order:0}
-.compose-area.rich-editor{order:1}
-
-/* Recipient address directory */
-.compose-label{display:flex;align-items:center;justify-content:flex-end;gap:5px}
-.recipient-directory-trigger{border:0;background:transparent;color:var(--muted,#64748b);padding:3px 4px;border-radius:5px;cursor:pointer;line-height:1}
-.recipient-directory-trigger:hover{background:var(--hover,#eaf0f8);color:var(--primary,#2563eb)}
-.recipient-box{position:relative}
-.recipient-directory-modal{display:none;position:fixed;inset:0;z-index:10050;background:rgba(15,23,42,.55);align-items:center;justify-content:center;padding:16px}
-.recipient-directory-modal.show{display:flex}
-.recipient-directory-dialog{width:min(720px,100%);max-height:min(82vh,760px);display:flex;flex-direction:column;background:var(--panel,#fff);color:var(--text,#1f2937);border:1px solid var(--border,#e5e7eb);border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.25);overflow:hidden}
-.recipient-directory-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--border,#e5e7eb)}
-.recipient-directory-head h3{margin:0;font-size:18px}.recipient-directory-head p{margin:5px 0 0;color:var(--muted,#64748b);font-size:12px}
-.recipient-directory-tools{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border,#e5e7eb);flex-wrap:wrap}
-#recipientDirectorySearch{flex:1;min-width:180px;border:1px solid var(--border,#cbd5e1);border-radius:8px;padding:10px 12px;background:var(--surface,#f8fafc);color:inherit;font:inherit}
-.recipient-select-all{display:flex;align-items:center;gap:7px;white-space:nowrap;font-size:13px}.recipient-directory-tools>span{font-size:12px;color:var(--muted,#64748b);white-space:nowrap}
-.recipient-directory-list{overflow:auto;min-height:180px;max-height:calc(82vh - 220px)}
-.recipient-directory-row{display:flex;align-items:flex-start;gap:11px;padding:12px 20px;border-bottom:1px solid var(--border,#e5e7eb);cursor:pointer}
-.recipient-directory-row:hover{background:var(--hover,#f1f5f9)}.recipient-directory-row input{margin-top:4px;accent-color:var(--primary,#2563eb)}
-.recipient-directory-person{min-width:0;flex:1}.recipient-directory-name{font-size:13px;font-weight:650;overflow-wrap:anywhere}.recipient-directory-meta{font-size:12px;color:var(--muted,#64748b);margin-top:3px;overflow-wrap:anywhere}
-.recipient-directory-loading,.recipient-directory-empty{padding:28px 18px;text-align:center;color:var(--muted,#64748b);font-size:13px}
-.recipient-directory-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-top:1px solid var(--border,#e5e7eb)}.recipient-directory-foot>span{font-size:12px;color:var(--muted,#64748b)}.recipient-directory-foot>div{display:flex;gap:8px}
-@media(max-width:600px){.recipient-directory-modal{padding:8px}.recipient-directory-dialog{max-height:90vh}.recipient-directory-list{max-height:calc(90vh - 230px)}.recipient-directory-head{padding:14px}.recipient-directory-row{padding:12px 14px}.recipient-directory-foot{padding:12px;align-items:flex-start;flex-direction:column}.recipient-directory-foot>div{width:100%}.recipient-directory-foot button{flex:1}}
+  .mail-status.is-delivered { color: #16a34a; display: inline-flex; align-items: center; justify-content: center; margin-left: 8px; }
+  .mail-status.is-delivered .bi { font-size: 16px; }
+  .send-btn.is-sending .send-pending-icon { color: #dc2626 !important; }
+  .send-btn.is-sending { cursor: progress; }
 </style>
+
+
+
 
 </head>
 <body>
@@ -88,11 +40,11 @@
   <div class="theme-palette">
     <strong>Theme colour</strong>
     <div class="theme-swatches">
-      <button data-theme="#2563eb" style="--swatch:#2563eb" aria-label="Blue"></button>
-      <button data-theme="#0f9d78" style="--swatch:#0f9d78" aria-label="Teal"></button>
-      <button data-theme="#7c3aed" style="--swatch:#7c3aed" aria-label="Violet"></button>
-      <button data-theme="#db6b18" style="--swatch:#db6b18" aria-label="Orange"></button>
-      <button data-theme="#c0266d" style="--swatch:#c0266d" aria-label="Pink"></button>
+      <button data-theme="#2563eb" aria-label="Blue"></button>
+      <button data-theme="#0f9d78" aria-label="Teal"></button>
+      <button data-theme="#7c3aed" aria-label="Violet"></button>
+      <button data-theme="#db6b18" aria-label="Orange"></button>
+      <button data-theme="#c0266d" aria-label="Pink"></button>
     </div>
   </div>
 </aside>
@@ -135,7 +87,7 @@
       </div>
       <div id="toolbar" class="toolbar"><button class="icon-btn" id="markReadBtn" title="Mark read"><i class="bi bi-envelope-open"></i></button><button class="icon-btn" id="markUnreadBtn" title="Mark unread"><i class="bi bi-envelope"></i></button><button class="icon-btn" id="archiveBtn" title="Archive"><i class="bi bi-archive"></i></button><button class="icon-btn" id="spamBtn" title="Spam"><i class="bi bi-exclamation-octagon"></i></button><button class="icon-btn" id="deleteBtn" title="Trash"><i class="bi bi-trash3"></i></button></div>
       <div id="mailList" class="mail-list"><div class="loading-inline"><span class="panel-spinner" aria-label="Loading"></span></div></div>
-      <div class="pager"><span id="rangeText">—</span><div style="display:flex;align-items:center;gap:5px"><select id="pageSize"><option value="25">25</option><option value="50">50</option></select><button id="prevPage" disabled>‹</button><span id="pageText">1 / 1</span><button id="nextPage" disabled>›</button></div></div>
+      <div class="pager"><span id="rangeText">—</span><div class="pager-controls"><select id="pageSize"><option value="25">25</option><option value="50">50</option></select><button id="prevPage" disabled>‹</button><span id="pageText">1 / 1</span><button id="nextPage" disabled>›</button></div></div>
     </section>
     <div id="paneSplitter" class="splitter" role="separator" aria-orientation="vertical" aria-label="Resize mail list and reading pane" title="Drag to resize"></div>
     <section id="readPane" class="read-pane">
@@ -151,7 +103,7 @@
 </div>
 </div>
 
-<div id="successModal" class="modal"><div class="success-box"><div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div><h3>Message Sent</h3><p>Your message has been successfully delivered.</p><div id="successReference" class="reference">Reference: —</div><div style="margin-top:20px"><button id="successOk" class="send-btn" style="margin:auto;min-width:80px">OK</button></div></div></div>
+<div id="successModal" class="modal"><div class="success-box"><div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div><h3>Message Sent</h3><p>Your message has been successfully delivered.</p><div id="successReference" class="reference">Reference: —</div><div class="success-actions"><button id="successOk" class="send-btn success-ok">OK</button></div></div></div>
 <div id="loadingOverlay" class="loading-overlay" aria-hidden="true"><div class="loading-box"><span class="big-spinner" aria-label="Loading"></span></div></div>
 
 <div id="unifiedAlert" class="alert-box" role="alert">
@@ -465,7 +417,7 @@ const ComposerManager = (() => {
           <button class="secondary-btn" type="button" data-action="draft">Save draft</button>
           <button class="secondary-btn" type="button" data-action="discard">Discard</button>
         </div>
-        <button class="send-btn" type="button" data-action="send"><span class="send-spinner"></span><span class="send-label">Send</span></button>
+        <button class="send-btn" type="button" data-action="send"><i class="bi bi-hourglass-split send-pending-icon" aria-hidden="true"></i><span class="send-label">Send</span></button>
       </div>
     `;
     container.appendChild(el);
@@ -787,8 +739,16 @@ const ComposerManager = (() => {
     state.sending = isSending;
     state.el.querySelectorAll('input, textarea, button, [contenteditable]').forEach(el => el.disabled = isSending);
     const sendBtn = state.el.querySelector('[data-action="send"]');
+    const sendIcon = sendBtn.querySelector('.send-pending-icon');
     sendBtn.classList.toggle('loading', isSending);
+    sendBtn.classList.toggle('is-sending', isSending);
     sendBtn.disabled = isSending;
+    if (sendIcon) {
+      sendIcon.className = 'bi ' + (isSending ? 'bi-hourglass-split' : 'bi-send') + ' send-pending-icon';
+      sendIcon.setAttribute('aria-label', isSending ? 'Sending' : 'Send');
+    }
+    const label = sendBtn.querySelector('.send-label');
+    if (label) label.textContent = isSending ? 'Sending…' : 'Send';
   }
 
   async function sendComposer(state) {
@@ -930,13 +890,25 @@ async function load(page=1,opts={}){
 
 function showInboxCount(n){const b=$('inboxCount');if(n>0){b.textContent=n;b.classList.remove('hidden')}else b.classList.add('hidden')}
 
+function sentStatusMarkup(m){
+  // A row in SENT is displayed only after the backend has saved the message.
+  // No recipient read/delivery receipt is requested or inferred.
+  return '<span class="mail-status is-delivered" title="Sent" aria-label="Sent"><i class="bi bi-check-circle"></i></span>';
+}
+
 function renderList(){
  if(!currentMessages.length){
    const folderName = folders[currentFolder] || currentFolder;
    $('mailList').innerHTML='<div class="empty"><div class="empty-title">No messages in '+esc(folderName)+'</div><div class="empty-text">This folder is empty. New messages will appear here.</div></div>';
    return
  }
- $('mailList').innerHTML=currentMessages.map(m=>`<div class="mail-row ${m.isRead?'':'unread'} ${m.mailId===selectedMailId?'selected':''}" data-id="${escAttr(m.mailId)}"><div class="mail-check"><input type="checkbox" data-select="${escAttr(m.mailId)}" ${selectedIds.has(m.mailId)?'checked':''}></div><div class="mail-main"><div class="mail-top"><div class="sender">${esc(m.senderName||m.senderEmail||m.to||'Unknown')}</div><div class="date">${esc(formatDate(m.date))}</div></div><div class="subject" style="color:var(--text)">${esc(m.subject||'(No subject)')} ${m.hasAttachment?'<span class="attachment-dot"><i class="bi bi-paperclip"></i></span>':''}</div><div class="preview">${esc(m.body||'')}</div></div><div class="mail-row-end"><button class="star ${m.isStarred?'active':''}" data-star="${escAttr(m.mailId)}" title="${m.isStarred?'Unstar':'Star'}"><i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i></button>${Number(m.conversationCount||1)>1?`<span class="conversation-count" title="${Number(m.conversationCount)} messages in this conversation">${Number(m.conversationCount)}</span>`:''}</div></div>`).join('');
+ $('mailList').innerHTML=currentMessages.map(m=>{
+    const sent=currentFolder==='SENT';
+    const status=sent?sentStatusMarkup(m):'';
+    const sender=esc(m.senderName||m.senderEmail||m.to||'Unknown');
+    const recipient=sent&&m.to?`<span class="mail-recipient">to ${esc(m.to)}</span>`:'';
+    return `<div class="mail-row ${m.isRead?'':'unread'} ${m.mailId===selectedMailId?'selected':''}" data-id="${escAttr(m.mailId)}"><div class="mail-check"><input type="checkbox" data-select="${escAttr(m.mailId)}" ${selectedIds.has(m.mailId)?'checked':''}></div><div class="mail-main"><div class="mail-top"><div class="sender-line"><span class="sender">${sender}</span>${recipient}</div><div class="date">${esc(formatDate(m.date))}</div></div><div class="subject-line"><div class="subject">${esc(m.subject||'(No subject)')} ${m.hasAttachment?'<span class="attachment-dot"><i class="bi bi-paperclip"></i></span>':''}</div>${status}</div><div class="preview">${esc(m.body||'')}</div></div><div class="mail-row-end"><button class="star ${m.isStarred?'active':''}" data-star="${escAttr(m.mailId)}" title="${m.isStarred?'Unstar':'Star'}"><i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i></button>${Number(m.conversationCount||1)>1?`<span class="conversation-count" title="${Number(m.conversationCount)} messages in this conversation">${Number(m.conversationCount)}</span>`:''}</div></div>`;
+  }).join('');
  document.querySelectorAll('[data-select]').forEach(c=>c.addEventListener('click',e=>{e.stopPropagation();const id=c.dataset.select;if(c.checked)selectedIds.add(id);else selectedIds.delete(id);updateToolbar()}));
  document.querySelectorAll('[data-star]').forEach(b=>b.addEventListener('click',async e=>{e.stopPropagation();const id=b.dataset.star;const m=currentMessages.find(x=>x.mailId===id);if(!m)return;const old=!!m.isStarred;m.isStarred=!old;renderList();try{await MailboxAPI.update({mailId:id,Is_Starred:m.isStarred?'YES':'NO'});invalidateFolderCache();folderViews.clear();if(currentFolder==='STARRED'&&!m.isStarred){currentMessages=currentMessages.filter(x=>x.mailId!==id);renderList()}else{folderCache.delete(cacheKey(currentFolder,currentPage));}showAlert(m.isStarred?'Added to Starred.':'Removed from Starred.','success',1500)}catch(err){m.isStarred=old;renderList();showAlert(err.message||'Unable to update star.','error')}}));
  document.querySelectorAll('.mail-row').forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('input,button'))return;if(currentFolder==='DRAFT')openDraft(r.dataset.id);else openMessage(r.dataset.id)}));
@@ -987,7 +959,7 @@ function renderThread(){
    const m=item.message||{},files=item.attachments||[],mid=escAttr(m.mailId||'');
    const expanded=index===0;
    const recipients=[m.to?`To: ${esc(m.to)}`:'',m.cc?`Cc: ${esc(m.cc)}`:'',m.bcc?`Bcc: ${esc(m.bcc)}`:''].filter(Boolean).join(' · ');
-   const body=String(m.bodyType||'').toUpperCase()==='HTML'?(m.body||''):`<div style="white-space:pre-wrap">${esc(m.body||'')}</div>`;
+   const body=String(m.bodyType||'').toUpperCase()==='HTML'?(m.body||''):`<div class="thread-plain-body">${esc(m.body||'')}</div>`;
    const attachments=files.map(a=>`<a class="attachment" href="${escAttr(a.url||'#')}" target="_blank" rel="noopener noreferrer" download><span><i class="bi bi-paperclip"></i></span><span title="${escAttr(a.fileName)}">${esc(a.fileName||'Attachment')}</span><small>${esc(formatSize(a.size))}</small></a>`).join('');
    return `<article class="thread-message ${expanded?'expanded':''}" data-thread-mail="${mid}">
      <div class="thread-message-head" role="button" tabindex="0" aria-expanded="${expanded}" data-thread-toggle="${mid}"><div class="thread-avatar">${esc(initials(m.senderName,m.senderEmail))}</div><div class="thread-person"><div class="thread-person-name">${esc(m.senderName||m.senderEmail||'Unknown sender')}</div><div class="thread-person-email">${esc(m.senderEmail||'')}</div><div class="thread-recipients">${recipients||'Recipients not available'}</div></div><time class="thread-date">${esc(formatDate(m.date)||m.date||'')}</time></div>
