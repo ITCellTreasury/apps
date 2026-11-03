@@ -10,18 +10,18 @@
 <link rel="stylesheet" href="mailbox-common.css">
 
 <style>
-.thread-topbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--panel,#fff);border-bottom:1px solid var(--border,#e5e7eb)}
+.thread-topbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:12px 16px;/*border-bottom:1px solid var(--border,#e5e7eb)*/}
 .thread-topbar .read-subject{flex:1;min-width:0;font-size:18px;font-weight:650;overflow-wrap:anywhere}
 .thread-count{font-size:12px;color:var(--muted,#64748b);white-space:nowrap}
 .thread-messages{padding:1px;overflow:auto;min-height:100%;}
-.thread-message{/*border:1px solid var(--border,#e5e7eb);*//*border-radius:12px*/;margin:0 0 0px;background:var(--hover);overflow:hidden;/*box-shadow:0 1px 2px rgba(15,23,42,.04)*/}
+.thread-message{/*border:1px solid var(--border,#e5e7eb);*//*border-radius:12px*/;margin:0 0 0px;background:var(--soft);overflow:hidden;/*box-shadow:0 1px 2px rgba(15,23,42,.04)*/}
 .thread-message-head{display:flex;align-items:flex-start;gap:10px;padding:13px 14px;border-bottom:1px solid var(--border,#e5e7eb)}
 .thread-avatar{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:grid;place-items:center;background:var(--primary,#e8efff);color:var(--accent-soft);font-weight:700;font-size:12px}
 .thread-person{flex:1;min-width:0}.thread-person-name{font-size:14px;font-weight:650;overflow-wrap:anywhere}.thread-person-email{font-size:12px;color:var(--muted,#64748b);overflow-wrap:anywhere;margin-top:2px}.thread-recipients{font-size:12px;color:var(--muted,#64748b);margin-top:5px;line-height:1.5;overflow-wrap:anywhere}.thread-date{font-size:11px;color:var(--muted,#64748b);white-space:nowrap;padding-top:2px}
 .thread-message-actions{display:flex;align-items:center;gap:3px;flex-wrap:wrap;padding:7px 12px;border-bottom:1px solid var(--panel);background:var(--surface,#f8fafc)}
 .thread-action{border:0;background:transparent;color:var(--text,#334155);border-radius:6px;padding:6px 8px;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;gap:5px}.thread-action:hover{background:var(--hover,#eaf0f8)}.thread-action.danger{color:#dc2626}.thread-action.active{color:#d97706}
 .thread-message-body{padding:16px;overflow-wrap:anywhere;word-break:break-word;line-height:1.6;font-size:14px}.thread-message-body img{max-width:100%;height:auto}.thread-message-body table{max-width:100%;border-collapse:collapse}.thread-message-body pre{white-space:pre-wrap;overflow-wrap:anywhere}.thread-message-body iframe{max-width:100%}
-.thread-attachments{padding:0 14px 14px;display:flex;gap:8px;flex-wrap:wrap}.thread-attachments:empty{display:none}.thread-attachments .attachment{display:flex;align-items:center;gap:7px;max-width:100%;padding:8px 10px;border:1px solid var(--border,#e5e7eb);border-radius:8px;text-decoration:none;color:inherit;font-size:12px}.thread-attachments .attachment span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}.thread-empty{padding:24px;text-align:center;color:var(--muted,#64748b)}
+.thread-attachments{padding:0 14px 14px;display:flex;gap:8px;flex-wrap:wrap}.thread-attachments:empty{display:none}.thread-attachments .attachment{display:flex;align-items:center;gap:7px;max-width:100%;padding:8px 10px;border:1px solid var(--primary,#e5e7eb);border-radius:8px;text-decoration:none;color:inherit;font-size:12px}.thread-attachments .attachment span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}.thread-empty{padding:24px;text-align:center;color:var(--muted,#64748b)}
 @media(max-width:700px){.thread-messages{padding:10px}.thread-message-head{flex-wrap:wrap}.thread-date{margin-left:46px;width:100%}.thread-message-actions{gap:2px}.thread-action{padding:7px 6px}.thread-topbar{padding:10px}.thread-topbar .read-subject{font-size:16px}}
 
 .drawer-logout{display:flex;align-items:center;gap:10px;width:100%;margin:14px 0 0;padding:11px 13px;border:1px solid var(--border,#e5e7eb);border-radius:9px;background:var(--surface,#f8fafc);color:var(--text,#334155);font:inherit;cursor:pointer;text-align:left}
@@ -32,9 +32,10 @@
 
 /* Reading pane is hidden until a message is selected. */
 .main.reading-hidden #readPane,.main.reading-hidden #paneSplitter{display:none!important}
-.main.reading-hidden .mail-area{flex:1 1 100%;width:100%;min-width:0}
+.main.reading-hidden .mail-area{flex:1 1 100%;width:100%;min-width:0;}
 /* Compact conversation: latest message open, older messages collapsed. */
 .thread-message{transition:border-color .15s ease,box-shadow .15s ease}
+.thread-message:hover{background: var(--hover)}
 .thread-message.expanded{border-left:3px solid var(--primary,var(--accent,#2563eb));box-shadow:0 2px 7px rgba(15,23,42,.06);background: #0000;}
 .thread-message:not(.expanded) .thread-message-actions,.thread-message:not(.expanded) .thread-message-body,.thread-message:not(.expanded) .thread-attachments{display:none}
 .thread-message-head{cursor:pointer}
