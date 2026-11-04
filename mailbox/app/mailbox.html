@@ -13,6 +13,20 @@
   .mail-status.is-delivered .bi { font-size: 16px; }
   .send-btn.is-sending .send-pending-icon { color: #dc2626 !important; }
   .send-btn.is-sending { cursor: progress; }
+
+.mail-date-group{margin:0 0 10px}
+.mail-date-group-title{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--panel-bg, var(--surface, #fff));border-bottom:1px solid var(--border-color, rgba(128,128,128,.18));font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--muted-text, #64748b)}
+.mail-date-group-count{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--soft-bg, rgba(128,128,128,.12))}
+.mail-date-group-items{display:block}
+
+/* Recipient chips can be moved between To, Cc and Bcc by dragging. */
+.recipient-chip[draggable="true"]{cursor:grab;user-select:none}
+.recipient-chip[draggable="true"]:active{cursor:grabbing}
+.recipient-chip.is-dragging{opacity:.4}
+.recipient-box.recipient-drop-target{outline:2px dashed var(--primary, #2563eb);outline-offset:2px;background:var(--soft-bg, rgba(37,99,235,.06))}
+.thread-topbar{position:relative}
+.read-pane-close{flex:0 0 auto;margin-left:8px}
+
 </style>
 
 
@@ -93,7 +107,7 @@
     <section id="readPane" class="read-pane">
       <div id="readEmpty" class="read-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><strong>Select a message</strong><span>Choose an email from the list to read it here.</span></div>
       <div id="readContent" class="read-content hidden">
-        <div class="thread-topbar"><button id="backBtn" class="icon-btn mobile-back" title="Back"><i class="bi bi-chevron-left"></i></button><div id="readSubject" class="read-subject">(No subject)</div><span id="threadCount" class="thread-count"></span></div>
+        <div class="thread-topbar"><button id="backBtn" class="icon-btn mobile-back" title="Back"><i class="bi bi-chevron-left"></i></button><div id="readSubject" class="read-subject">(No subject)</div><span id="threadCount" class="thread-count"></span><button id="closeReadBtn" class="icon-btn read-pane-close" type="button" title="Close reading pane" aria-label="Close reading pane"><i class="bi bi-x-lg"></i></button></div>
         <div id="threadMessages" class="thread-messages"><div class="loading-inline"><span class="panel-spinner" aria-label="Loading"></span></div></div>
       </div>
     </section>
@@ -451,11 +465,28 @@ const ComposerManager = (() => {
     const subjectInput = el.querySelector('[data-field="subject"]');
     const bodyEl = el.querySelector('[data-field="body"]');
 
-    titleEl.textContent = mode === 'reply' ? 'Reply message' : mode === 'forward' ? 'Forward message' : mode === 'draft' ? 'Edit draft' : 'New message';
+    titleEl.textContent = mode === 'reply' ? 'Reply message' : mode === 'replyAll' ? 'Reply all message' : mode === 'forward' ? 'Forward message' : mode === 'draft' ? 'Edit draft' : 'New message';
     badgeEl.classList.toggle('hidden', mode === 'new' || mode === 'draft');
-    badgeEl.textContent = mode === 'reply' ? 'Reply' : 'Forward';
+    badgeEl.textContent = mode === 'reply' ? 'Reply' : mode === 'replyAll' ? 'Reply all' : 'Forward';
 
     if (mode === 'reply' && message) { addRecipient(state, 'to', message.senderEmail || '', false); subjectInput.value = replySubject(message.subject); bodyEl.innerHTML = '<br><br>'; }
+    if (mode === 'replyAll' && message) {
+      const own = String((user.email || user.emailAddress || '')).trim().toLowerCase();
+      const sender = String(message.senderEmail || '').trim().toLowerCase();
+      const splitEmails = value => {
+        const raw = String(value || '');
+        const found = raw.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi);
+        return found ? [...new Set(found.map(v => v.trim()))] : raw.split(/[;,]+/).map(v => v.trim()).filter(validEmail);
+      };
+      // For a message sent by the current user, address the original recipients.
+      const toList = (sender && own && sender === own ? splitEmails(message.to) : splitEmails(message.senderEmail)).filter(email => email.toLowerCase() !== own);
+      const ccList = [...splitEmails(message.to), ...splitEmails(message.cc)]
+        .filter(email => email.toLowerCase() !== own && !toList.some(to => to.toLowerCase() === email.toLowerCase()));
+      [...new Set(toList)].forEach(email => addRecipient(state, 'to', email, false));
+      [...new Set(ccList)].forEach(email => addRecipient(state, 'cc', email, false));
+      subjectInput.value = replySubject(message.subject);
+      bodyEl.innerHTML = '<br><br>';
+    }
     if (mode === 'forward' && message) { subjectInput.value = forwardSubject(message.subject); bodyEl.innerHTML = createForwarded(message); }
     if (mode === 'draft' && message) {
       subjectInput.value = message.subject || message.Subject || '';
@@ -475,6 +506,39 @@ const ComposerManager = (() => {
     const tab = state.tab;
     tab.addEventListener('click', (e) => { if (e.target.closest('.compose-tab-close')) { requestCloseComposer(state.id); return; } activateComposer(state.id); });
     el.querySelector('[data-action="close"]').addEventListener('click', () => requestCloseComposer(state.id));
+    // Move a recipient chip between To, Cc and Bcc by dragging it to another field.
+    el.addEventListener('dragstart', e => {
+      const chip=e.target.closest('.recipient-chip[data-recipient-email]');
+      if(!chip)return;
+      const payload={email:chip.dataset.recipientEmail,from:chip.dataset.recipientField};
+      e.dataTransfer.effectAllowed='move';
+      e.dataTransfer.setData('application/x-mail-recipient',JSON.stringify(payload));
+      e.dataTransfer.setData('text/plain',payload.email);
+      chip.classList.add('is-dragging');
+    });
+    el.addEventListener('dragend', e => {
+      const chip=e.target.closest('.recipient-chip');
+      if(chip)chip.classList.remove('is-dragging');
+      el.querySelectorAll('.recipient-drop-target').forEach(x=>x.classList.remove('recipient-drop-target'));
+    });
+    ['to','cc','bcc'].forEach(targetField=>{
+      const box=el.querySelector(`[data-recipient-box="${targetField}"]`);
+      box.addEventListener('dragover',e=>{if(e.dataTransfer.types.includes('application/x-mail-recipient')||e.dataTransfer.types.includes('text/plain')){e.preventDefault();e.dataTransfer.dropEffect='move';box.classList.add('recipient-drop-target')}});
+      box.addEventListener('dragleave',e=>{if(!box.contains(e.relatedTarget))box.classList.remove('recipient-drop-target')});
+      box.addEventListener('drop',e=>{
+        e.preventDefault();box.classList.remove('recipient-drop-target');
+        let payload=null;
+        try{payload=JSON.parse(e.dataTransfer.getData('application/x-mail-recipient')||'null')}catch(_){}
+        if(!payload||!payload.email||!['to','cc','bcc'].includes(payload.from)||payload.from===targetField)return;
+        const sourceList=state.recipients[payload.from];
+        const index=sourceList.findIndex(x=>x.toLowerCase()===String(payload.email).toLowerCase());
+        if(index<0)return;
+        const email=sourceList.splice(index,1)[0];
+        if(!state.recipients[targetField].some(x=>x.toLowerCase()===email.toLowerCase()))state.recipients[targetField].push(email);
+        renderRecipientChips(state,payload.from);renderRecipientChips(state,targetField);
+        state.dirty=true;
+      });
+    });
     el.querySelector('[data-action="send"]').addEventListener('click', () => sendComposer(state));
 
     const fileInput = el.querySelector('[data-role="file-input"]');
@@ -568,7 +632,7 @@ const ComposerManager = (() => {
   }
   function renderRecipientChips(state, field) {
     const host = state.el.querySelector(`[data-chips="${field}"]`);
-    host.innerHTML = state.recipients[field].map((email, i) => `<span class="recipient-chip"><span>${esc(email)}</span><button type="button" aria-label="Remove ${esc(email)}" data-remove-recipient="${i}">×</button></span>`).join('');
+    host.innerHTML = state.recipients[field].map((email, i) => `<span class="recipient-chip" draggable="true" data-recipient-email="${escAttr(email)}" data-recipient-field="${field}" title="Drag to move to To, Cc or Bcc"><span>${esc(email)}</span><button type="button" aria-label="Remove ${esc(email)}" data-remove-recipient="${i}">×</button></span>`).join('');
     host.querySelectorAll('[data-remove-recipient]').forEach(btn => btn.addEventListener('click', () => { state.recipients[field].splice(Number(btn.dataset.removeRecipient), 1); renderRecipientChips(state, field); }));
   }
   function recipientValue(state, field) { commitRecipient(state, field); return state.recipients[field].join(', '); }
@@ -640,7 +704,7 @@ const ComposerManager = (() => {
     const el = state.el;
     const title = el.querySelector('[data-role="title"]').textContent;
     const subject = el.querySelector('[data-field="subject"]').value.trim();
-    const label = title === 'Reply message' ? 'Reply: ' + (subject || 'message') : title === 'Forward message' ? 'Forward: ' + (subject || 'message') : 'New message';
+    const label = title === 'Reply message' ? 'Reply: ' + (subject || 'message') : title === 'Reply all message' ? 'Reply all: ' + (subject || 'message') : title === 'Forward message' ? 'Forward: ' + (subject || 'message') : 'New message';
     state.tab.querySelector('.compose-tab-label').textContent = label;
   }
 
@@ -801,9 +865,9 @@ const ComposerManager = (() => {
         body: el.querySelector('[data-field="body"]').innerHTML,
         bodyType: 'HTML',
         attachments,
-        threadId: state.mode === 'reply' && original ? (original.threadId || '') : '',
-        parentMessageId: state.mode === 'reply' && original ? (original.messageId || '') : '',
-        replyTo: state.mode === 'reply' && original ? (original.senderEmail || '') : '',
+        threadId: ['reply','replyAll'].includes(state.mode) && original ? (original.threadId || '') : '',
+        parentMessageId: ['reply','replyAll'].includes(state.mode) && original ? (original.messageId || '') : '',
+        replyTo: ['reply','replyAll'].includes(state.mode) && original ? (original.senderEmail || '') : '',
         forwardedFrom: state.mode === 'forward' && original ? (original.messageId || '') : ''
       });
       setSendingState(state, false);
@@ -830,9 +894,9 @@ const ComposerManager = (() => {
         subject: el.querySelector('[data-field="subject"]').value,
         body: el.querySelector('[data-field="body"]').innerHTML,
         bodyType: 'HTML',
-        threadId: state.mode === 'reply' && original ? (original.threadId || '') : '',
-        parentMessageId: state.mode === 'reply' && original ? (original.messageId || '') : '',
-        replyTo: state.mode === 'reply' && original ? (original.senderEmail || '') : '',
+        threadId: ['reply','replyAll'].includes(state.mode) && original ? (original.threadId || '') : '',
+        parentMessageId: ['reply','replyAll'].includes(state.mode) && original ? (original.messageId || '') : '',
+        replyTo: ['reply','replyAll'].includes(state.mode) && original ? (original.senderEmail || '') : '',
         forwardedFrom: state.mode === 'forward' && original ? (original.messageId || '') : ''
       });
       setSendingState(state, false);
@@ -916,19 +980,54 @@ function sentStatusMarkup(m){
   return '<span class="mail-status is-delivered" title="Sent" aria-label="Sent"><i class="bi bi-check-circle"></i></span>';
 }
 
+
+function mailDateParts(value){
+ const ms=parseMailDate(value);
+ if(!ms)return null;
+ const d=new Date(ms);
+ return Number.isNaN(d.getTime())?null:d;
+}
+function mailDateGroup(value){
+ const d=mailDateParts(value);
+ if(!d)return {key:'undated',label:'Date unavailable'};
+ const now=new Date(), today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+ const day=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+ const diff=Math.floor((today-day)/86400000);
+ if(diff===0)return {key:'today',label:'Today'};
+ if(diff>0&&diff<=7)return {key:'last-week',label:'Last week'};
+ if(d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth())return {key:'this-month',label:'This month'};
+ const previousMonth=new Date(now.getFullYear(),now.getMonth()-1,1);
+ if(d.getFullYear()===previousMonth.getFullYear()&&d.getMonth()===previousMonth.getMonth())
+   return {key:'last-month',label:previousMonth.toLocaleDateString([], {month:'long',year:'numeric'})};
+ const key=`month-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+ return {key,label:d.toLocaleDateString([], {month:'long',year:'numeric'})};
+}
+function renderMailRow(m){
+ const sent=currentFolder==='SENT';
+ const status=sent?sentStatusMarkup(m):'';
+ const sender=esc(m.senderName||m.senderEmail||m.to||'Unknown');
+ const recipient=sent&&m.to?`<span class="mail-recipient">to ${esc(m.to)}</span>`:'';
+ return `<div class="mail-row ${m.isRead?'':'unread'} ${m.mailId===selectedMailId?'selected':''}" data-id="${escAttr(m.mailId)}"><div class="mail-check"><input type="checkbox" data-select="${escAttr(m.mailId)}" ${selectedIds.has(m.mailId)?'checked':''}></div><div class="mail-main"><div class="mail-top"><div class="sender-line"><span class="sender">${sender}</span>${recipient}</div><div class="date">${esc(formatDate(m.date))}</div></div><div class="subject-line"><div class="subject">${esc(m.subject||'(No subject)')} ${m.hasAttachment?'<span class="attachment-dot"><i class="bi bi-paperclip"></i></span>':''}</div>${status}</div><div class="preview">${esc(m.body||'')}</div></div><div class="mail-row-end"><button class="star ${m.isStarred?'active':''}" data-star="${escAttr(m.mailId)}" title="${m.isStarred?'Unstar':'Star'}"><i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i></button>${Number(m.conversationCount||1)>1?`<span class="conversation-count" title="${Number(m.conversationCount)} messages in this conversation">${Number(m.conversationCount)}</span>`:''}</div></div>`;
+}
 function renderList(){
  if(!currentMessages.length){
    const folderName = folders[currentFolder] || currentFolder;
    $('mailList').innerHTML='<div class="empty"><div class="empty-title">No messages in '+esc(folderName)+'</div><div class="empty-text">This folder is empty. New messages will appear here.</div></div>';
-   return
+   return;
  }
- $('mailList').innerHTML=currentMessages.map(m=>{
-    const sent=currentFolder==='SENT';
-    const status=sent?sentStatusMarkup(m):'';
-    const sender=esc(m.senderName||m.senderEmail||m.to||'Unknown');
-    const recipient=sent&&m.to?`<span class="mail-recipient">to ${esc(m.to)}</span>`:'';
-    return `<div class="mail-row ${m.isRead?'':'unread'} ${m.mailId===selectedMailId?'selected':''}" data-id="${escAttr(m.mailId)}"><div class="mail-check"><input type="checkbox" data-select="${escAttr(m.mailId)}" ${selectedIds.has(m.mailId)?'checked':''}></div><div class="mail-main"><div class="mail-top"><div class="sender-line"><span class="sender">${sender}</span>${recipient}</div><div class="date">${esc(formatDate(m.date))}</div></div><div class="subject-line"><div class="subject">${esc(m.subject||'(No subject)')} ${m.hasAttachment?'<span class="attachment-dot"><i class="bi bi-paperclip"></i></span>':''}</div>${status}</div><div class="preview">${esc(m.body||'')}</div></div><div class="mail-row-end"><button class="star ${m.isStarred?'active':''}" data-star="${escAttr(m.mailId)}" title="${m.isStarred?'Unstar':'Star'}"><i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i></button>${Number(m.conversationCount||1)>1?`<span class="conversation-count" title="${Number(m.conversationCount)} messages in this conversation">${Number(m.conversationCount)}</span>`:''}</div></div>`;
-  }).join('');
+ // Group the currently loaded page without changing the server pagination or sort order.
+ const groups=[];
+ const groupMap=new Map();
+ currentMessages.forEach(m=>{
+   const g=mailDateGroup(m.date);
+   if(!groupMap.has(g.key)){const bucket={...g,messages:[]};groupMap.set(g.key,bucket);groups.push(bucket);}
+   groupMap.get(g.key).messages.push(m);
+ });
+ $('mailList').innerHTML=groups.map(g=>`
+   <section class="mail-date-group" data-date-group="${escAttr(g.key)}">
+     <div class="mail-date-group-title"><span>${esc(g.label)}</span><span class="mail-date-group-count">${g.messages.length}</span></div>
+     <div class="mail-date-group-items">${g.messages.map(renderMailRow).join('')}</div>
+   </section>`).join('');
  document.querySelectorAll('[data-select]').forEach(c=>c.addEventListener('click',e=>{e.stopPropagation();const id=c.dataset.select;if(c.checked)selectedIds.add(id);else selectedIds.delete(id);updateToolbar()}));
  document.querySelectorAll('[data-star]').forEach(b=>b.addEventListener('click',async e=>{e.stopPropagation();const id=b.dataset.star;const m=currentMessages.find(x=>x.mailId===id);if(!m)return;const old=!!m.isStarred;m.isStarred=!old;renderList();try{await MailboxAPI.update({mailId:id,Is_Starred:m.isStarred?'YES':'NO'});invalidateFolderCache();folderViews.clear();if(currentFolder==='STARRED'&&!m.isStarred){currentMessages=currentMessages.filter(x=>x.mailId!==id);renderList()}else{folderCache.delete(cacheKey(currentFolder,currentPage));}showAlert(m.isStarred?'Added to Starred.':'Removed from Starred.','success',1500)}catch(err){m.isStarred=old;renderList();showAlert(err.message||'Unable to update star.','error')}}));
  document.querySelectorAll('.mail-row').forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('input,button'))return;if(currentFolder==='DRAFT')openDraft(r.dataset.id);else openMessage(r.dataset.id)}));
@@ -991,6 +1090,7 @@ function renderThread(){
      ${attachments?`<div class="thread-attachments">${attachments}</div>`:''}
      <div class="thread-message-actions">
        <button class="thread-action" data-thread-action="reply" data-mail="${mid}" title="Reply"><i class="bi bi-reply"></i> Reply</button>
+       <button class="thread-action" data-thread-action="replyAll" data-mail="${mid}" title="Reply all"><i class="bi bi-reply-all"></i> Reply all</button>
        <button class="thread-action" data-thread-action="forward" data-mail="${mid}" title="Forward"><i class="bi bi-forward"></i> Forward</button>
        <button class="thread-action ${m.isStarred?'active':''}" data-thread-action="star" data-mail="${mid}" title="${m.isStarred?'Unstar':'Star'}"><i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i></button>
        <button class="thread-action" data-thread-action="read" data-mail="${mid}" title="Mark ${m.isRead?'unread':'read'}"><i class="bi ${m.isRead?'bi-envelope':'bi-envelope-open'}"></i> ${m.isRead?'Unread':'Read'}</button>
@@ -1027,7 +1127,7 @@ async function refreshThread(){
 async function threadMessageAction(mailId,action){
  const item=threadMessages.find(x=>String(x.message.mailId)===String(mailId));if(!item)return;
  const m=item.message;
- if(action==='reply'||action==='forward'){
+ if(action==='reply'||action==='replyAll'||action==='forward'){
    ComposerManager.createComposer(action,m,item.attachments||[]);return;
  }
  let changes={};
@@ -1066,6 +1166,7 @@ function closeRead(){selectedMailId='';selectedThreadMailId='';selectedMessage=n
 $('composeBtn').addEventListener('click',()=>ComposerManager.createComposer('new'));
 $('successOk').addEventListener('click',()=>{$('successModal').classList.remove('show');});
 $('backBtn').addEventListener('click',closeRead);
+$('closeReadBtn').addEventListener('click',closeRead);
 
 /* sort dropdown — sync with saved preference */
 $('sortSelect').value = currentSort;
