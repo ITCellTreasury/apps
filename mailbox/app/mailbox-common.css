@@ -11,7 +11,7 @@
   --border:#e5eaf1;
 
   --surface:rgba(255,255,255,.88);
-  --input-bg:rgba(255,255,255,.86);
+  --input-bg:rgb(255, 255, 255);
   --input-focus-bg:#fff;
 
   --page-top:#f8fafc;
@@ -627,7 +627,7 @@ body{overflow:hidden}
 .compose-tabs{display:flex;align-items:flex-end;gap:5px;min-width:0;flex:1;height:100%;overflow-x:auto;overflow-y:hidden}
 .workspace-tab,.compose-tab{height:36px;display:flex;align-items:center;flex:0 0 auto;cursor:pointer;white-space:nowrap}
 .compose-tab{gap:12px;max-width:280px}
-.compose-tab.active{background:var(--panel);color:var(--primary);font-weight:700}
+.compose-tab.active{background:var(--selected);color:var(--primary);font-weight:700;border-bottom: solid;}
 .compose-tab-label{overflow:hidden;text-overflow:ellipsis;max-width:235px}
 .compose-tab-close{font-size:18px;line-height:12px;padding:0 2px;color:var(--muted);cursor:pointer}
 .compose-tab-close:hover{color:var(--text)}
@@ -688,7 +688,7 @@ body{overflow:hidden}
 .app{width:100%;height:100vh;height:100dvh;min-height:0;display:flex;flex-direction:column}
 .workspace-tabs{flex:0 0 42px;width:100%;min-width:0;display:flex;align-items:flex-end;gap:5px;padding:0 12px;background:var(--panel);border-bottom:1px solid var(--border);overflow:hidden}
 .workspace-tab,.compose-tab{height:36px;display:flex;align-items:center;gap:10px;flex:0 0 auto;padding:8px 15px;border:1px solid var(--border);border-bottom:0;border-radius:9px 9px 0 0;background:var(--soft);color:var(--text);font-size:12px;cursor:pointer;white-space:nowrap}
-.workspace-tab.active,.compose-tab.active{background:var(--panel);color:var(--primary);font-weight:700}
+.workspace-tab.active,.compose-tab.active{background:var(--selected);color:var(--primary);font-weight:700}
 .compose-tabs{height:100%;display:flex;align-items:flex-end;gap:5px;min-width:0;flex:1;overflow-x:auto;overflow-y:hidden}
 .compose-tab{max-width:300px}
 .compose-tab-label{max-width:245px;overflow:hidden;text-overflow:ellipsis}
