@@ -58,7 +58,7 @@
     --border:#394353;
 
     --surface:rgba(28,34,45,.88);
-    --input-bg:rgba(22,28,38,.88);
+    --input-bg:rgb(20, 27, 35);
     --input-focus-bg:#1c2430;
 
     --page-top:#111722;
@@ -995,7 +995,7 @@ body{overflow:hidden}
 .recipient-chip button{border:0;background:transparent;cursor:pointer;font-size:16px;line-height:1;padding:0 1px;color:inherit}
 .recipient-box .autocomplete{left:0;right:0;top:100%;z-index:30}
 
-.thread-topbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:12px 16px;/*border-bottom:1px solid var(--border,#e5e7eb)*/}
+.thread-topbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:12px 16px;background: var(--input-bg);/*border-bottom:1px solid var(--border,#e5e7eb)*/}
 .thread-topbar .read-subject{flex:1;min-width:0;font-size:18px;font-weight:650;overflow-wrap:anywhere}
 .thread-count{font-size:12px;color:var(--muted,#64748b);white-space:nowrap}
 .thread-messages{padding:1px;overflow:auto;min-height:100%;}
