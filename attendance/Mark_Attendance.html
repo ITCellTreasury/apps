@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#155eef"><title>Attendance Register - Mark Attendance</title><style>
+:root{color-scheme:light;--bg:#f3f6fb;--card:#fff;--ink:#17243a;--muted:#68758a;--line:#dce4ef;--primary:#155eef;--primary2:#0b48c5;--good:#13834b;--bad:#c43232;--soft:#eaf1ff}
+@media(prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#101827;--card:#182437;--ink:#edf3ff;--muted:#aab7ca;--line:#304158;--primary:#76a5ff;--primary2:#9bbcff;--good:#5bd69a;--bad:#ff8585;--soft:#243653}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial}header{background:var(--card);border-bottom:1px solid var(--line);padding:16px max(18px,calc((100% - 1100px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}header h1{font-size:20px;margin:0}main{max-width:1100px;margin:24px auto;padding:0 16px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 5px 20px #1020400a}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tab{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 14px;cursor:pointer}.tab.active{background:var(--soft);border-color:var(--primary);color:var(--primary);font-weight:700}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field{display:flex;flex-direction:column;gap:5px}.field.full{grid-column:1/-1}label{font-size:13px;font-weight:650;color:var(--muted)}input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);font:inherit;min-height:42px}input:focus,select:focus{outline:2px solid var(--primary);outline-offset:1px}button{border:0;border-radius:9px;padding:10px 15px;background:var(--primary);color:white;font-weight:700;cursor:pointer}button.secondary{background:var(--soft);color:var(--primary)}button.danger{background:#b52e35}button:disabled{opacity:.5;cursor:not-allowed}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.notice{padding:11px 13px;border-radius:9px;margin:12px 0;background:var(--soft);color:var(--ink)}.notice.error{background:#ffe9e9;color:#9f2222}.notice.success{background:#e4f8ed;color:#11683c}[hidden]{display:none!important}.muted{color:var(--muted)}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:650px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:14px}th{color:var(--muted);font-weight:700}.pill{display:inline-block;padding:3px 9px;border-radius:99px;background:var(--soft);color:var(--primary);font-size:12px;font-weight:700}.pill.off{background:#ffe9e9;color:#a52c2c}.topline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.hero{text-align:center;padding:28px 12px}.hero h2{font-size:25px;margin:8px 0}.big-id{font-size:22px;letter-spacing:2px;text-align:center}.stat{font-size:13px;color:var(--muted)}footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}@media(max-width:650px){main{margin:14px auto}.grid{grid-template-columns:1fr}.card{padding:15px}header{padding:13px 16px}header h1{font-size:18px}}
+</style></head>
+<body>
+<header><h1>Attendance Register · Mark Attendance</h1><span class="pill">GPS verified</span></header>
+<main><section class="card hero"><div class="muted">Employee attendance</div><h2>Mark your attendance</h2><p class="muted">Enter your Attendance ID and verify your current location.</p>
+<div class="field"><label for="attendanceId">Attendance ID</label><input id="attendanceId" class="big-id" placeholder="Enter Attendance ID" autocomplete="off"></div>
+<div class="actions" style="justify-content:center"><button id="fetchUser">Fetch details</button></div>
+<div id="userBox" class="notice" hidden></div><div id="gpsBox" class="notice" hidden></div>
+<div class="actions" style="justify-content:center"><button id="markBtn" disabled>Verify location & mark attendance</button></div>
+<div id="result" class="notice" hidden></div></section>
+<section class="card"><h3>Attendance instructions</h3><ul><li>Enable Location/GPS and allow location access in your browser.</li><li>Stand within the configured office perimeter.</li><li>First marking each day is Opening; the latest marking becomes Closing. Other markings are retained as Intermediate.</li><li>Use the same Attendance ID for every marking.</li></ul><p class="muted">Location verification requires an internet connection and a secure HTTPS hosting context. GPS accuracy varies by device and environment.</p></section></main>
+<footer>Attendance Register · Google Sheets backend</footer>
+<script>
+const API_KEY='https://script.google.com/macros/s/AKfycbzlEtGiwOjJUQvO3ViyiPUmswcch_989R5L9dqgVh_EafiRC3Mvr9n_QL8KWGDXUYRaYQ/exec';
+const $=id=>document.getElementById(id);
+function apiUrl(){return localStorage.getItem(API_KEY)||''}
+function setApiUrl(v){localStorage.setItem(API_KEY,v.trim())}
+function jsonp(action, data={}) {
+  return new Promise((resolve,reject)=>{
+    const url=apiUrl();
+    if(!url){reject(new Error('Configure the Apps Script Web App URL first.'));return}
+    const cb='att_cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
+    const s=document.createElement('script');
+    const timer=setTimeout(()=>{cleanup();reject(new Error('Request timed out. Check the API URL and deployment access.'))},20000);
+    function cleanup(){clearTimeout(timer);delete window[cb];s.remove()}
+    window[cb]=(res)=>{cleanup(); if(res&&res.ok)resolve(res);else reject(new Error(res?.error||'Request failed'))};
+    const params=new URLSearchParams({action,callback:cb});
+    if(data && Object.keys(data).length) params.set('payload',JSON.stringify(data));
+    s.src=url+(url.includes('?')?'&':'?')+params.toString();
+    s.onerror=()=>{cleanup();reject(new Error('Could not reach Apps Script. Verify the deployed /exec URL and internet connection.'))};
+    document.body.appendChild(s);
+  });
+}
+function show(el,msg,type='info'){el.textContent=msg;el.className='notice '+type;el.hidden=false}
+function hide(el){el.hidden=true}
+function fmtDate(v){return v?new Date(v).toLocaleDateString():'—'}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function adminToken(){return sessionStorage.getItem('ATT_ADMIN_TOKEN')||''}
+async function adminLogin(){
+  const username=$('adminUser').value.trim(),password=$('adminPass').value;
+  const r=await jsonp('adminLogin',{username,password});
+  sessionStorage.setItem('ATT_ADMIN_TOKEN',r.token);
+  $('loginPanel').hidden=true;$('adminApp').hidden=false;
+  return r;
+}
+function adminLogout(){sessionStorage.removeItem('ATT_ADMIN_TOKEN');location.reload()}
+async function requireAdmin(){
+  if(adminToken()){
+    try{await jsonp('adminCheck',{token:adminToken()});$('loginPanel').hidden=true;$('adminApp').hidden=false;return true}catch(e){sessionStorage.removeItem('ATT_ADMIN_TOKEN')}
+  }
+  $('loginPanel').hidden=false;$('adminApp').hidden=true;return false;
+}
+function authData(data={}){return {...data,token:adminToken()}}
+
+
+let currentUser=null,currentPosition=null;
+$('fetchUser').onclick=async()=>{hide($('result'));$('markBtn').disabled=true;currentUser=null;try{const id=$('attendanceId').value.trim();if(!id)throw new Error('Enter your Attendance ID.');const r=await jsonp('lookupUser',{attendanceId:id});currentUser=r.user;show($('userBox'),`${currentUser.name} · ${currentUser.office} · ${currentUser.attendanceId}`,'success');$('markBtn').disabled=false}catch(e){show($('userBox'),e.message,'error')}};
+$('markBtn').onclick=async()=>{if(!currentUser)return;hide($('result'));$('markBtn').disabled=true;show($('gpsBox'),'Acquiring GPS location…');
+if(!navigator.geolocation){show($('gpsBox'),'Geolocation is not supported by this browser.','error');$('markBtn').disabled=false;return}
+navigator.geolocation.getCurrentPosition(async pos=>{currentPosition={latitude:pos.coords.latitude,longitude:pos.coords.longitude,accuracy:pos.coords.accuracy};show($('gpsBox'),`GPS acquired. Accuracy ±${Math.round(pos.coords.accuracy)} metres. Sending attendance…`);
+try{const r=await jsonp('markAttendance',{attendanceId:currentUser.attendanceId,...currentPosition});show($('result'),`${r.message} · ${r.time} · Distance: ${r.distance} m`,'success');}catch(e){show($('result'),e.message,'error')}finally{$('markBtn').disabled=false}},err=>{const msg={1:'Location permission denied. Allow location access and retry.',2:'Location unavailable. Check GPS and retry.',3:'GPS request timed out. Retry in an open area.'};show($('gpsBox'),msg[err.code]||err.message,'error');$('markBtn').disabled=false},{enableHighAccuracy:true,timeout:20000,maximumAge:0})};
+</script></body></html>

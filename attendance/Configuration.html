@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#155eef"><title>Attendance Register - Configuration</title><style>
+:root{color-scheme:light;--bg:#f3f6fb;--card:#fff;--ink:#17243a;--muted:#68758a;--line:#dce4ef;--primary:#155eef;--primary2:#0b48c5;--good:#13834b;--bad:#c43232;--soft:#eaf1ff}
+@media(prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#101827;--card:#182437;--ink:#edf3ff;--muted:#aab7ca;--line:#304158;--primary:#76a5ff;--primary2:#9bbcff;--good:#5bd69a;--bad:#ff8585;--soft:#243653}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial}header{background:var(--card);border-bottom:1px solid var(--line);padding:16px max(18px,calc((100% - 1100px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}header h1{font-size:20px;margin:0}main{max-width:1100px;margin:24px auto;padding:0 16px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 5px 20px #1020400a}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tab{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 14px;cursor:pointer}.tab.active{background:var(--soft);border-color:var(--primary);color:var(--primary);font-weight:700}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field{display:flex;flex-direction:column;gap:5px}.field.full{grid-column:1/-1}label{font-size:13px;font-weight:650;color:var(--muted)}input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);font:inherit;min-height:42px}input:focus,select:focus{outline:2px solid var(--primary);outline-offset:1px}button{border:0;border-radius:9px;padding:10px 15px;background:var(--primary);color:white;font-weight:700;cursor:pointer}button.secondary{background:var(--soft);color:var(--primary)}button.danger{background:#b52e35}button:disabled{opacity:.5;cursor:not-allowed}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.notice{padding:11px 13px;border-radius:9px;margin:12px 0;background:var(--soft);color:var(--ink)}.notice.error{background:#ffe9e9;color:#9f2222}.notice.success{background:#e4f8ed;color:#11683c}[hidden]{display:none!important}.muted{color:var(--muted)}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:650px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:14px}th{color:var(--muted);font-weight:700}.pill{display:inline-block;padding:3px 9px;border-radius:99px;background:var(--soft);color:var(--primary);font-size:12px;font-weight:700}.pill.off{background:#ffe9e9;color:#a52c2c}.topline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.hero{text-align:center;padding:28px 12px}.hero h2{font-size:25px;margin:8px 0}.big-id{font-size:22px;letter-spacing:2px;text-align:center}.stat{font-size:13px;color:var(--muted)}footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}@media(max-width:650px){main{margin:14px auto}.grid{grid-template-columns:1fr}.card{padding:15px}header{padding:13px 16px}header h1{font-size:18px}}
+</style></head>
+<body>
+<header><h1>Attendance Register · Configuration</h1><span class="pill">Administrator</span></header><main>
+<section id="loginPanel" class="card" hidden><h2>Administrator login</h2><div class="grid"><div class="field"><label>Username</label><input id="adminUser" value="admin"></div><div class="field"><label>Password</label><input id="adminPass" type="password"></div></div><div class="actions"><button id="loginBtn">Sign in</button></div><div id="loginMsg" class="notice" hidden></div><p class="muted">First deployment default: admin / ChangeMe123! Change it immediately.</p></section>
+<section id="adminApp" hidden><div class="topline"><p class="muted">Configure the backend endpoint and attendance geofence.</p><button class="secondary" id="logoutBtn">Sign out</button></div>
+<section class="card"><h2>Apps Script API connection</h2><div class="field"><label>Web App URL ending in /exec</label><input id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec"></div><div class="actions"><button id="saveApi">Save API URL on this device</button><button class="secondary" id="testApi">Test connection</button></div><div id="apiMsg" class="notice" hidden></div></section>
+<section class="card"><h2>Office geofence</h2><div class="grid"><div class="field full"><label>Office name</label><input id="officeName" maxlength="160"></div><div class="field"><label>Office latitude</label><input id="latitude" type="number" step="any" min="-90" max="90" placeholder="8.5241"></div><div class="field"><label>Office longitude</label><input id="longitude" type="number" step="any" min="-180" max="180" placeholder="76.9366"></div><div class="field"><label>Permitted radius (metres)</label><input id="radius" type="number" min="1" max="10000" step="1" value="10"></div><div class="field"><label>Maximum accepted GPS accuracy (metres)</label><input id="maxAccuracy" type="number" min="1" max="1000" value="50"></div></div><div class="actions"><button id="saveConfig">Save configuration</button><button id="getLocation" class="secondary">Use this device's current location</button></div><div id="configMsg" class="notice" hidden></div><p class="muted">A 10 m radius is strict. For reliable use, set maximum GPS accuracy thoughtfully; indoor GPS may not achieve this precision.</p></section></section></main>
+<footer>Attendance Register · Google Sheets backend</footer>
+<script>
+const API_KEY='https://script.google.com/macros/s/AKfycbzlEtGiwOjJUQvO3ViyiPUmswcch_989R5L9dqgVh_EafiRC3Mvr9n_QL8KWGDXUYRaYQ/exec';
+const $=id=>document.getElementById(id);
+function apiUrl(){return localStorage.getItem(API_KEY)||''}
+function setApiUrl(v){localStorage.setItem(API_KEY,v.trim())}
+function jsonp(action, data={}) {
+  return new Promise((resolve,reject)=>{
+    const url=apiUrl();
+    if(!url){reject(new Error('Configure the Apps Script Web App URL first.'));return}
+    const cb='att_cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
+    const s=document.createElement('script');
+    const timer=setTimeout(()=>{cleanup();reject(new Error('Request timed out. Check the API URL and deployment access.'))},20000);
+    function cleanup(){clearTimeout(timer);delete window[cb];s.remove()}
+    window[cb]=(res)=>{cleanup(); if(res&&res.ok)resolve(res);else reject(new Error(res?.error||'Request failed'))};
+    const params=new URLSearchParams({action,callback:cb});
+    if(data && Object.keys(data).length) params.set('payload',JSON.stringify(data));
+    s.src=url+(url.includes('?')?'&':'?')+params.toString();
+    s.onerror=()=>{cleanup();reject(new Error('Could not reach Apps Script. Verify the deployed /exec URL and internet connection.'))};
+    document.body.appendChild(s);
+  });
+}
+function show(el,msg,type='info'){el.textContent=msg;el.className='notice '+type;el.hidden=false}
+function hide(el){el.hidden=true}
+function fmtDate(v){return v?new Date(v).toLocaleDateString():'—'}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function adminToken(){return sessionStorage.getItem('ATT_ADMIN_TOKEN')||''}
+async function adminLogin(){
+  const username=$('adminUser').value.trim(),password=$('adminPass').value;
+  const r=await jsonp('adminLogin',{username,password});
+  sessionStorage.setItem('ATT_ADMIN_TOKEN',r.token);
+  $('loginPanel').hidden=true;$('adminApp').hidden=false;
+  return r;
+}
+function adminLogout(){sessionStorage.removeItem('ATT_ADMIN_TOKEN');location.reload()}
+async function requireAdmin(){
+  if(adminToken()){
+    try{await jsonp('adminCheck',{token:adminToken()});$('loginPanel').hidden=true;$('adminApp').hidden=false;return true}catch(e){sessionStorage.removeItem('ATT_ADMIN_TOKEN')}
+  }
+  $('loginPanel').hidden=false;$('adminApp').hidden=true;return false;
+}
+function authData(data={}){return {...data,token:adminToken()}}
+
+
+$('loginBtn').onclick=async()=>{try{await adminLogin();loadConfig()}catch(e){show($('loginMsg'),e.message,'error')}};$('logoutBtn').onclick=adminLogout;
+$('saveApi').onclick=()=>{setApiUrl($('apiUrl').value);show($('apiMsg'),'API URL saved on this device.','success')};
+$('testApi').onclick=async()=>{setApiUrl($('apiUrl').value);try{const r=await jsonp('ping');show($('apiMsg'),r.message||'Connection successful.','success')}catch(e){show($('apiMsg'),e.message,'error')}};
+async function loadConfig(){try{const r=await jsonp('getConfig',authData());$('officeName').value=r.config.officeName||'';$('latitude').value=r.config.latitude??'';$('longitude').value=r.config.longitude??'';$('radius').value=r.config.radius||10;$('maxAccuracy').value=r.config.maxAccuracy||50;$('apiUrl').value=apiUrl()}catch(e){show($('configMsg'),e.message,'error')}}
+$('saveConfig').onclick=async()=>{try{const config={officeName:$('officeName').value.trim(),latitude:Number($('latitude').value),longitude:Number($('longitude').value),radius:Number($('radius').value),maxAccuracy:Number($('maxAccuracy').value)};if(!config.officeName||!$('latitude').value||!$('longitude').value||!Number.isFinite(config.latitude)||!Number.isFinite(config.longitude)||config.latitude < -90||config.latitude>90||config.longitude < -180||config.longitude>180||config.radius<1||config.maxAccuracy<1)throw new Error('Enter valid office name, coordinates, radius and accuracy.');const r=await jsonp('saveConfig',authData({config}));show($('configMsg'),r.message,'success')}catch(e){show($('configMsg'),e.message,'error')}};
+$('getLocation').onclick=()=>{if(!navigator.geolocation){show($('configMsg'),'Geolocation unavailable.','error');return}navigator.geolocation.getCurrentPosition(p=>{$('latitude').value=p.coords.latitude.toFixed(7);$('longitude').value=p.coords.longitude.toFixed(7);show($('configMsg'),`Coordinates captured (accuracy ±${Math.round(p.coords.accuracy)} m).`,'success')},e=>show($('configMsg'),e.message,'error'),{enableHighAccuracy:true,timeout:20000,maximumAge:0})};
+requireAdmin().then(ok=>{if(ok)loadConfig()});
+</script></body></html>
