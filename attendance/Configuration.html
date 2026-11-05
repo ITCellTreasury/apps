@@ -13,7 +13,7 @@
 <section class="card"><h2>Office geofence</h2><div class="grid"><div class="field full"><label>Office name</label><input id="officeName" maxlength="160"></div><div class="field"><label>Office latitude</label><input id="latitude" type="number" step="any" min="-90" max="90" placeholder="8.5241"></div><div class="field"><label>Office longitude</label><input id="longitude" type="number" step="any" min="-180" max="180" placeholder="76.9366"></div><div class="field"><label>Permitted radius (metres)</label><input id="radius" type="number" min="1" max="10000" step="1" value="10"></div><div class="field"><label>Maximum accepted GPS accuracy (metres)</label><input id="maxAccuracy" type="number" min="1" max="1000" value="50"></div></div><div class="actions"><button id="saveConfig">Save configuration</button><button id="getLocation" class="secondary">Use this device's current location</button></div><div id="configMsg" class="notice" hidden></div><p class="muted">A 10 m radius is strict. For reliable use, set maximum GPS accuracy thoughtfully; indoor GPS may not achieve this precision.</p></section></section></main>
 <footer>Attendance Register · Google Sheets backend</footer>
 <script>
-const API_KEY='https://script.google.com/macros/s/AKfycbzlEtGiwOjJUQvO3ViyiPUmswcch_989R5L9dqgVh_EafiRC3Mvr9n_QL8KWGDXUYRaYQ/exec';
+const API_KEY='ATTENDANCE_API_URL';
 const $=id=>document.getElementById(id);
 function apiUrl(){return localStorage.getItem(API_KEY)||''}
 function setApiUrl(v){localStorage.setItem(API_KEY,v.trim())}
