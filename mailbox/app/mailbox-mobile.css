@@ -182,10 +182,7 @@ button,input,select,textarea{touch-action:manipulation}
   .secondary-btn{height:38px;font-size:12px}
   .file-chip span{max-width:145px}
   .autocomplete{left:0;right:0;top:100%;z-index:300}
-  .profile-drawer{
-    position:fixed;z-index:300;top:0;right:0;bottom:0;width:min(340px,88vw);
-    max-width:none;border-radius:20px 0 0 20px;
-  }
+  .profile-drawer{width:min(380px,94vw);max-width:none;border-radius:20px 0 0 20px;padding:18px 16px calc(18px + var(--mobile-safe-bottom,0px))}
   .recipient-directory-modal{z-index:500;padding:8px}
   .recipient-directory-dialog{width:100%;max-height:calc(100dvh - 16px);border-radius:18px}
   .recipient-directory-list{max-height:calc(100dvh - 245px)}
