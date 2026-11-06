@@ -1270,3 +1270,22 @@ html[data-theme-mode="dark"]{color-scheme:dark;--bg:#0c1117;--panel:#111820;--so
    ========================================================= */
 .thread-topbar{position:relative}
 .read-pane-close{flex:0 0 auto;margin-left:8px}
+
+
+/* Profile photo rendering: fill the complete circular avatar, centred and cropped. */
+#avatar.has-photo{background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important;}
+#drawerAvatar.has-photo{background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important;}
+.profile-details[hidden],.profile-form[hidden],.profile-edit-btn[hidden]{display:none!important}
+.profile-details{margin-top:12px}
+.profile-details-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 8px}
+.profile-details-heading>strong{font-size:12px}
+.profile-edit-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:8px;background:var(--soft);color:var(--text);padding:6px 10px;font:inherit;font-size:11px;font-weight:650;cursor:pointer}
+.profile-edit-btn:hover{border-color:var(--primary);color:var(--primary)}
+.profile-detail-list{margin:0;display:flex;flex-direction:column;gap:0}
+.profile-detail-list>div{display:grid;grid-template-columns:minmax(105px, .85fr) minmax(0,1.15fr);gap:10px;padding:9px 2px;border-bottom:1px solid var(--border)}
+.profile-detail-list dt{font-size:11px;color:var(--muted)}
+.profile-detail-list dd{margin:0;font-size:12px;font-weight:600;color:var(--text);overflow-wrap:anywhere;text-align:right}
+.thread-avatar{position:relative;overflow:hidden;background-position:center;background-size:cover;isolation:isolate}
+.thread-avatar span{position:relative;z-index:0}
+.thread-avatar.has-photo span{visibility:hidden}
+.thread-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;z-index:1;display:block}

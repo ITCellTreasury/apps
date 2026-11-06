@@ -31,7 +31,17 @@
     </div>
     <h3 id="drawerName">User</h3>
     <p id="drawerEmail" class="profile-account-email"></p>
-    <form id="profileForm" class="profile-form">
+    <section class="profile-details" id="profileDetails">
+      <div class="profile-details-heading"><strong>Personal information</strong><button id="editProfileBtn" class="profile-edit-btn" type="button"><i class="bi bi-pencil"></i><span>Edit</span></button></div>
+      <dl class="profile-detail-list">
+        <div><dt>Full name</dt><dd id="detailFullName">—</dd></div>
+        <div><dt>Recovery email</dt><dd id="detailRecoveryEmail">—</dd></div>
+        <div><dt>Mobile number</dt><dd id="detailMobile">—</dd></div>
+        <div><dt>Designation</dt><dd id="detailDesignation">—</dd></div>
+        <div><dt>Department</dt><dd id="detailDepartment">—</dd></div>
+      </dl>
+    </section>
+    <form id="profileForm" class="profile-form" hidden>
       <label for="profileFullName">Full name</label>
       <input id="profileFullName" name="fullName" type="text" autocomplete="name" maxlength="120" required>
       <label for="profileRecoveryEmail">Recovery email</label>
@@ -43,8 +53,8 @@
       <label for="profileDepartment">Department</label>
       <input id="profileDepartment" name="department" type="text" maxlength="120">
       <button id="saveProfileBtn" class="profile-save-btn" type="submit"><i class="bi bi-check2-circle"></i><span>Save changes</span></button>
-      <p id="profileStatus" class="profile-status" role="status" aria-live="polite"></p>
     </form>
+    <p id="profileStatus" class="profile-status" role="status" aria-live="polite"></p>
     <div class="drawer-preferences">
       <div class="theme-mode-row"><strong>Appearance</strong><button id="themeModeToggle" class="theme-mode-toggle" type="button" aria-pressed="false"><i class="bi bi-moon-stars"></i><span>Dark mode</span><span class="theme-switch-track"><span></span></span></button></div>
       <div class="theme-palette">
@@ -149,7 +159,7 @@
 </div>
 
 <script>
-window.MAILBOX_API_URL=window.MAILBOX_API_URL||'https://script.google.com/macros/s/AKfycbyVZmFavUS8UHm81dIcMvdcrGktNwpQZeEJ64YwU3KfzWUFCCn3rrsODiZQGfDny8mi/exec';
+window.MAILBOX_API_URL=window.MAILBOX_API_URL||'https://script.google.com/macros/s/AKfycbxIKNgdOfq0JJAz1ilkb52Nt_nN_aGHSuXjshUQpxW4A9tvqkhN_TOqAScBQRVcW4Ah/exec';
 const MailboxAPI=(()=>{
  async function request(action,payload={}){const response=await fetch(window.MAILBOX_API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action},payload)),redirect:'follow'});if(!response.ok)throw new Error('Server error: '+response.status);const data=await response.json();if(!data.ok)throw new Error(data.error||'Request failed.');return data}
  // Persist authentication across browser restarts. Migrate existing sessionStorage
@@ -1089,11 +1099,43 @@ async function openMessage(id){
    const result=await MailboxAPI.getThread(id);
    if(selectedMailId!==id)return;
    threadMessages=Array.isArray(result.messages)?result.messages:[];
+   await loadThreadProfileImages();
    if(!threadMessages.length)throw new Error('No messages found in this conversation.');
    const chosen=threadMessages.find(x=>x.message.mailId===id)||threadMessages[threadMessages.length-1];
    selectedMessage=chosen.message;selectedAttachments=chosen.attachments||[];
    paintReadHeader(selectedMessage);renderThread();
  }catch(err){$('threadMessages').innerHTML=`<div class="thread-empty">${esc(err.message||'Unable to load conversation.')}</div>`;}
+}
+
+// Profile photos for people in a conversation, indexed by their email address.
+const threadProfileImageMap=new Map();
+let threadProfileImageMapLoaded=false;
+async function loadThreadProfileImages(){
+ if(threadProfileImageMapLoaded)return;
+ try{
+   // Dedicated endpoint returns the Users-sheet photo URL for every active account.
+   const result=await MailboxAPI.request('listThreadProfileImages',{token:MailboxAPI.token()});
+   const candidates=[result&&result.users,result&&result.items,result&&result.data&&result.data.users,result&&result.data&&result.data.items];
+   const users=candidates.find(Array.isArray)||[];
+   users.forEach(u=>{
+     const email=String(u.email||u.emailAddress||u.Email_Address||u.Email||u.mailId||'').trim().toLowerCase();
+     const photo=String(u.profileImageUrl||u.Profile_Image_URL||u.profile_image_url||u.avatarUrl||u.photoUrl||'').trim();
+     if(email&&photo)threadProfileImageMap.set(email,photo);
+   });
+   threadProfileImageMapLoaded=true;
+ }catch(err){
+   // Retry on the next thread refresh if the endpoint is temporarily unavailable.
+   threadProfileImageMapLoaded=false;
+   console.warn('Unable to load thread profile photos:',err);
+ }
+}
+
+function threadAvatarMarkup(m){
+ const senderEmail=String(m.senderEmail||m.sender_email||m.fromEmail||m.from||m.senderAddress||(m.sender&&(m.sender.email||m.sender.emailAddress||m.sender.Email_Address))||'').trim().toLowerCase();
+ const directPhoto=m.senderProfileImageUrl||m.senderImageUrl||m.senderPhotoUrl||m.profileImageUrl||m.senderAvatarUrl||m.avatarUrl||m.photoUrl||m.Profile_Image_URL||(m.sender&&(m.sender.profileImageUrl||m.sender.Profile_Image_URL||m.sender.avatarUrl));
+ const photo=String(directPhoto||threadProfileImageMap.get(senderEmail)||'').trim();
+ const fallback=esc(initials(m.senderName||m.fromName||m.sender_name,senderEmail));
+ return `<div class="thread-avatar${photo?' has-photo':''}"><span>${fallback}</span>${photo?`<img src="${escAttr(photo)}" alt="" loading="eager" referrerpolicy="no-referrer" onerror="this.style.display='none';this.parentElement.classList.remove('has-photo')">`:''}</div>`;
 }
 
 function renderThread(){
@@ -1110,7 +1152,7 @@ function renderThread(){
    const body=String(m.bodyType||'').toUpperCase()==='HTML'?(m.body||''):`<div class="thread-plain-body">${esc(m.body||'')}</div>`;
    const attachments=files.map(a=>`<a class="attachment" href="${escAttr(a.url||'#')}" target="_blank" rel="noopener noreferrer" download><span><i class="bi bi-paperclip"></i></span><span title="${escAttr(a.fileName)}">${esc(a.fileName||'Attachment')}</span><small>${esc(formatSize(a.size))}</small></a>`).join('');
    return `<article class="thread-message ${expanded?'expanded':''} ${selected?'selected':''}" data-thread-mail="${mid}">
-     <div class="thread-message-head" role="button" tabindex="0" aria-expanded="${expanded}" data-thread-toggle="${mid}"><div class="thread-avatar">${esc(initials(m.senderName,m.senderEmail))}</div><div class="thread-person"><div class="thread-person-name">${esc(m.senderName||m.senderEmail||'Unknown sender')}</div><div class="thread-person-email">${esc(m.senderEmail||'')}</div><div class="thread-recipient-line"><span class="thread-recipients">${recipients||'Recipients not available'}</span><span class="thread-folder"><i class="bi bi-folder2"></i> ${esc(folderLabel)}</span></div></div><time class="thread-date">${esc(formatDate(m.date)||m.date||'')}</time></div>
+     <div class="thread-message-head" role="button" tabindex="0" aria-expanded="${expanded}" data-thread-toggle="${mid}">${threadAvatarMarkup(m)}<div class="thread-person"><div class="thread-person-name">${esc(m.senderName||m.senderEmail||'Unknown sender')}</div><div class="thread-person-email">${esc(m.senderEmail||'')}</div><div class="thread-recipient-line"><span class="thread-recipients">${recipients||'Recipients not available'}</span><span class="thread-folder"><i class="bi bi-folder2"></i> ${esc(folderLabel)}</span></div></div><time class="thread-date">${esc(formatDate(m.date)||m.date||'')}</time></div>
      <div class="thread-message-body">${body}</div>
      ${attachments?`<div class="thread-attachments">${attachments}</div>`:''}
      <div class="thread-message-actions">
@@ -1144,6 +1186,7 @@ async function refreshThread(){
  const result=await MailboxAPI.getThread(id);
  if(selectedMailId!==id)return;
  threadMessages=Array.isArray(result.messages)?result.messages:[];
+ await loadThreadProfileImages();
  const chosen=threadMessages.find(x=>x.message.mailId===id)||threadMessages[threadMessages.length-1];
  if(!chosen){closeRead();return;}
  selectedMessage=chosen.message;selectedAttachments=chosen.attachments||[];paintReadHeader(selectedMessage);renderThread();
@@ -1355,15 +1398,32 @@ load(1).finally(()=>startSilent());
    sessionStorage.setItem('mailbox_user',JSON.stringify(merged));
    return merged;
  };
+ const displayValue=value=>String(value||'').trim()||'—';
+ const showProfileEditor=editing=>{
+   $('profileDetails').hidden=!!editing;
+   $('profileForm').hidden=!editing;
+   $('editProfileBtn').hidden=!!editing;
+ };
  const fillForm=u=>{
-   $('drawerName').textContent=u.name||u.fullName||'User';
-   $('drawerEmail').textContent=u.email||u.emailAddress||'';
-   $('profileFullName').value=u.name||u.fullName||'';
-   $('profileRecoveryEmail').value=u.recoveryEmail||u.Recovery_Email||'';
-   $('profileMobile').value=u.mobile||u.Mobile||'';
-   $('profileDesignation').value=u.designation||u.Designation||'';
-   $('profileDepartment').value=u.department||u.Department||'';
+   const name=u.name||u.fullName||u.Full_Name||'';
+   const recovery=u.recoveryEmail||u.Recovery_Email||'';
+   const mobile=u.mobile||u.Mobile||'';
+   const designation=u.designation||u.Designation||'';
+   const department=u.department||u.Department||'';
+   $('drawerName').textContent=name||'User';
+   $('drawerEmail').textContent=u.email||u.emailAddress||u.Email_Address||'';
+   $('profileFullName').value=name;
+   $('profileRecoveryEmail').value=recovery;
+   $('profileMobile').value=mobile;
+   $('profileDesignation').value=designation;
+   $('profileDepartment').value=department;
+   $('detailFullName').textContent=displayValue(name);
+   $('detailRecoveryEmail').textContent=displayValue(recovery);
+   $('detailMobile').textContent=displayValue(mobile);
+   $('detailDesignation').textContent=displayValue(designation);
+   $('detailDepartment').textContent=displayValue(department);
    paintAvatar(u);
+   showProfileEditor(false);
  };
  let currentProfile=storedUser(), imageBusy=false;
  fillForm(currentProfile);
@@ -1378,6 +1438,7 @@ load(1).finally(()=>startSilent());
  };
  const closeDrawer=()=>{drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');topAvatar.setAttribute('aria-expanded','false')};
  topAvatar.addEventListener('click',openDrawer);
+ $('editProfileBtn').addEventListener('click',()=>showProfileEditor(true));
  $('closeProfile').addEventListener('click',closeDrawer);
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&drawer.classList.contains('open'))closeDrawer()});
  $('profileForm').addEventListener('submit',async e=>{
