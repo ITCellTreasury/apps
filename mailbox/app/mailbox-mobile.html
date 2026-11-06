@@ -159,7 +159,7 @@
 </div>
 
 <script>
-window.MAILBOX_API_URL=window.MAILBOX_API_URL||'https://script.google.com/macros/s/AKfycbxIKNgdOfq0JJAz1ilkb52Nt_nN_aGHSuXjshUQpxW4A9tvqkhN_TOqAScBQRVcW4Ah/exec';
+window.MAILBOX_API_URL=window.MAILBOX_API_URL||'https://script.google.com/macros/s/AKfycbzSmkO0f-qB60RgFK4L8ZJ5XHJDcevJS6cJvbfEbgRpyWCaYJjWB01s0NFmwYsSJobj/exec';
 const MailboxAPI=(()=>{
  async function request(action,payload={}){const response=await fetch(window.MAILBOX_API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action},payload)),redirect:'follow'});if(!response.ok)throw new Error('Server error: '+response.status);const data=await response.json();if(!data.ok)throw new Error(data.error||'Request failed.');return data}
  // Persist authentication across browser restarts. Migrate existing sessionStorage
