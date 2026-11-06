@@ -130,10 +130,28 @@
 window.MAILBOX_API_URL=window.MAILBOX_API_URL||'https://script.google.com/macros/s/AKfycbxUSVKvxyqpx50TzqxikOv2hmPEN-N0sXWwXVmwVTgx9pXaQ326Hk9FUWTKvIbRMbia/exec';
 const MailboxAPI=(()=>{
  async function request(action,payload={}){const response=await fetch(window.MAILBOX_API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action},payload)),redirect:'follow'});if(!response.ok)throw new Error('Server error: '+response.status);const data=await response.json();if(!data.ok)throw new Error(data.error||'Request failed.');return data}
- const token=()=>sessionStorage.getItem('mailbox_token')||'';
- const user=()=>{try{return JSON.parse(sessionStorage.getItem('mailbox_user')||'null')}catch(_){return null}};
- const setSession=data=>{sessionStorage.setItem('mailbox_token',data.token);sessionStorage.setItem('mailbox_user',JSON.stringify(data.user))};
- const clearSession=()=>{sessionStorage.removeItem('mailbox_token');sessionStorage.removeItem('mailbox_user')};
+ // Persist authentication across browser restarts. Migrate existing sessionStorage
+ // sessions (created by the current login page) into localStorage on first load.
+ const readStored=(key)=>localStorage.getItem(key)||sessionStorage.getItem(key)||'';
+ const token=()=>readStored('mailbox_token');
+ const user=()=>{try{return JSON.parse(readStored('mailbox_user')||'null')}catch(_){return null}};
+ const setSession=data=>{
+   if(!data||!data.token)throw new Error('Invalid login session.');
+   localStorage.setItem('mailbox_token',data.token);
+   localStorage.setItem('mailbox_user',JSON.stringify(data.user||{}));
+   // Keep a compatibility copy for any existing page code still reading sessionStorage.
+   sessionStorage.setItem('mailbox_token',data.token);
+   sessionStorage.setItem('mailbox_user',JSON.stringify(data.user||{}));
+ };
+ const clearSession=()=>{
+   ['mailbox_token','mailbox_user'].forEach(key=>{localStorage.removeItem(key);sessionStorage.removeItem(key)});
+ };
+ // Migrate an active login created by login.html before this persistent storage update.
+ if(!localStorage.getItem('mailbox_token')&&sessionStorage.getItem('mailbox_token')){
+   localStorage.setItem('mailbox_token',sessionStorage.getItem('mailbox_token'));
+   const savedUser=sessionStorage.getItem('mailbox_user');
+   if(savedUser)localStorage.setItem('mailbox_user',savedUser);
+ }
  const requireLogin=()=>{if(!token())location.href='login.html'};
  return{request,token,user,setSession,clearSession,requireLogin,logout:()=>request('logout',{token:token()}),bootstrap:()=>request('bootstrap',{token:token()}),list:(folder,search='',page=1,pageSize=25,sort='date-desc')=>request('mailbox',{token:token(),folder,search,page,pageSize,sort}),get:mailId=>request('getMessage',{token:token(),mailId}),getThread:mailId=>request('getThread',{token:token(),mailId}),suggestRecipients:query=>request('suggestRecipients',{token:token(),query}),send:payload=>request('sendMessage',Object.assign({token:token()},payload)),draft:payload=>request('saveDraft',Object.assign({token:token()},payload)),update:payload=>request('updateMessage',Object.assign({token:token()},payload))}
 })();
@@ -1025,8 +1043,16 @@ async function applySelected(changes){
  }catch(err){showAlert(err.message||'Unable to update messages.','error')}
 }
 
+function setThreadSubject(subject){
+ const el=$('readSubject');
+ const value=String(subject||'(No subject)');
+ el.textContent=value;
+ el.title=value;
+ el.classList.remove('is-expanded');
+ el.setAttribute('aria-label',value);
+}
 function paintReadHeader(m){
- $('readSubject').textContent=m.subject||'(No subject)';
+ setThreadSubject(m.subject);
  $('threadCount').textContent=threadMessages.length?`${threadMessages.length} message${threadMessages.length===1?'':'s'}`:'';
 }
 
@@ -1034,7 +1060,7 @@ async function openMessage(id){
  const row=currentMessages.find(x=>x.mailId===id);if(!row)return;
  selectedMailId=id;selectedThreadMailId=id;selectedMessage=row;selectedAttachments=[];threadMessages=[];$('foldersWorkspace').classList.remove('reading-hidden');
  renderList();$('readEmpty').classList.add('hidden');$('readContent').classList.remove('hidden');$('readPane').classList.add('mobile-show');
- $('readSubject').textContent=row.subject||'(No subject)';$('threadCount').textContent='';
+ setThreadSubject(row.subject);$('threadCount').textContent='';
  $('threadMessages').innerHTML='<div class="loading-inline"><span class="panel-spinner" aria-label="Loading"></span></div>';
  if(!row.isRead){row.isRead=true;renderList();}
  try{
@@ -1146,6 +1172,8 @@ $('backBtn').addEventListener('click',closeRead);
 $('closeReadBtn').addEventListener('click',closeRead);
 
 /* sort dropdown — sync with saved preference */
+$('readSubject').addEventListener('click',()=>{$('readSubject').classList.toggle('is-expanded')});
+
 $('sortSelect').value = currentSort;
 $('sortSelect').addEventListener('change',()=>{
   currentSort = $('sortSelect').value;
@@ -1278,7 +1306,7 @@ load(1).finally(()=>startSilent());
 /* Profile drawer, theme, editor tools */
 (()=>{
  const $=id=>document.getElementById(id);
- const user=(()=>{try{return JSON.parse(sessionStorage.getItem('mailbox_user')||'{}')}catch(e){return {}}})();
+ const user=(()=>{try{return JSON.parse(localStorage.getItem('mailbox_user')||sessionStorage.getItem('mailbox_user')||'{}')}catch(e){return {}}})();
  const av=$('avatar');if(!av)return;
  const name=user.name||user.fullName||user.email||'User';
  $('drawerName').textContent=name;
