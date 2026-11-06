@@ -837,7 +837,7 @@ body{overflow:hidden}
   padding: 0 26px 0 8px;
   cursor: pointer;
   outline: none;
-  min-width: 130px;
+  min-width: 100px;
 }
 .sort-select:focus {
   border-color: var(--primary);
