@@ -116,7 +116,7 @@
     <section id="readPane" class="read-pane">
       <div id="readEmpty" class="read-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><strong>Select a message</strong><span>Choose an email from the list to read it here.</span></div>
       <div id="readContent" class="read-content hidden">
-        <div class="thread-topbar"><button id="backBtn" class="icon-btn mobile-back" title="Back"><i class="bi bi-chevron-left"></i></button><div id="readSubject" class="read-subject">(No subject)</div><span id="threadCount" class="thread-count"></span><button id="closeReadBtn" class="icon-btn read-pane-close" type="button" title="Close reading pane" aria-label="Close reading pane"><i class="bi bi-x-lg"></i></button></div>
+        <div class="thread-topbar"><button id="backBtn" class="icon-btn mobile-back" title="Back"><i class="bi bi-chevron-left"></i></button><div id="readSubject" class="read-subject">(No subject)</div><span id="threadCount" class="thread-count"></span><button id="openThreadWindowBtn" class="icon-btn thread-window-btn" type="button" title="Open thread in new window" aria-label="Open thread in new window"><i class="bi bi-box-arrow-up-right"></i></button><button id="printThreadBtn" class="icon-btn thread-print-btn" type="button" title="Print thread" aria-label="Print thread"><i class="bi bi-printer"></i></button><button id="closeReadBtn" class="icon-btn read-pane-close" type="button" title="Close reading pane" aria-label="Close reading pane"><i class="bi bi-x-lg"></i></button></div>
         <div id="threadMessages" class="thread-messages"><div class="loading-inline"><span class="panel-spinner" aria-label="Loading"></span></div></div>
       </div>
     </section>
@@ -800,7 +800,7 @@ const ComposerManager = (() => {
     if (confirmed) closeComposer(state.id);
   }
 
-  function closeComposer(id) {
+  function closeComposer(id, reason = 'cancel') {
     const state = composers.get(id);
     if (!state || state.sending) return;
     state.el.remove(); state.tab.remove(); composers.delete(id);
@@ -809,6 +809,7 @@ const ComposerManager = (() => {
       if (composers.size > 0) activateComposer(composers.keys().next().value);
       else switchView('folders');
     }
+    if(reason==='cancel' && state.mode==='new') showAlert('New message composition cancelled.', 'info', 2400);
   }
 
   function removeAll() { composers.forEach(s => { s.el.remove(); s.tab.remove(); }); composers.clear(); activeId = null; }
@@ -899,7 +900,7 @@ const ComposerManager = (() => {
       });
       setSendingState(state, false);
       if (state.draftMailId) { MailboxAPI.update({mailId:state.draftMailId,Folder:'TRASH',Is_Deleted:'YES'}).catch(()=>{}); invalidateFolderCache('DRAFT'); }
-      closeComposer(state.id);
+      closeComposer(state.id, 'sent');
       $('successReference').textContent = 'Reference: ' + (result.referenceNo || '—');
       $('successModal').classList.add('show');
       invalidateFolderCache('SENT'); invalidateFolderCache('INBOX');
@@ -931,7 +932,7 @@ const ComposerManager = (() => {
       el.querySelector('[data-role="status"]').textContent = 'Draft saved' + (result.referenceNo ? ' · ' + result.referenceNo : '');
       invalidateFolderCache('DRAFT'); folderViews.delete('DRAFT');
       if (currentFolder === 'DRAFT') load(1,{silent:true}).catch(()=>{});
-      if (options.closeAfter) { closeComposer(state.id); showAlert('Draft saved. Composer closed.', 'success', 2500); }
+      if (options.closeAfter) { closeComposer(state.id, 'saved'); showAlert('Draft saved. Composer closed.', 'success', 2500); }
       else { showAlert('Draft saved.', 'success', 1800); }
     } catch (err) { setSendingState(state, false); showAlert(err.message || 'Unable to save draft.', 'error'); }
   }
@@ -1056,7 +1057,7 @@ function renderList(){
      <div class="mail-date-group-items">${g.messages.map(renderMailRow).join('')}</div>
    </section>`).join('');
  document.querySelectorAll('[data-select]').forEach(c=>c.addEventListener('click',e=>{e.stopPropagation();const id=c.dataset.select;if(c.checked)selectedIds.add(id);else selectedIds.delete(id);updateToolbar()}));
- document.querySelectorAll('[data-star]').forEach(b=>b.addEventListener('click',async e=>{e.stopPropagation();const id=b.dataset.star;const m=currentMessages.find(x=>x.mailId===id);if(!m)return;const old=!!m.isStarred;m.isStarred=!old;renderList();try{await MailboxAPI.update({mailId:id,Is_Starred:m.isStarred?'YES':'NO'});invalidateFolderCache();folderViews.clear();if(currentFolder==='STARRED'&&!m.isStarred){currentMessages=currentMessages.filter(x=>x.mailId!==id);renderList()}else{folderCache.delete(cacheKey(currentFolder,currentPage));}showAlert(m.isStarred?'Added to Starred.':'Removed from Starred.','success',1500)}catch(err){m.isStarred=old;renderList();showAlert(err.message||'Unable to update star.','error')}}));
+ document.querySelectorAll('[data-star]').forEach(b=>b.addEventListener('click',async e=>{e.stopPropagation();const id=b.dataset.star;const m=currentMessages.find(x=>x.mailId===id);if(!m)return;const old=!!m.isStarred;m.isStarred=!old;renderList();try{await MailboxAPI.update({mailId:id,Is_Starred:m.isStarred?'YES':'NO'});invalidateFolderCache();folderViews.clear();if(currentFolder==='STARRED'&&!m.isStarred){currentMessages=currentMessages.filter(x=>x.mailId!==id);renderList()}else{folderCache.delete(cacheKey(currentFolder,currentPage));}showAlert(m.isStarred?'Mail starred.':'Mail unstarred.','success',2200)}catch(err){m.isStarred=old;renderList();showAlert(err.message||'Unable to update star.','error')}}));
  document.querySelectorAll('.mail-row').forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('input,button'))return;if(currentFolder==='DRAFT')openDraft(r.dataset.id);else openMessage(r.dataset.id)}));
 }
 
@@ -1072,6 +1073,9 @@ async function applySelected(changes){
    selectedIds.clear();invalidateFolderCache();folderViews.clear();
    if(changes.Folder || changes.Is_Deleted==='YES' || changes.Is_Spam==='YES') { currentMessages=currentMessages.filter(m=>!ids.includes(m.mailId));renderList(); } else { currentMessages.forEach(m=>{if(ids.includes(m.mailId)){if(changes.Is_Read!==undefined)m.isRead=changes.Is_Read==='YES';}});renderList(); }
    load(currentPage,{silent:true}).catch(()=>{});
+   const target=changes.Folder==='ARCHIVE'?'Archive':changes.Folder==='SPAM'?'Spam':changes.Folder==='TRASH'?'Trash':'';
+   const action=target?`${ids.length} message${ids.length===1?'':'s'} moved to ${target}.`:changes.Is_Read==='YES'?'Selected messages marked as read.':changes.Is_Read==='NO'?'Selected messages marked as unread.':'Selected messages updated.';
+   showAlert(action,'success',2600);
  }catch(err){showAlert(err.message||'Unable to update messages.','error')}
 }
 
@@ -1217,7 +1221,8 @@ async function threadMessageAction(mailId,action){
    invalidateFolderCache();folderViews.clear();
    load(currentPage,{silent:true}).catch(()=>{});
    if(!['archive','spam','trash'].includes(action)) await refreshThread();
-   showAlert(action==='star'?(m.isStarred?'Added to Starred.':'Removed from Starred.'):action==='read'?'Read status updated.': 'Message moved.', 'success', 1400);
+   const destination={archive:'Archive',spam:'Spam',trash:'Trash'}[action];
+   showAlert(action==='star'?(m.isStarred?'Thread message starred.':'Thread message unstarred.'):action==='read'?'Thread message read status updated.':`Message moved to ${destination}.`, 'success', 2600);
  }catch(err){showAlert(err.message||'Unable to update message.','error');}
 }
 
@@ -1226,6 +1231,30 @@ $('threadMessages').addEventListener('click',e=>{
  const head=e.target.closest('[data-thread-toggle]');if(head){const card=head.closest('.thread-message');selectedThreadMailId=String(card.dataset.threadMail||'');$('threadMessages').querySelectorAll('.thread-message').forEach(node=>node.classList.toggle('selected',node===card));const expanded=card.classList.toggle('expanded');head.setAttribute('aria-expanded',String(expanded));}
 });
 $('threadMessages').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-thread-toggle]')){e.preventDefault();const card=e.target.closest('.thread-message');selectedThreadMailId=String(card.dataset.threadMail||'');$('threadMessages').querySelectorAll('.thread-message').forEach(node=>node.classList.toggle('selected',node===card));const expanded=card.classList.toggle('expanded');e.target.setAttribute('aria-expanded',String(expanded));}});
+
+function openThreadPopup(printAfterOpen=false){
+ const subject=String(selectedMessage?.subject||$('readSubject').textContent||'(No subject)');
+ const threadHtml=$('threadMessages').innerHTML;
+ const popup=window.open('','mailbox-thread-'+Date.now(),'width=920,height=760,resizable=yes,scrollbars=yes');
+ if(!popup){showAlert('Your browser blocked the thread window. Allow pop-ups for this site and try again.','warning');return;}
+ const safeTitle=esc(subject);
+ popup.document.open();
+ popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${safeTitle}</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"><link rel="stylesheet" href="mailbox-common.css"><style>
+ *{box-sizing:border-box}body{margin:0;padding:28px;background:#f3f6fa;color:#172033;font-family:Inter,Segoe UI,Arial,sans-serif}
+ .print-shell{max-width:900px;margin:0 auto;background:#fff;padding:24px;border-radius:12px}
+ h1{font-size:22px;margin:0 0 20px;padding-bottom:16px;border-bottom:1px solid #ddd;overflow-wrap:anywhere}
+ .thread-messages{overflow:visible!important}.thread-message{break-inside:avoid;page-break-inside:avoid;margin-bottom:14px!important;border:1px solid #ddd!important;border-radius:8px!important}
+ .thread-message-body{display:block!important}.thread-message-actions{display:none!important}
+ .thread-message-head{break-inside:avoid}.thread-attachments a{color:#1457b8}
+ @media print{body{padding:0;background:#fff}.print-shell{max-width:none;padding:0;border:0;border-radius:0}.thread-message{box-shadow:none!important}.thread-message-body{display:block!important}}
+ </style></head><body><main class="print-shell"><h1>${safeTitle}</h1><section class="thread-messages">${threadHtml}</section></main></body></html>`);
+ popup.document.close();
+ if(printAfterOpen){
+   popup.addEventListener('load',()=>{popup.focus();popup.print();},{once:true});
+   setTimeout(()=>{try{popup.focus();popup.print()}catch(_){}},700);
+ }
+}
+
 function closeRead(){selectedMailId='';selectedThreadMailId='';selectedMessage=null;selectedAttachments=[];threadMessages=[];$('readContent').classList.add('hidden');$('readEmpty').classList.remove('hidden');$('readPane').classList.remove('mobile-show');$('foldersWorkspace').classList.add('reading-hidden');renderList()}
 
 /* =========================================================
@@ -1235,6 +1264,8 @@ $('composeBtn').addEventListener('click',()=>ComposerManager.createComposer('new
 $('successOk').addEventListener('click',()=>{$('successModal').classList.remove('show');});
 $('backBtn').addEventListener('click',closeRead);
 $('closeReadBtn').addEventListener('click',closeRead);
+$('openThreadWindowBtn').addEventListener('click',()=>openThreadPopup(false));
+$('printThreadBtn').addEventListener('click',()=>openThreadPopup(true));
 
 /* sort dropdown — sync with saved preference */
 $('readSubject').addEventListener('click',()=>{$('readSubject').classList.toggle('is-expanded')});
@@ -1245,6 +1276,8 @@ $('sortSelect').addEventListener('change',()=>{
   localStorage.setItem('mailbox_sort', currentSort);
   folderCache.clear();folderViews.clear();currentPage=1;
   load(1);
+  const labels={'date-desc':'Newest first','date-asc':'Oldest first','sender-asc':'Sender A to Z','sender-desc':'Sender Z to A','subject-asc':'Subject A to Z','subject-desc':'Subject Z to A'};
+  showAlert(`Mail list sorted: ${labels[currentSort]||currentSort}.`,'info',2200);
 });
 
 const prefetchTimers=new Map();
@@ -1282,7 +1315,8 @@ $('markReadBtn').addEventListener('click',()=>applySelected({Is_Read:'YES'}));$(
   });
   if (ok) applySelected({Folder:'TRASH',Is_Deleted:'YES'});
 });
-$('refreshBtn').addEventListener('click',()=>load(currentPage));$('refreshListBtn').addEventListener('click',()=>load(currentPage));
+$('refreshBtn').addEventListener('click',()=>load(currentPage).then(()=>showAlert('Mailbox refreshed.','success',1800)));
+$('refreshListBtn').addEventListener('click',()=>load(currentPage).then(()=>showAlert('Mail list refreshed.','success',1800)));
 function runSearch(){clearTimeout(searchTimer);searchTimer=setTimeout(()=>load(1),260);$('clearSearch').style.display=$('searchInput').value?'block':'none'}
 $('searchInput').addEventListener('input',runSearch);$('searchInput').addEventListener('keydown',e=>{if(e.key==='Escape'){$('searchInput').value='';runSearch()}});$('clearSearch').addEventListener('click',()=>{$('searchInput').value='';runSearch();$('searchInput').focus()});
 $('logoutBtn').addEventListener('click',async()=>{
