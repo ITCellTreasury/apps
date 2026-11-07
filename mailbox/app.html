@@ -1030,13 +1030,41 @@ function mailDateGroup(value){
  const key=`month-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
  return {key,label:d.toLocaleDateString([], {month:'long',year:'numeric'})};
 }
+
+
 function renderMailRow(m){
  const sent=currentFolder==='SENT';
  const status=sent?sentStatusMarkup(m):'';
  const sender=esc(m.senderName||m.senderEmail||m.to||'Unknown');
  const recipient=sent&&m.to?`<span class="mail-recipient">to ${esc(m.to)}</span>`:'';
- return `<div class="mail-row ${m.isRead?'':'unread'} ${m.mailId===selectedMailId?'selected':''}" data-id="${escAttr(m.mailId)}"><div class="mail-check"><input type="checkbox" data-select="${escAttr(m.mailId)}" ${selectedIds.has(m.mailId)?'checked':''}></div><div class="mail-main"><div class="mail-top"><div class="sender-line"><span class="sender">${sender}</span>${recipient}</div><div class="date">${esc(formatDate(m.date))}</div></div><div class="subject-line"><div class="subject">${esc(m.subject||'(No subject)')} ${m.hasAttachment?'<span class="attachment-dot"><i class="bi bi-paperclip"></i></span>':''}</div>${status}</div><div class="preview">${esc(m.body||'')}</div></div><div class="mail-row-end"><button class="star ${m.isStarred?'active':''}" data-star="${escAttr(m.mailId)}" title="${m.isStarred?'Unstar':'Star'}"><i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i></button>${Number(m.conversationCount||1)>1?`<span class="conversation-count" title="${Number(m.conversationCount)} messages in this conversation">${Number(m.conversationCount)}</span>`:''}</div></div>`;
+
+ return `<div class="mail-row ${m.isRead?'':'unread'} ${m.mailId===selectedMailId?'selected':''}" data-id="${escAttr(m.mailId)}">
+   <div class="mail-check">
+     <input type="checkbox" data-select="${escAttr(m.mailId)}" ${selectedIds.has(m.mailId)?'checked':''}>
+   </div>
+   <div class="mail-main">
+     <div class="mail-top">
+       <div class="sender-line">
+         <span class="sender">${sender}</span>${recipient}
+       </div>
+       <div class="date">${esc(formatDate(m.date))}</div>
+     </div>
+     <div class="subject-line">
+       ${m.hasAttachment?'<span class="attachment-dot"><i class="bi bi-paperclip"></i></span>':''}
+       <div class="subject">${esc(m.subject||'(No subject)')}</div>
+       ${status}
+     </div>
+     <div class="preview">${esc(m.body||'')}</div>
+   </div>
+   <div class="mail-row-end">
+     <button class="star ${m.isStarred?'active':''}" data-star="${escAttr(m.mailId)}" title="${m.isStarred?'Unstar':'Star'}">
+       <i class="bi ${m.isStarred?'bi-star-fill':'bi-star'}"></i>
+     </button>
+     ${Number(m.conversationCount||1)>1?`<span class="conversation-count" title="${Number(m.conversationCount)} messages in this conversation">${Number(m.conversationCount)}</span>`:''}
+   </div>
+ </div>`;
 }
+
 function renderList(){
  if(!currentMessages.length){
    const folderName = folders[currentFolder] || currentFolder;
