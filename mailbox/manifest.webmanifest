@@ -1,9 +1,9 @@
 {
-  "id": "./mailbox.html",
+  "id": "./app.html",
   "name": "MailBox",
   "short_name": "MailBox",
   "description": "Mailbox • Secure internal service",
-  "start_url": "./mailbox.html",
+  "start_url": "./app.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
