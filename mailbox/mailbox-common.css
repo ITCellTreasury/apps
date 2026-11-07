@@ -1300,3 +1300,86 @@ html[data-theme-mode="dark"]{color-scheme:dark;--bg:#0c1117;--panel:#111820;--so
   .thread-message-actions{display:none!important}
   .thread-message-body{display:block!important}
 }
+
+
+
+/* =========================================================
+   TRANSFORM-BASED FLOATING RIGHT READING PANE
+   Mirrors the profile drawer's right anchoring and transform
+   behaviour. This block targets #readPane only.
+   ========================================================= */
+@media (max-width: 1200px) {
+  .workspace-stage > .main #readPane {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+
+    /* Keep the panel attached to the viewport's right edge.
+       Its left edge moves naturally as the browser narrows. */
+    width: min(680px, calc(100vw - 80px)) !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 64px) !important;
+    height: auto !important;
+    max-height: none !important;
+
+    display: flex !important;
+    flex: none !important;
+    flex-direction: column !important;
+
+    z-index: 250 !important;
+    overflow: hidden !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 16px 0 0 16px !important;
+    background: var(--panel) !important;
+    box-shadow: var(--shadow) !important;
+
+    /* Same slide-in mechanism as .profile-drawer. */
+    transform: translateX(105%);
+    transition: transform .24s ease;
+    will-change: transform;
+  }
+
+  .workspace-stage > .main:not(.reading-hidden) #readPane {
+    transform: translateX(0);
+  }
+
+  .workspace-stage > .main #paneSplitter {
+    display: none !important;
+  }
+
+  .workspace-stage > .main #readPane .read-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+/* At very narrow widths, retain the 64px folder rail and use
+   the remaining viewport for the floating reader. */
+@media (max-width: 520px) {
+  .workspace-stage > .main #readPane {
+    width: calc(100vw - 64px) !important;
+    max-width: calc(100vw - 64px) !important;
+    border-radius: 14px 0 0 14px !important;
+  }
+}
+
+/* =========================================================
+   READ PANE HEIGHT: MATCH THE WORKSPACE STAGE
+   Keep the floating pane inside #workspaceStage rather than
+   stretching it to the full browser viewport.
+   ========================================================= */
+@media (max-width: 1200px) {
+  #workspaceStage > .main #readPane {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+    height: 100% !important;
+    max-height: 100% !important;
+  }
+}
