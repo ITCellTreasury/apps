@@ -3,7 +3,7 @@
    Load after mailbox-common.css. Desktop remains unchanged.
    ========================================================= */
 :root{
-  --mobile-header:#0b5cab;
+  --mobile-header:var(--primary);
   --mobile-accent:var(--primary,#2563eb);
   --mobile-nav-height:66px;
   --mobile-safe-bottom:env(safe-area-inset-bottom, 0px);
