@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "mailbox-shell-v2";
+const CACHE_NAME = "Discuss-shell-v2";
 
 const APP_SHELL = [
   "./",
