@@ -1,0 +1,84 @@
+
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 100 85"
+     fill="none"
+     width="32"
+     height="32">
+
+  <defs>
+    <!-- Rear bubble gradient -->
+    <linearGradient id="backBubble"
+                    x1="0" y1="0"
+                    x2="1" y2="1">
+      <stop offset="0%" stop-color="#65c9f4"/>
+      <stop offset="55%" stop-color="#258cdb"/>
+      <stop offset="100%" stop-color="#0754b8"/>
+    </linearGradient>
+
+    <!-- Front bubble gradient -->
+    <linearGradient id="frontBubble"
+                    x1="0" y1="0"
+                    x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#a0edff"/>
+      <stop offset="35%" stop-color="#55c9e9"/>
+      <stop offset="100%" stop-color="#16a5d1"/>
+    </linearGradient>
+
+    <!-- Bubble shadow -->
+    <filter id="bubbleShadow"
+            x="-30%" y="-30%"
+            width="170%" height="180%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.2"/>
+      <feOffset dx="1" dy="2"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope=".4"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Dot shadow -->
+    <filter id="dotShadow"
+            x="-50%" y="-50%"
+            width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1"/>
+      <feOffset dx="0" dy="1"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Rear speech bubble -->
+  <path
+    d="M27 14 Q27 9 33 9 H86 Q92 9 92 15
+       V53 Q92 59 86 59 H77
+       L80 77 L61 59 H33
+       Q27 59 27 53 Z"
+    fill="url(#backBubble)"
+    filter="url(#bubbleShadow)"
+    stroke="#62b9ef"
+    stroke-width="1"/>
+
+  <!-- Front speech bubble -->
+  <path
+    d="M8 8 Q8 3 14 3 H63 Q69 3 69 9
+       V48 Q69 54 63 54 H30
+       L13 68 L15 54 H14
+       Q8 54 8 48 Z"
+    fill="url(#frontBubble)"
+    filter="url(#bubbleShadow)"
+    stroke="#8de6f7"
+    stroke-width="1"/>
+
+  <!-- Three white chat dots -->
+  <g fill="#f8fafc" filter="url(#dotShadow)">
+    <circle cx="25" cy="28" r="3.8"/>
+    <circle cx="39" cy="28" r="3.8"/>
+    <circle cx="53" cy="28" r="3.8"/>
+  </g>
+
+</svg>

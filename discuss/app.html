@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Discuss | Mailbox</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="mailbox-common.css">
+<link rel="stylesheet" href="mailbox-mobile.css">
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><div class="brand-logo">
+
+
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 100 85"
+     fill="none"
+     width="40"
+     height="40">
+
+  <defs>
+    <!-- Rear bubble gradient -->
+    <linearGradient id="backBubble"
+                    x1="0" y1="0"
+                    x2="1" y2="1">
+      <stop offset="0%" stop-color="#65c9f4"/>
+      <stop offset="55%" stop-color="#258cdb"/>
+      <stop offset="100%" stop-color="#0754b8"/>
+    </linearGradient>
+
+    <!-- Front bubble gradient -->
+    <linearGradient id="frontBubble"
+                    x1="0" y1="0"
+                    x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#a0edff"/>
+      <stop offset="35%" stop-color="#55c9e9"/>
+      <stop offset="100%" stop-color="#16a5d1"/>
+    </linearGradient>
+
+    <!-- Bubble shadow -->
+    <filter id="bubbleShadow"
+            x="-30%" y="-30%"
+            width="170%" height="180%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.2"/>
+      <feOffset dx="1" dy="2"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope=".4"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Dot shadow -->
+    <filter id="dotShadow"
+            x="-50%" y="-50%"
+            width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1"/>
+      <feOffset dx="0" dy="1"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Rear speech bubble -->
+  <path
+    d="M27 14 Q27 9 33 9 H86 Q92 9 92 15
+       V53 Q92 59 86 59 H77
+       L80 77 L61 59 H33
+       Q27 59 27 53 Z"
+    fill="url(#backBubble)"
+    filter="url(#bubbleShadow)"
+    stroke="#62b9ef"
+    stroke-width="1"/>
+
+  <!-- Front speech bubble -->
+  <path
+    d="M8 8 Q8 3 14 3 H63 Q69 3 69 9
+       V48 Q69 54 63 54 H30
+       L13 68 L15 54 H14
+       Q8 54 8 48 Z"
+    fill="url(#frontBubble)"
+    filter="url(#bubbleShadow)"
+    stroke="#8de6f7"
+    stroke-width="1"/>
+
+  <!-- Three white chat dots -->
+  <g fill="#f8fafc" filter="url(#dotShadow)">
+    <circle cx="25" cy="28" r="3.8"/>
+    <circle cx="39" cy="28" r="3.8"/>
+    <circle cx="53" cy="28" r="3.8"/>
+  </g>
+
+</svg>
+
+
+</div><div><div class="brand-name">Discuss</div><div class="brand-sub"></div></div></div>
+  <div class="search"><svg class="search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="searchInput" type="search" placeholder="Search..." autocomplete="off"><button id="clearSearch" class="clear-search" type="button">×</button></div>
+  <div class="account"><button id="refreshBtn" class="icon-btn" title="Refresh"><i class="bi bi-arrow-clockwise"></i></button><button id="avatar" class="avatar" type="button" aria-label="Open account details" aria-expanded="false">U</button></div>
+</header>
+
+<aside id="profileDrawer" class="profile-drawer" aria-hidden="true">
+  <div class="profile-drawer-head">
+    <strong>Account details</strong>
+    <button id="closeProfile" class="icon-btn" type="button" aria-label="Close profile">×</button>
+  </div>
+  <div class="profile-scroll">
+    <div class="profile-photo-area">
+      <div class="profile-avatar" id="drawerAvatar">U</div>
+      <button id="changeAvatarBtn" class="avatar-edit-btn" type="button" aria-label="Change profile photo" title="Change profile photo"><i class="bi bi-camera"></i></button>
+      <input id="profileImageInput" type="file" accept="image/*" hidden>
+    </div>
+    <h3 id="drawerName">User</h3>
+    <p id="drawerEmail" class="profile-account-email"></p>
+    <section class="profile-details" id="profileDetails">
+      <div class="profile-details-heading"><strong>Personal information</strong><button id="editProfileBtn" class="profile-edit-btn" type="button"><i class="bi bi-pencil"></i><span>Edit</span></button></div>
+      <dl class="profile-detail-list">
+        <div><dt>Full name</dt><dd id="detailFullName">—</dd></div>
+        <div><dt>Recovery email</dt><dd id="detailRecoveryEmail">—</dd></div>
+        <div><dt>Mobile number</dt><dd id="detailMobile">—</dd></div>
+        <div><dt>Designation</dt><dd id="detailDesignation">—</dd></div>
+        <div><dt>Department</dt><dd id="detailDepartment">—</dd></div>
+      </dl>
+    </section>
+    <form id="profileForm" class="profile-form" hidden>
+      <label for="profileFullName">Full name</label>
+      <input id="profileFullName" name="fullName" type="text" autocomplete="name" maxlength="120" required>
+      <label for="profileRecoveryEmail">Recovery email</label>
+      <input id="profileRecoveryEmail" name="recoveryEmail" type="email" autocomplete="email" maxlength="180">
+      <label for="profileMobile">Mobile number</label>
+      <input id="profileMobile" name="mobile" type="tel" autocomplete="tel" maxlength="30">
+      <label for="profileDesignation">Designation</label>
+      <input id="profileDesignation" name="designation" type="text" maxlength="120">
+      <label for="profileDepartment">Department</label>
+      <input id="profileDepartment" name="department" type="text" maxlength="120">
+      <button id="saveProfileBtn" class="profile-save-btn" type="submit"><i class="bi bi-check2-circle"></i><span>Save changes</span></button>
+    </form>
+    <p id="profileStatus" class="profile-status" role="status" aria-live="polite"></p>
+    <div class="drawer-preferences">
+      <div class="theme-mode-row"><strong>Appearance</strong><button id="themeModeToggle" class="theme-mode-toggle" type="button" aria-pressed="false"><i class="bi bi-moon-stars"></i><span>Dark mode</span><span class="theme-switch-track"><span></span></span></button></div>
+      <div class="theme-palette">
+        <strong>Theme colour</strong>
+        <div class="theme-swatches">
+          <button data-theme="#2563eb" aria-label="Blue"></button>
+          <button data-theme="#0f9d78" aria-label="Teal"></button>
+          <button data-theme="#7c3aed" aria-label="Violet"></button>
+          <button data-theme="#db6b18" aria-label="Orange"></button>
+          <button data-theme="#c0266d" aria-label="Pink"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button id="logoutBtn" class="drawer-logout" type="button"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button>
+</aside>
+
+<nav class="workspace-tabs">
+  <button class="workspace-tab active" id="foldersTab" type="button">Folders</button>
+  <div id="composeTabs" class="compose-tabs"></div>
+</nav>
+
+<div id="workspaceStage" class="workspace-stage">
+  <main class="main reading-hidden" id="foldersWorkspace">
+    <aside class="sidebar">
+      <button id="composeBtn" class="compose-btn"><i class="bi bi-pencil-square"></i><span>Compose</span></button>
+      <div class="folder-title">Folders</div>
+      <button class="folder active" data-folder="INBOX"><i class="bi bi-inbox"></i><span>Inbox</span><b id="inboxCount" class="folder-count hidden">0</b></button>
+      <button class="folder" data-folder="SENT"><i class="bi bi-send"></i><span>Sent</span></button>
+      <button class="folder" data-folder="DRAFT"><i class="bi bi-file-earmark-text"></i><span>Drafts</span></button>
+      <button class="folder" data-folder="STARRED"><i class="bi bi-star"></i><span>Starred</span></button>
+      <button class="folder" data-folder="ARCHIVE"><i class="bi bi-archive"></i><span>Archive</span></button>
+      <button class="folder" data-folder="SPAM"><i class="bi bi-exclamation-triangle"></i><span>Spam</span></button>
+      <button class="folder" data-folder="TRASH"><i class="bi bi-trash3"></i><span>Trash</span></button>
+    </aside>
+    <section class="mail-area">
+      <div class="list-head">
+        <div id="listTitle" class="list-title">Inbox</div>
+        <div class="list-actions">
+          <span class="sort-wrap">
+            <select id="sortSelect" class="sort-select" title="Sort messages">
+              <option value="date-desc">Newest first</option>
+              <option value="date-asc">Oldest first</option>
+              <option value="sender-asc">Sender A → Z</option>
+              <option value="sender-desc">Sender Z → A</option>
+              <option value="subject-asc">Subject A → Z</option>
+              <option value="subject-desc">Subject Z → A</option>
+            </select>
+          </span>
+          <button id="selectAllBtn" class="icon-btn" title="Select all"><i class="bi bi-check2-square"></i></button>
+          <button id="refreshListBtn" class="icon-btn" title="Refresh"><i class="bi bi-arrow-clockwise"></i></button>
+        </div>
+      </div>
+      <div id="toolbar" class="toolbar"><button class="icon-btn" id="markReadBtn" title="Mark read"><i class="bi bi-envelope-open"></i></button><button class="icon-btn" id="markUnreadBtn" title="Mark unread"><i class="bi bi-envelope"></i></button><button class="icon-btn" id="archiveBtn" title="Archive"><i class="bi bi-archive"></i></button><button class="icon-btn" id="spamBtn" title="Spam"><i class="bi bi-exclamation-octagon"></i></button><button class="icon-btn" id="deleteBtn" title="Trash"><i class="bi bi-trash3"></i></button></div>
+      <div id="mailList" class="mail-list"><div class="loading-inline"><span class="panel-spinner" aria-label="Loading"></span></div></div>
+      <div class="pager"><span id="rangeText">—</span><div class="pager-controls"><select id="pageSize"><option value="25">25</option><option value="50">50</option></select><button id="prevPage" disabled>‹</button><span id="pageText">1 / 1</span><button id="nextPage" disabled>›</button></div></div>
+    </section>
+    <div id="paneSplitter" class="splitter" role="separator" aria-orientation="vertical" aria-label="Resize mail list and reading pane" title="Drag to resize"></div>
+    <section id="readPane" class="read-pane">
+      <div id="readEmpty" class="read-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><strong>Select a message</strong><span>Choose an email from the list to read it here.</span></div>
+      <div id="readContent" class="read-content hidden">
+        <div class="thread-topbar"><button id="backBtn" class="icon-btn mobile-back" title="Back"><i class="bi bi-chevron-left"></i></button><div id="readSubject" class="read-subject">(No subject)</div><span id="threadCount" class="thread-count"></span><button id="openThreadWindowBtn" class="icon-btn thread-window-btn" type="button" title="Open thread in new window" aria-label="Open thread in new window"><i class="bi bi-box-arrow-up-right"></i></button><button id="printThreadBtn" class="icon-btn thread-print-btn" type="button" title="Print thread" aria-label="Print thread"><i class="bi bi-printer"></i></button><button id="closeReadBtn" class="icon-btn read-pane-close" type="button" title="Close reading pane" aria-label="Close reading pane"><i class="bi bi-x-lg"></i></button></div>
+        <div id="threadMessages" class="thread-messages"><div class="loading-inline"><span class="panel-spinner" aria-label="Loading"></span></div></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="composeContainer" class="compose-workspace" aria-hidden="true"></div>
+</div>
+</div>
+
+<div id="successModal" class="modal"><div class="success-box"><div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div><h3>Message Sent</h3><p>Your message has been successfully delivered.</p><div id="successReference" class="reference">Reference: —</div><div class="success-actions"><button id="successOk" class="send-btn success-ok">OK</button></div></div></div>
+<div id="loadingOverlay" class="loading-overlay" aria-hidden="true"><div class="loading-box"><span class="big-spinner" aria-label="Loading"></span></div></div>
+
+<div id="unifiedAlert" class="alert-box" role="alert">
+  <span class="alert-icon" id="alertIcon">ℹ️</span>
+  <span class="alert-msg" id="alertMsg"></span>
+  <button class="alert-close" id="alertClose" aria-label="Close">×</button>
+</div>
+
+<!-- Custom confirm dialog -->
+<div id="confirmOverlay" class="confirm-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="confirm-dialog">
+    <div class="confirm-icon" id="confirmIcon">?</div>
+    <h3 class="confirm-title" id="confirmTitle">Are you sure?</h3>
+    <p class="confirm-message" id="confirmMessage"></p>
+    <div class="confirm-actions">
+      <button class="confirm-btn" id="confirmCancel">Cancel</button>
+      <button class="confirm-btn primary" id="confirmOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Recipient directory picker -->
+<div id="recipientDirectoryModal" class="recipient-directory-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="recipientDirectoryTitle">
+  <div class="recipient-directory-dialog">
+    <div class="recipient-directory-head"><div><h3 id="recipientDirectoryTitle">Mail ID Details</h3><p>Select one or more recipients to insert into the address field.</p></div><button type="button" id="recipientDirectoryClose" class="icon-btn" aria-label="Close recipient directory">×</button></div>
+    <div class="recipient-directory-tools"><input id="recipientDirectorySearch" type="search" placeholder="Search name, designation or mail ID…" autocomplete="off"><label class="recipient-select-all"><input type="checkbox" id="recipientDirectorySelectAll"> Select all</label><span id="recipientDirectoryCount">Loading…</span></div>
+    <div id="recipientDirectoryList" class="recipient-directory-list"><div class="recipient-directory-loading">Loading Mail ID Details…</div></div>
+    <div class="recipient-directory-foot"><span id="recipientDirectorySelected">0 selected</span><div><button type="button" id="recipientDirectoryCancel" class="secondary-btn">Cancel</button><button type="button" id="recipientDirectoryInsert" class="send-btn">Insert selected</button></div></div>
+  </div>
+</div>
+
+<script src="mailbox-app.js?v=2" defer></script>
+<script src="mailbox-profile.js?v=2" defer></script>
+</body>
+</html>
