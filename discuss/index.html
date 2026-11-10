@@ -307,7 +307,7 @@
         event.preventDefault();
         deferredInstallPrompt = event;
         installButtonText.textContent = 'Install MailBox app';
-        installHelp.textContent = 'Install MailBox on this device for app-like access.';
+        installHelp.textContent = 'Install Discuss on this device for app-like access.';
       });
 
       installButton.addEventListener('click', async () => {
@@ -315,8 +315,8 @@
           deferredInstallPrompt.prompt();
           const choice = await deferredInstallPrompt.userChoice;
           installHelp.textContent = choice.outcome === 'accepted'
-            ? 'MailBox installation started.'
-            : 'You can install MailBox later from your browser menu.';
+            ? 'Discuss installation started.'
+            : 'You can install Discuss later from your browser menu.';
           deferredInstallPrompt = null;
           return;
         }
@@ -327,16 +327,16 @@
       });
 
       window.addEventListener('appinstalled', () => {
-        installButtonText.textContent = 'MailBox installed';
+        installButtonText.textContent = 'Discuss installed';
         installButton.disabled = true;
         installButton.style.opacity = '.7';
-        installHelp.textContent = 'MailBox is now available from your home screen.';
+        installHelp.textContent = 'Discuss is now available from your home screen.';
       });
 
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js').catch((error) => {
-            console.error('MailBox service worker registration failed:', error);
+            console.error('Discuss service worker registration failed:', error);
           });
         });
       }
