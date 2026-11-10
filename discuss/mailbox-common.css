@@ -1313,9 +1313,9 @@ html[data-theme-mode="dark"]{color-scheme:dark;--bg:#0c1117;--panel:#111820;--so
 
     /* Keep the panel attached to the viewport's right edge.
        Its left edge moves naturally as the browser narrows. */
-    width: min(680px, calc(100vw - 80px)) !important;
+  /*  width: min(680px, calc(100vw - 80px)) !important;*/
     min-width: 0 !important;
-    max-width: calc(100vw - 64px) !important;
+    /*max-width: calc(100vw - 64px) !important;*/
     height: auto !important;
     max-height: none !important;
 
@@ -1356,8 +1356,8 @@ html[data-theme-mode="dark"]{color-scheme:dark;--bg:#0c1117;--panel:#111820;--so
    the remaining viewport for the floating reader. */
 @media (max-width: 520px) {
   .workspace-stage > .main #readPane {
-    width: calc(100vw - 64px) !important;
-    max-width: calc(100vw - 64px) !important;
+   /* width: calc(100vw - 64px) !important;*/
+   /* max-width: calc(100vw - 64px) !important;*/
     border-radius: 14px 0 0 14px !important;
   }
 }
