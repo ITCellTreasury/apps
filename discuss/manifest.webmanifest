@@ -1,8 +1,8 @@
 {
   "id": "./app.html",
-  "name": "MailBox",
-  "short_name": "MailBox",
-  "description": "Mailbox • Secure internal service",
+  "name": "Discuss",
+  "short_name": "Discuss",
+  "description": "Discuss • Secure internal service",
   "start_url": "./app.html",
   "scope": "./",
   "display": "standalone",
