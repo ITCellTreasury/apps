@@ -1008,7 +1008,7 @@ html[data-theme-mode="dark"]{color-scheme:dark;--bg:#0c1117;--panel:#111820;--so
 .recipient-box:focus-within{outline:2px solid var(--accent,#6b8afd);outline-offset:1px}
 .recipient-chips{display:contents}
 .recipient-box .recipient-entry{flex:1 1 140px;min-width:120px;width:auto;border:0!important;outline:0!important;box-shadow:none!important;padding:5px 2px;background:transparent}
-.recipient-chip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:4px 8px;border-radius:14px;background:#edf1f71f;font-size:12px;overflow-wrap:anywhere}
+.recipient-chip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:4px 8px;border-radius:14px;background:color-mix(in srgb, var(--primary) 50%, transparent);font-size:12px;overflow-wrap:anywhere}
 .recipient-chip button{border:0;background:transparent;cursor:pointer;font-size:16px;line-height:1;padding:0 1px;color:inherit}
 .recipient-box .autocomplete{left:0;right:0;top:100%;z-index:30}
 
