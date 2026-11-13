@@ -1,5 +1,5 @@
 
-window.MAILBOX_API_URL=window.MAILBOX_API_URL||'https://script.google.com/macros/s/AKfycbzSmkO0f-qB60RgFK4L8ZJ5XHJDcevJS6cJvbfEbgRpyWCaYJjWB01s0NFmwYsSJobj/exec';
+window.MAILBOX_API_URL=window.MAILBOX_API_URL||'https://script.google.com/macros/s/AKfycbzAoHcLJCRXsFnsj8WXxJGIGsfTI4HPYKPrsr4iS6mzbPqi0SVMx3IWDosWZtFFconD/exec';
 const MailboxAPI=(()=>{
  const inFlightRequests=new Map();
  const READ_ACTIONS=new Set(['mailbox','getMessage','getThread','bootstrap','listMailboxUsers','listThreadProfileImages','suggestRecipients','getProfile']);
@@ -69,20 +69,66 @@ let currentSort = localStorage.getItem('mailbox_sort') || 'date-desc';
 
 function parseMailDate(value) {
   if (value === null || value === undefined || value === '') return 0;
-  // The API may send today's date as a time-only string (e.g. "12:35 PM").
-  // Interpret that as today's local date so it sorts alongside full timestamps.
+
   const raw = String(value).trim();
-  const timeOnly = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/i);
+
+  // Handle time-only values such as 12:35 PM
+  const timeOnly = raw.match(
+    /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/i
+  );
+
   if (timeOnly) {
     let hours = Number(timeOnly[1]) % 12;
     if (timeOnly[4].toUpperCase() === 'PM') hours += 12;
+
     const d = new Date();
     d.setHours(hours, Number(timeOnly[2]), Number(timeOnly[3] || 0), 0);
     return d.getTime();
   }
-  const parsed = new Date(value).getTime();
+
+  // Explicitly parse DD/MM/YYYY HH:mm:ss
+  const match = raw.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/
+  );
+
+  if (match) {
+    const day = Number(match[1]);
+    const month = Number(match[2]);
+    const year = Number(match[3]);
+    const hours = Number(match[4] || 0);
+    const minutes = Number(match[5] || 0);
+    const seconds = Number(match[6] || 0);
+
+    const d = new Date(
+      year,
+      month - 1,
+      day,
+      hours,
+      minutes,
+      seconds,
+      0
+    );
+
+    // Validate components to reject impossible dates
+    if (
+      d.getFullYear() !== year ||
+      d.getMonth() !== month - 1 ||
+      d.getDate() !== day ||
+      d.getHours() !== hours ||
+      d.getMinutes() !== minutes ||
+      d.getSeconds() !== seconds
+    ) {
+      return 0;
+    }
+
+    return d.getTime();
+  }
+
+  // Fallback for ISO timestamps and other standard formats
+  const parsed = Date.parse(raw);
   return Number.isFinite(parsed) ? parsed : 0;
 }
+
 
 function sortMessages(list) {
   const arr = Array.isArray(list) ? list.slice() : [];
@@ -122,7 +168,32 @@ let activeView = 'folders';
 function initials(name,email){const s=String(name||email||'U').trim();const p=s.split(/\s+/).filter(Boolean);return (p.length>1?p[0][0]+p[1][0]:s.slice(0,2)).toUpperCase()}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function escAttr(v){return esc(v)}
-function formatDate(v){if(!v)return '';const raw=String(v).trim();const timeOnly=/^\d{1,2}:\d{2}(?::\d{2})?\s*(AM|PM)$/i.test(raw);const d=timeOnly?new Date(parseMailDate(raw)):new Date(v);if(Number.isNaN(d.getTime()))return raw;const now=new Date();const same=d.toDateString()===now.toDateString();return same?d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString([], {day:'2-digit',month:'short',year:'numeric'})}
+function formatDate(value) {
+  if (!value) return '';
+
+  const raw = String(value).trim();
+  const ms = parseMailDate(raw);
+
+  if (!ms) return raw;
+
+  const d = new Date(ms);
+  const now = new Date();
+
+  const sameDay = d.toDateString() === now.toDateString();
+
+  return sameDay
+    ? d.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    : d.toLocaleDateString([], {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+}
+
+
 function formatSize(bytes){const n=Number(bytes||0);if(!n)return '';if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';if(n<1073741824)return (n/1048576).toFixed(1)+' MB';return (n/1073741824).toFixed(1)+' GB'}
 function showOverlay(){ $('loadingOverlay').classList.add('show'); $('loadingOverlay').setAttribute('aria-hidden','false') }
 function hideOverlay(){ $('loadingOverlay').classList.remove('show'); $('loadingOverlay').setAttribute('aria-hidden','true') }
@@ -868,11 +939,15 @@ function sentStatusMarkup(m){
 }
 
 
-function mailDateParts(value){
- const ms=parseMailDate(value);
- if(!ms)return null;
- const d=new Date(ms);
- return Number.isNaN(d.getTime())?null:d;
+
+function mailDateParts(value) {
+  const ms = parseMailDate(value);
+
+  if (!ms) return null;
+
+  const d = new Date(ms);
+
+  return Number.isNaN(d.getTime()) ? null : d;
 }
 function mailDateGroup(value){
  const d=mailDateParts(value);
