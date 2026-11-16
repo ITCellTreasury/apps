@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#102a56">
-  <meta name="description" content="Contact directory for Treasury Administrators and offices.">
+  <meta name="description" content="NOC Contact Directory">
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
@@ -130,8 +130,8 @@ button, input { font: inherit; }
   <div class="header-inner">
     <div class="header-icon" aria-hidden="true"><i class="bi bi-person-vcard-fill"></i></div>
     <div>
-     <!-- <div class="header-kicker">Treasury Directory</div> -->
-      <h1>Contact Details of Administrators</h1>
+     <!-- <div class="header-kicker">NOC Contact Directory</div> -->
+      <h1>NOC Contact Directory</h1>
      <!-- <p>Find administrator and office contacts for any treasury.</p> -->
     </div>
   </div>
@@ -157,7 +157,7 @@ button, input { font: inherit; }
   <div id="results" aria-live="polite">
     <section class="empty-state"><div class="empty-icon" aria-hidden="true"><i class="bi bi-person-lines-fill"></i></div><h2>Select a treasury to get started</h2><p>Administrator and office contact details will appear here.</p></section>
   </div>
-  <div class="footer-note">Treasury contact directory</div>
+  <div class="footer-note">NOC Contact Directory by NOC IT Cell</div>
 </main>
 
 <div id="pwaInstallBackdrop" class="install-backdrop" role="dialog" aria-modal="true" aria-labelledby="pwaInstallTitle">
@@ -253,7 +253,7 @@ button, input { font: inherit; }
 'use strict';
 const API_KEY='AIzaSyBB1V3vJpNZ9X1GIF-YOwoa6YSt_iXMLo0';
 const SPREADSHEET_ID_ALL='1HvCqLHC8IyllKskBXX1MtMfjQMGUyhMP7KuTuJxDhmU';
-const SHEET_ADMIN='Admin Contact Details', RANGE_ALL='A2:H';
+const SHEET_ADMIN='Admin Contact Details', RANGE_ALL='A2:N';
 const SPREADSHEET_ID_DISTRICT='1JxwLKphMWM9fqV43Tt0jQpQjlQC-6DaSlYQ66Fjq7rA';
 const SHEET_DATA='Data', RANGE_DISTRICT='A:I';
 let adminRows=[], officerRows=[], treasuryOptions=[];
@@ -309,11 +309,23 @@ function renderCard(selected){
  ${personBlock('Treasury Administrator',treasuryAdminName,treasuryAdminPhone)}
  ${personBlock('Network / SD-WAN Admin',networkName,networkPhone)}
  </div></section>`;
- const officerHtml=`<section class="contact-card"><div class="card-top"><div class="avatar"><i class="bi bi-building"></i></div><div><h2>Office &amp; Officer Details</h2><span class="role-tag">Treasury office contacts</span></div></div><div class="card-body"><div class="two-col">
+ const dcName=clean(admin[12]),districtName=clean(admin[8]),dcPhone=clean(admin[13]);
+ const dcDisplayName=dcName
+   ? `${esc(dcName)}${districtName?' <span style="font-size:.82rem;font-weight:600;color:var(--muted)">(District Name: '+esc(districtName)+')</span>':''}`
+   : 'Name not provided';
+ const districtCoordinatorHtml=`<div class="person" style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line)">
+   <div class="person-label">District Coordinator Details</div>
+   <div class="person-name">${dcDisplayName}</div>
+   ${field('Contact Number (CUG)',dcPhone,'phone',dcName||'District Coordinator')}
+ </div>`;
+ const officerHtml=`<section class="contact-card"><div class="card-top"><div class="avatar"><i class="bi bi-building"></i></div><div><h2>Office &amp; Officer Details</h2><span class="role-tag">Treasury office contacts</span></div></div><div class="card-body">
+ <div class="two-col">
  ${field('Office email ID',officeEmail,'email')}
  ${field('Office contact number',officePhone,'phone','Treasury Office',officeEmail)}
  ${field('Office mobile number',officeMobile,'phone','Treasury Office',officeEmail)}
- </div></div></section>`;
+ </div>
+ ${districtCoordinatorHtml}
+ </div></section>`;
  resultsEl.innerHTML=adminHtml+officerHtml;
 }
 async function fetchSheet(id,sheet,range){
