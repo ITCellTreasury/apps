@@ -290,6 +290,19 @@ function field(label,value,kind='text',name='',email=''){
  else body=`<div class="contact-row"><div class="contact-value">${esc(clean(value)||'—')}</div></div>`;
  return `<div><div class="person-label">${esc(label)}</div>${body}</div>`;
 }
+function splitContactValues(value){
+ return clean(value).split(',').map(part=>clean(part)).filter(Boolean);
+}
+function networkAdminBlocks(names,phones){
+ const nameList=splitContactValues(names);
+ const phoneList=splitContactValues(phones);
+ const count=Math.max(nameList.length,phoneList.length,1);
+ return Array.from({length:count},(_,i)=>{
+  const name=nameList[i]||'';
+  const phone=phoneList[i]||'';
+  return personBlock('Network / SD-WAN Admin',name,phone);
+ }).join('');
+}
 function personBlock(title,name,phone,email=''){
  return `<div class="person"><div class="person-label">${esc(title)}</div><div class="person-name">${esc(clean(name)||'Name not provided')}</div>
  ${field('Contact number',phone,'phone',name,email)}${email?field('Email address',email,'email'):''}</div>`;
@@ -305,7 +318,7 @@ function renderCard(selected){
  if(!hasAny){resultsEl.innerHTML=`<section class="empty-state"><div class="empty-icon"><i class="bi bi-person-exclamation"></i></div><h2>No contact details found</h2><p>No matching contact information was found for ${esc(treasury)}.</p></section>`;return;}
  const adminHtml=`<section class="contact-card"><div class="card-top"><div class="avatar"><i class="bi bi-shield-check"></i></div><div><h2>${esc(treasury)}</h2><span class="role-tag">Administrator details</span></div></div><div class="card-body"><div class="section-title">Administrators</div>
  ${personBlock('Treasury Administrator',treasuryAdminName,treasuryAdminPhone)}
- ${personBlock('Network / SD-WAN Admin',networkName,networkPhone)}
+ ${networkAdminBlocks(networkName,networkPhone)}
  </div></section>`;
  const dcName=clean(admin[12]),districtName=clean(admin[8]),dcPhone=clean(admin[13]);
  const dcDisplayName=dcName
