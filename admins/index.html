@@ -251,11 +251,9 @@ button, input { font: inherit; }
 <script>
 (function(){
 'use strict';
-const API_KEY='AIzaSyBB1V3vJpNZ9X1GIF-YOwoa6YSt_iXMLo0';
-const SPREADSHEET_ID_ALL='1HvCqLHC8IyllKskBXX1MtMfjQMGUyhMP7KuTuJxDhmU';
-const SHEET_ADMIN='Admin Contact Details', RANGE_ALL='A2:N';
-const SPREADSHEET_ID_DISTRICT='1JxwLKphMWM9fqV43Tt0jQpQjlQC-6DaSlYQ66Fjq7rA';
-const SHEET_DATA='Data', RANGE_DISTRICT='A:I';
+// Deploy the accompanying Code.gs as a Google Apps Script Web App
+// and paste its /exec URL below.
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFqeM3MDc6foJGfn-DOymsCburyYXi8-6U78cprDqUpG9I6mA0BCSsF1JH0xYX-mVHCg/exec';
 let adminRows=[], officerRows=[], treasuryOptions=[];
 const searchInput=document.getElementById('treasurySearch');
 const suggestions=document.getElementById('suggestions');
@@ -292,6 +290,19 @@ function field(label,value,kind='text',name='',email=''){
  else body=`<div class="contact-row"><div class="contact-value">${esc(clean(value)||'—')}</div></div>`;
  return `<div><div class="person-label">${esc(label)}</div>${body}</div>`;
 }
+function splitContactValues(value){
+ return clean(value).split(',').map(part=>clean(part)).filter(Boolean);
+}
+function networkAdminBlocks(names,phones){
+ const nameList=splitContactValues(names);
+ const phoneList=splitContactValues(phones);
+ const count=Math.max(nameList.length,phoneList.length,1);
+ return Array.from({length:count},(_,i)=>{
+  const name=nameList[i]||'';
+  const phone=phoneList[i]||'';
+  return personBlock('Network / SD-WAN Admin',name,phone);
+ }).join('');
+}
 function personBlock(title,name,phone,email=''){
  return `<div class="person"><div class="person-label">${esc(title)}</div><div class="person-name">${esc(clean(name)||'Name not provided')}</div>
  ${field('Contact number',phone,'phone',name,email)}${email?field('Email address',email,'email'):''}</div>`;
@@ -307,7 +318,7 @@ function renderCard(selected){
  if(!hasAny){resultsEl.innerHTML=`<section class="empty-state"><div class="empty-icon"><i class="bi bi-person-exclamation"></i></div><h2>No contact details found</h2><p>No matching contact information was found for ${esc(treasury)}.</p></section>`;return;}
  const adminHtml=`<section class="contact-card"><div class="card-top"><div class="avatar"><i class="bi bi-shield-check"></i></div><div><h2>${esc(treasury)}</h2><span class="role-tag">Administrator details</span></div></div><div class="card-body"><div class="section-title">Administrators</div>
  ${personBlock('Treasury Administrator',treasuryAdminName,treasuryAdminPhone)}
- ${personBlock('Network / SD-WAN Admin',networkName,networkPhone)}
+ ${networkAdminBlocks(networkName,networkPhone)}
  </div></section>`;
  const dcName=clean(admin[12]),districtName=clean(admin[8]),dcPhone=clean(admin[13]);
  const dcDisplayName=dcName
@@ -328,11 +339,25 @@ function renderCard(selected){
  </div></section>`;
  resultsEl.innerHTML=adminHtml+officerHtml;
 }
-async function fetchSheet(id,sheet,range){
- const url=`https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${encodeURIComponent(sheet)}!${range}?key=${API_KEY}`;
- const res=await fetch(url);if(!res.ok)throw new Error('Google Sheets returned HTTP '+res.status);
- const data=await res.json();if(data.error)throw new Error(data.error.message||'Unable to read sheet');
- return data.values||[];
+async function fetchContactData(){
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('PASTE_YOUR_')){
+    throw new Error('Please configure the Apps Script Web App URL in APPS_SCRIPT_URL.');
+  }
+  const separator = APPS_SCRIPT_URL.includes('?') ? '&' : '?';
+  const response = await fetch(APPS_SCRIPT_URL + separator + 'action=getContacts', {
+    method: 'GET',
+    cache: 'no-store',
+    redirect: 'follow'
+  });
+  if(!response.ok) throw new Error('Apps Script returned HTTP ' + response.status);
+  const data = await response.json();
+  if(!data || data.success !== true) {
+    throw new Error((data && data.error) || 'Invalid response from Apps Script.');
+  }
+  return {
+    adminRows: Array.isArray(data.adminRows) ? data.adminRows : [],
+    officerRows: Array.isArray(data.officerRows) ? data.officerRows : []
+  };
 }
 function searchableFieldsForTreasury(treasury){
  const k=keyFor(treasury);
@@ -382,21 +407,25 @@ searchInput.addEventListener('keydown',e=>{
 document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))suggestions.classList.remove('open');});
 async function init(){
  try{
-  const loaded=await Promise.allSettled([fetchSheet(SPREADSHEET_ID_ALL,SHEET_ADMIN,RANGE_ALL),fetchSheet(SPREADSHEET_ID_DISTRICT,SHEET_DATA,RANGE_DISTRICT)]);
-  if(loaded[0].status==='fulfilled')adminRows=loaded[0].value;
-  if(loaded[1].status==='fulfilled')officerRows=loaded[1].value;
-  if(loaded.every(x=>x.status==='rejected'))throw new Error('Could not load either contact sheet. Check network access and Google Sheets API permissions.');
+  statusEl.innerHTML='<span class="status-dot"></span><span>Loading treasury contact details from Apps Script…</span>';
+  const data = await fetchContactData();
+  adminRows = data.adminRows;
+  officerRows = data.officerRows;
+
+  if(!adminRows.length && !officerRows.length){
+    throw new Error('Apps Script returned no contact rows. Check spreadsheet IDs, tab names and access permissions.');
+  }
+
   const byKey=new Map();
   adminRows.forEach(r=>{const n=clean(r[0]);if(n&&!byKey.has(keyFor(n)))byKey.set(keyFor(n),n);});
   officerRows.forEach(r=>{const n=clean(r[1]);if(n&&!byKey.has(keyFor(n)))byKey.set(keyFor(n),n);});
   treasuryOptions=[...byKey.values()].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'}));
-  const notes=[];
-  if(loaded[0].status==='rejected')notes.push('administrator sheet unavailable');
-  if(loaded[1].status==='rejected')notes.push('office details sheet unavailable');
-  statusEl.innerHTML=`<span class="status-dot"></span><span>${treasuryOptions.length} treasuries loaded${notes.length?' ('+notes.join('; ')+')':''}.</span>`;
+
+  statusEl.innerHTML=`<span class="status-dot"></span><span>${treasuryOptions.length} treasuries loaded successfully through Apps Script.</span>`;
  }catch(e){
-  console.error(e);statusEl.innerHTML='<span class="status-dot" style="background:#e05a67"></span><span>'+esc('Unable to load contact details: '+e.message)+'</span>';
-  resultsEl.innerHTML='<section class="empty-state"><div class="empty-icon"><i class="bi bi-person-exclamation"></i></div><h2>Contact list could not be loaded</h2><p>Check the connection, spreadsheet access, and API key.</p></section>';
+  console.error(e);
+  statusEl.innerHTML='<span class="status-dot" style="background:#e05a67"></span><span>'+esc('Unable to load contact details: '+e.message)+'</span>';
+  resultsEl.innerHTML='<section class="empty-state"><div class="empty-icon"><i class="bi bi-person-exclamation"></i></div><h2>Contact list could not be loaded</h2><p>Check the Apps Script URL, deployment access and spreadsheet permissions.</p></section>';
  }
 }
 init();
