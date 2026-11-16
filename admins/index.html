@@ -9,7 +9,7 @@
   <link rel="icon" href="./icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<title>Contact Details of Administrators</title>
+<title>NOC Contact Directory</title>
 <style>
 :root {
   color-scheme: light dark;
@@ -151,7 +151,7 @@ button, input { font: inherit; }
       <div id="suggestions" class="suggestions" role="listbox"></div>
     </div>
     <p class="hint">Search across treasury names, administrator names, phone numbers, email addresses and other contact details. Select a result to open its full contact card.</p>
-    <div id="loadStatus" class="status" role="status"><span class="status-dot"></span><span>Loading…</span></div>
+    <div id="loadStatus" class="status" role="status"><span class="status-dot"></span><span>Loading treasury contact details…</span></div>
     <select id="treasurySelect" aria-hidden="true"><option value=""></option></select>
   </section>
   <div id="results" aria-live="polite">
@@ -407,13 +407,13 @@ searchInput.addEventListener('keydown',e=>{
 document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))suggestions.classList.remove('open');});
 async function init(){
  try{
-  statusEl.innerHTML='<span class="status-dot"></span><span>Loading treasury contact details from Apps Script…</span>';
+  statusEl.innerHTML='<span class="status-dot"></span><span>Loading…</span>';
   const data = await fetchContactData();
   adminRows = data.adminRows;
   officerRows = data.officerRows;
 
   if(!adminRows.length && !officerRows.length){
-    throw new Error('Apps Script returned no contact rows. Check spreadsheet IDs, tab names and access permissions.');
+    throw new Error('API returned no contact rows.');
   }
 
   const byKey=new Map();
@@ -421,11 +421,11 @@ async function init(){
   officerRows.forEach(r=>{const n=clean(r[1]);if(n&&!byKey.has(keyFor(n)))byKey.set(keyFor(n),n);});
   treasuryOptions=[...byKey.values()].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'}));
 
-  statusEl.innerHTML=`<span class="status-dot"></span><span>${treasuryOptions.length} treasuries loaded successfully through Apps Script.</span>`;
+  statusEl.innerHTML=`<span class="status-dot"></span><span>${treasuryOptions.length} Directory Records Available.</span>`;
  }catch(e){
   console.error(e);
   statusEl.innerHTML='<span class="status-dot" style="background:#e05a67"></span><span>'+esc('Unable to load contact details: '+e.message)+'</span>';
-  resultsEl.innerHTML='<section class="empty-state"><div class="empty-icon"><i class="bi bi-person-exclamation"></i></div><h2>Contact list could not be loaded</h2><p>Check the Apps Script URL, deployment access and spreadsheet permissions.</p></section>';
+  resultsEl.innerHTML='<section class="empty-state"><div class="empty-icon"><i class="bi bi-person-exclamation"></i></div><h2>Contact list could not be loaded</h2><p>Check the API.</p></section>';
  }
 }
 init();
